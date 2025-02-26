@@ -1,23 +1,17 @@
-# Computational modelling of decision making and action selection
+# WIN Hackathon 2 - Computational modelling of behaviour
 
-**Course organisers**
+**Organisers**
 
 Jan Grohn (jan.grohn@psy.ox.ac.uk), Miriam Klein-Flügge (miriam.klein-flugge@psy.ox.ac.uk)  
 
-This repository contains exercise sheets and code for a block practical on how to use computational modelling to understand decision making and action selection. The four weeks course is taught yearly at Oxford and is targeted at 3rd year undergraduates. 
+This repository contains exercise sheets and code for a hackathon on how to use computational modelling to understand decision making and action selection. 
 
 The notebooks are best run via Google Colab:
 
-session 1:  https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session1.ipynb
+part 1:  https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/winhack/part1.ipynb
 
-session 1 with solutions: https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session1_completed.ipynb
+part 1 with solutions: https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/winhack/part1_completed.ipynb
 
-session 2:  https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session2.ipynb
+part 2:  https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/winhack/part2.ipynb
 
-session 2 solutions:  https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session2_completed.ipynb
-
-session 3:  https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session3.ipynb
-
-session 3 with solutions: https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session3_completed.ipynb
-
-session 4: https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session4.ipynb
+part 2 solutions:  https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/winhack/part2_completed.ipynb
