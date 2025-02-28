@@ -1,6 +1,6 @@
 # WIN Hackathon 2 - Computational modelling of behaviour
 
-**Organisers**
+**Developers**
 
 Jan Grohn (jan.grohn@psy.ox.ac.uk), Miriam Klein-Flügge (miriam.klein-flugge@psy.ox.ac.uk)  
 
