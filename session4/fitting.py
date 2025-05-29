@@ -653,7 +653,7 @@ def fit_participant_data(
           fitData1Alpha.loc[i, "omega"] = omega_values[i]
           fitData2Alpha.loc[i, "omega"] = omega_diff_values[i]
           fitData1Alpha.loc[i, "BIC"] = 3*np.log(numTrials) + 2*float(loss_same_alpha[i])
-          fitData2Alpha.loc[s, "BIC"] = 4*np.log(numTrials) + 2*float(loss_alpha_difference[i])
+          fitData2Alpha.loc[i, "BIC"] = 4*np.log(numTrials) + 2*float(loss_alpha_difference[i])
 
       return fitData1Alpha, fitData2Alpha
 
