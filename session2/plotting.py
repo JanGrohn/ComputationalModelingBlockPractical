@@ -583,13 +583,11 @@ def plot_regression_weights(model) -> None:
   '''
   checkbox = widgets.Checkbox(value=False, description='Divide by sum of weights')
 
-  fig = go.FigureWidget(go.Figure())
-  
   param_names = list(model.params.keys())
   param_values = list(model.params.values)
-  fig.add_trace(go.Bar(x=param_names, y=param_values, offsetgroup=0))
+
+  fig = go.FigureWidget(go.Bar(x=param_names, y=param_values, offsetgroup=0))
   fig.update_layout(title='regression results', showlegend=False)
-  # fig.update_xaxes(tickangle=0)
 
   # when the checkbox is toggled, we want to divide the weights by the sum of the weights. 
   def update_fig(change: Dict[str, Any]) -> None:
