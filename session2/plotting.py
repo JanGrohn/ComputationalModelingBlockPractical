@@ -583,7 +583,7 @@ def plot_regression_weights(model) -> None:
   '''
   checkbox = widgets.Checkbox(value=False, description='Divide by sum of weights')
 
-  fig = go.FigureWidget()
+  fig = go.FigureWidget(go.Figure())
   param_names = list(model.params.keys())
   param_values = list(model.params.values)
   fig.add_trace(go.Bar(x=param_names, y=param_values, offsetgroup=0))
