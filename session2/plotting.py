@@ -583,7 +583,7 @@ def plot_regression_weights(model) -> None:
   '''
   checkbox = widgets.Checkbox(value=False, description='Divide by sum of weights')
 
-  param_names = list(model.params.keys())
+  param_names  = list(model.params.keys())
   param_values = list(model.params.values)
 
   fig = go.FigureWidget(go.Bar(x=param_names, y=param_values, offsetgroup=0))
@@ -593,7 +593,6 @@ def plot_regression_weights(model) -> None:
   def update_fig(change: Dict[str, Any]) -> None:
     with fig.batch_update():
       if checkbox.value:
-        # if keys contains "magDiff", remove it
         if "magDiff" in param_names:
           normalized_values = param_values[0:-1]/np.sum(param_values[0:-1])
           fig.data[0].y = np.concatenate((normalized_values, [param_values[-1]]))
@@ -612,11 +611,14 @@ def plot_regression_weights(model) -> None:
         if "magDiff" in param_names:
           fig.data[0].y = param_values
           fig.data[0].x = param_names
-          fig.data = fig.data[:-2]
+          if len(fig.data) > 2:
+            fig.data = fig.data[:-2]
         else:
           fig.data[0].y = param_values
           fig.data[0].x = param_names
-          fig.data = fig.data[:-1]
+          if len(fig.data) > 1:
+            fig.data = fig.data[:-1]
+      fig.update_layout(showlegend=False)
 
   checkbox.observe(update_fig, names="value")
 
