@@ -17,6 +17,7 @@ pio.templates.default = "none"
 
 # this allows us to make interactive figures
 import ipywidgets as widgets
+from IPython.display import display
 
 # import some custom fitting functions we wrote
 from session2 import fitting
@@ -583,7 +584,9 @@ def plot_regression_weights(model) -> None:
   checkbox = widgets.Checkbox(value=False, description='Divide by sum of weights')
 
   fig = go.FigureWidget()
-  fig.add_trace(go.Bar(x=model.params.keys(), y=model.params.values, offsetgroup=0))
+  param_names = list(model.params.keys())
+  param_values = list(model.params.values)
+  fig.add_trace(go.Bar(x=param_names, y=param_values, offsetgroup=0))
   fig.update_layout(title='regression results', showlegend=False)
   # fig.update_xaxes(tickangle=0)
 
@@ -592,27 +595,28 @@ def plot_regression_weights(model) -> None:
     with fig.batch_update():
       if checkbox.value:
         # if keys contains "magDiff", remove it
-        if "magDiff" in model.params.keys():
-          fig.data[0].y = np.concatenate((model.params.values[0:-1]/np.sum(model.params.values[0:-1]), [model.params.values[-1]]))
-          fig.data[0].x = [name + "/sum(weights)" for name in model.params[0:-1].keys()] + ["magDiff"]
-          fig.add_trace(go.Bar(x=["beta"], y=[model.params.values[-1] + np.sum(model.params.values[0:-1])/100], offsetgroup=0))
-          fig.add_trace(go.Bar(x=["omega"], y=[(1 - (np.sum(model.params[0:-1])/100) / (model.params.values[-1] + np.sum(model.params.values[0:-1])/100))], offsetgroup=0))
-        elif "v1" in model.params.keys():
-          fig.data[0].y = model.params.values/np.sum(model.params.values)
-          fig.data[0].x = [name + "/sum(weights)" for name in model.params.keys()]
-          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(model.params.values)], offsetgroup=0))
+        if "magDiff" in param_names:
+          normalized_values = param_values[0:-1]/np.sum(param_values[0:-1])
+          fig.data[0].y = np.concatenate((normalized_values, [param_values[-1]]))
+          fig.data[0].x = [name + "/sum(weights)" for name in param_names[0:-1]] + ["magDiff"]
+          fig.add_trace(go.Bar(x=["beta"], y=[param_values[-1] + np.sum(param_values[0:-1])/100], offsetgroup=0))
+          fig.add_trace(go.Bar(x=["omega"], y=[(1 - (np.sum(param_values[0:-1])/100) / (param_values[-1] + np.sum(param_values[0:-1])/100))], offsetgroup=0))
+        elif "v1" in param_names:
+          fig.data[0].y = param_values/np.sum(param_values)
+          fig.data[0].x = [name + "/sum(weights)" for name in param_names]
+          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(param_values)], offsetgroup=0))
         else:
-          fig.data[0].y = model.params.values/np.sum(model.params.values)
-          fig.data[0].x = [name + "/sum(weights)" for name in model.params.keys()]
-          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(model.params.values)/100], offsetgroup=0))
+          fig.data[0].y = param_values/np.sum(param_values)
+          fig.data[0].x = [name + "/sum(weights)" for name in param_names]
+          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(param_values)/100], offsetgroup=0))
       else:
-        if "magDiff" in model.params.keys():
-          fig.data[0].y = model.params.values
-          fig.data[0].x = model.params.keys()
+        if "magDiff" in param_names:
+          fig.data[0].y = param_values
+          fig.data[0].x = param_names
           fig.data = fig.data[:-2]
         else:
-          fig.data[0].y = model.params.values
-          fig.data[0].x = model.params.keys()
+          fig.data[0].y = param_values
+          fig.data[0].x = param_names
           fig.data = fig.data[:-1]
 
   checkbox.observe(update_fig, names="value")
