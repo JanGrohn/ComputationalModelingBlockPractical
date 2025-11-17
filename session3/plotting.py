@@ -296,3 +296,32 @@ def plot_parameter_corrs(df):
                     ))
     
   fig.show()
+
+
+def plot_model_frequencies(bestModels, sd=None, exceedance_probabilities=None, modelNames=['Multiplicative 1 Alpha', 'Multiplicative 2 Alphas', 'Additive 1 Alpha', 'Additive 2 Alphas']):
+    # use plotly to plot the model frequencies
+    frequencies = bestModels/np.sum(bestModels)
+    if sd is not None:
+        # plot with error bars using go.Bar
+        fig = go.Figure(data=go.Bar(
+            x=modelNames,
+            y=frequencies,
+            error_y=dict(type='data', array=sd)
+        ))
+    else:
+        fig = go.Figure(data=go.Bar(
+            x=modelNames,
+            y=frequencies
+        ))
+    if exceedance_probabilities is not None:
+        text_labels = [f'P_exceedance = {val:.3f}' for val in exceedance_probabilities]
+        y_positions = frequencies + (sd + 0.05 if sd is not None else frequencies + 0.05)
+        fig.add_trace(go.Scatter(
+            x=modelNames,
+            y=y_positions,
+            mode='text',
+            text=text_labels
+        ))
+        
+    fig.update_layout(yaxis_title='Frequency', xaxis_title='', showlegend=False)
+    fig.show()
