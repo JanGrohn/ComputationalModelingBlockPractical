@@ -154,7 +154,7 @@ const weights = {
         x, y: w, type: 'bar', marker: { color: COL.opt1 },
         hovertemplate: '%{x} trials back<br>weight %{y:.3f}<extra></extra>',
       }], layout({
-        width: 740, height: 300,
+        width: 700, height: 250,
         bargap: 0.35,
         xaxis: Object.assign(layout().xaxis, { title: 'trials into the past', dtick: 5 }),
         yaxis: Object.assign(layout().yaxis, { title: 'weight', range: [0, 1.02] }),

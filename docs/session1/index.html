@@ -17,50 +17,46 @@
 <body>
 <div class="reveal"><div class="slides">
 
-<!-- ===================================================================== -->
+<!-- 1 ==================================================================== -->
 <section class="title-slide">
   <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
   <p class="subtitle">Block practical &middot; Session 1 of 4</p>
-  <p class="byline"><strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
+  <p class="byline">Organisers: <strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
      Department of Experimental Psychology, University of Oxford</p>
-  <aside class="notes">Welcome. Four sessions, each half a day. Today is the gentlest.</aside>
 </section>
 
-<!-- ===================================================================== -->
+<!-- 2 ==================================================================== -->
 <section>
-  <h2>Four weeks</h2>
+  <h2>Plan for the next 4 weeks</h2>
   <div class="cols">
     <div class="stack-tight">
-      <h3>Week 1 &mdash; today</h3>
-      <ul><li>Play the task yourself</li>
+      <h3>Today</h3>
+      <ul><li>Some Python and Colab basics</li>
+          <li>Experience the task</li>
           <li>Build a learning model</li>
-          <li>See what its parameters do</li></ul>
+          <li>Understand the model parameters</li></ul>
       <h3>Week 2</h3>
-      <ul><li>Utility and choice probability</li>
-          <li>Simulations and parameter recovery</li></ul>
+      <ul><li>Model fitting</li>
+          <li>Parameter recovery</li>
+          <li>Simulating data from the model</li></ul>
     </div>
     <div class="stack-tight">
       <h3>Week 3</h3>
-      <ul><li>Fitting the model to real data</li>
-          <li>Model comparison</li>
-          <li>Data quality and exclusions</li></ul>
+      <ul><li>Checking data quality</li>
+          <li>Data analysis</li>
+          <li>Model comparison</li></ul>
       <h3>Week 4</h3>
-      <ul><li>Validating the fits</li>
-          <li>Statistics and your write-up</li></ul>
+      <ul><li>Statistics</li>
+          <li>Write-up planning</li></ul>
     </div>
   </div>
 </section>
 
-<!-- ===================================================================== -->
-<section class="section-slide">
-  <p class="eyebrow">Part one</p>
-  <h2>Why build a model?</h2>
-</section>
-
+<!-- 3 ==================================================================== -->
 <section>
   <h2>Why build a model?</h2>
-  <div class="discuss">
-    <span class="discuss-label">Discuss with your neighbour</span>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss with each other</span>
     <ul>
       <li>What models have you come across in your course so far?</li>
       <li>What has modelling taught us about behaviour?</li>
@@ -70,165 +66,308 @@
   </div>
 </section>
 
+<!-- 4 ==================================================================== -->
 <section>
   <h2>Why build a model?</h2>
   <div class="cols narrow-right">
-    <div>
-      <ul class="stack-tight">
-        <li>To make inferences about causes of behaviour we cannot observe directly</li>
-        <li>To infer latent variables and mechanisms</li>
-        <li>To say something about the computations involved in a task</li>
-        <li>To ask questions that are hard to answer with an experiment alone</li>
-        <li>To quantify the evidence for a theory</li>
-      </ul>
-    </div>
+    <ul class="stack-tight">
+      <li>To make inferences about latent causes of behaviour that we cannot observe directly</li>
+      <li>To get closer to a simplified form of people's cognitive processes</li>
+      <li>Because we want to infer latent variables and mechanisms</li>
+      <li>To say something about the computations involved in completing a task</li>
+      <li>To infer what is really happening inside the black box</li>
+      <li>To create order in the universe</li>
+      <li>Models let us ask questions that are hard to answer with experiments</li>
+      <li>To quantify evidence for our theories and hypotheses</li>
+    </ul>
     <figure>
       <img src="../assets/img/s1/brain-circuit.png" alt="A brain, half anatomical and half printed circuit.">
     </figure>
   </div>
-  <p class="citation">After a slide by Wei Ji Ma's lab, NYU</p>
+  <p class="citation">Courtesy of Wei Ji Ma's lab, NYU</p>
 </section>
 
-<!-- ===================================================================== -->
+<!-- 5 ==================================================================== -->
 <section>
-  <h2>Marr's three levels</h2>
+  <h2>What does computational modelling usually entail?</h2>
+  <ol class="stack-tight" style="list-style:decimal; margin-left:1.3em">
+    <li>Understand some simple maths behind the model (GCSE level)</li>
+    <li>Understand what the parameters and variables in the model mean</li>
+  </ol>
+  <div class="fragment" style="margin-top:0.7em">
+    <ul class="stack-tight">
+      <li><strong>Computational theory.</strong> What is the goal of the computation? Why is it
+        appropriate, and what is the logic of the strategy by which it can be carried out?</li>
+      <li><strong>Algorithm.</strong> How can this computational theory be implemented? What is the
+        representation for the input and output, and what is the algorithm for the transformation?</li>
+      <li><strong>Hardware implementation.</strong> How can the representation and algorithm be
+        realised physically?</li>
+    </ul>
+  </div>
+  <p class="citation fragment">Marr &amp; Poggio, <em>Vision</em>, 1982</p>
+</section>
+
+<!-- 6 ==================================================================== -->
+<section>
+  <h2>An example for Marr's three levels of explanation</h2>
   <div class="cols narrow-right">
     <div class="stack-tight">
-      <p><strong>Computational theory.</strong> What is the goal, and why is it the right one?</p>
-      <p><strong>Algorithm.</strong> What representation and what procedure achieve it?</p>
-      <p><strong>Implementation.</strong> How is that realised physically?</p>
+      <p><strong>Computation.</strong> The goal of a cash register is to do arithmetic, so we need
+        a theory of addition, subtraction, and so on.</p>
+      <p class="fragment"><strong>Algorithm.</strong> It uses Arabic numerals, not Roman ones &mdash;
+        so algorithms for addition that operate on Arabic numerals: add the last digit first, carry
+        if the sum exceeds 9, and so on.</p>
+      <p class="fragment"><em>Even if the computational goal is the same, the algorithm can be
+        very different.</em></p>
+      <p class="fragment"><strong>Implementation.</strong> The cash register may be mechanical, with
+        each number a notch on a circular wheel, or electrical, with binary numbers stored in the
+        wires and transistors of a circuit.</p>
+      <p class="fragment"><em>Even if the algorithm is the same, the implementation can be very
+        different.</em></p>
     </div>
     <figure>
       <img src="../assets/img/s1/cash-register.png" alt="A cash register.">
-      <figcaption>A cash register adds up prices. The goal is arithmetic; the algorithm
-        operates on Arabic rather than Roman numerals; the implementation may be
-        mechanical or electronic.</figcaption>
     </figure>
   </div>
-  <p class="takeaway" style="margin-top:0.8em">Two systems can share a goal and differ in algorithm,
-    or share an algorithm and differ in hardware.</p>
-  <p class="citation">Marr &amp; Poggio, <em>Vision</em>, 1982</p>
 </section>
 
-<!-- ===================================================================== -->
-<section class="section-slide">
-  <p class="eyebrow">Part two</p>
-  <h2>The task</h2>
-</section>
-
+<!-- 7 ==================================================================== -->
 <section>
-  <h2>What we are trying to model</h2>
+  <h2>What we're aiming to model</h2>
   <div class="cols">
-    <div>
-      <p class="lead">Two questions, and the task is built to separate them.</p>
+    <div class="fragment">
       <ul>
-        <li>How do we learn, over time, which option is more likely to be rewarded?</li>
-        <li>How do we decide between options once we have learnt that?</li>
+        <li>How do we learn across time which stimulus is more likely to be rewarded?</li>
+        <li>How do we decide between different options?</li>
       </ul>
     </div>
     <figure>
       <img src="../assets/img/s1/task-screen.png" alt="The task screen: a green deer worth 31 points beside an orange heron worth 66 points.">
-      <figcaption>One trial. <span class="term-opt1">Option 1 is the green stimulus</span>,
-        <span class="term-opt2">option 2 the orange one</span>. The number below each is the
-        points on offer this trial; how likely each is to pay out has to be learnt.</figcaption>
-    </figure>
-  </div>
-</section>
-
-<section>
-  <h2>Two things vary, and they vary independently</h2>
-  <div class="cols narrow-left">
-    <div class="stack-tight">
-      <p><strong>Magnitude</strong> is shown. It is redrawn at random every trial.</p>
-      <p><strong>Probability</strong> is hidden. It has to be learnt from outcomes, and it changes.</p>
-      <p class="note">Because the two are independent, a participant who tracks only the
-        numbers on screen behaves differently from one who also learns the probabilities &mdash;
-        which is what makes the model identifiable.</p>
-    </div>
-    <figure>
-      <img src="../assets/img/s1/behrens-schedule.png" alt="Three stacked panels showing reward probability and magnitude across 160 trials.">
-      <figcaption>A whole schedule: the reward probability reverses in the volatile
-        half and holds steady in the stable half, while magnitudes jitter throughout.</figcaption>
+      <figcaption><span class="term-opt1">Option 1 is the green stimulus</span>,
+        <span class="term-opt2">option 2 the orange one</span>.</figcaption>
     </figure>
   </div>
   <p class="citation">Behrens et al., <em>Nature Neuroscience</em>, 2007</p>
 </section>
 
+<!-- 8 ==================================================================== -->
 <section>
-  <h2>What we can measure, and what we cannot</h2>
-  <div class="cols">
+  <h2>What measurements do we obtain from participants in our task?</h2>
+  <div class="cols narrow-right">
     <div>
-      <h3>Measured directly</h3>
-      <ul class="stack-tight">
-        <li>Which option was chosen</li>
-        <li>Reaction time</li>
-        <li>Points earned</li>
+      <ul class="fragment stack-tight">
+        <li>Reaction times (milliseconds)</li>
+        <li>Choice (right or left, green or orange)</li>
       </ul>
-      <h3>Not measured</h3>
-      <ul class="stack-tight">
-        <li>How quickly a participant updates their beliefs</li>
-        <li>How they trade points off against probability</li>
-        <li>How noisy their choices are</li>
-      </ul>
+      <p class="fragment takeaway" style="margin-top:1em"><strong>Problem.</strong> Reaction time
+        and choice data cannot tell us how fast participants learn, or how much they weigh reward
+        magnitude against probability.</p>
     </div>
-    <div>
-      <p class="takeaway">The second list is what we actually want. A model is how we
-        get at it &mdash; each entry becomes a parameter we can estimate.</p>
-    </div>
+    <figure class="fragment">
+      <img src="../assets/img/s1/button-box.jpg" alt="A two-button response box with its cable.">
+    </figure>
   </div>
 </section>
 
+<!-- 9 ==================================================================== -->
 <section>
-  <h2>Before you run anyone</h2>
-  <div class="discuss">
-    <span class="discuss-label">Discuss with your neighbour</span>
+  <h2>Why learn to code?</h2>
+  <p class="lead">Building models often needs you to code them up&hellip;</p>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss with each other</span>
     <ul>
-      <li>What makes a good testing environment?</li>
-      <li>What would you ask a participant to check they have understood the task?</li>
-      <li>Should the stable and volatile blocks be counterbalanced? Why?</li>
+      <li>How will it help you if you want to do research?</li>
+      <li>How will it help you if you want to pursue other careers?</li>
     </ul>
   </div>
-  <p class="note" style="margin-top:0.8em">In a real study you would brief the participant and
-    take informed consent before any of this.</p>
 </section>
 
+<!-- 10 =================================================================== -->
 <section>
-  <h2>Your turn: play the task</h2>
-  <p class="lead">Follow the link in Section 2 of the Colab notebook.</p>
+  <h2>Aims for today</h2>
+  <ol style="list-style:decimal; margin-left:1.3em">
+    <li>Learn about the task you'll be running in this block practical, and practise by playing
+      the task yourself <span class="note">(30&ndash;45 mins)</span></li>
+  </ol>
+  <p class="note" style="margin:0.4em 0 0.4em 1.3em"><em>Break (5&ndash;10 minutes)</em></p>
+  <ol start="2" style="list-style:decimal; margin-left:1.3em">
+    <li>Build a simple reinforcement learning model of the task, and understand how varying
+      parameters in the model affects its behaviour <span class="note">(~1.5 hours)</span></li>
+  </ol>
+</section>
+
+<!-- 11 =================================================================== -->
+<section>
+  <h2>Instructing and testing a participant</h2>
+  <div class="discuss">
+    <span class="discuss-label">Discuss with each other</span>
+    <ul>
+      <li>What creates a good environment for testing?</li>
+      <li>What kind of questions might you ask a participant to probe their task understanding?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 12 =================================================================== -->
+<section>
+  <h2>Task demo</h2>
+  <p class="lead">See the link in Section 2 of the Colab notebook.</p>
+</section>
+
+<!-- 13 =================================================================== -->
+<section>
+  <h2>Task practice</h2>
   <ul>
-    <li>Play it properly &mdash; try to earn points, not just click through.</li>
-    <li>If you have time, restart and play the other block order.</li>
-    <li>Pay attention to <em>how</em> you are deciding. You will be asked.</li>
+    <li>Normally, when we test participants, we first inform them about the goal of the study and
+      take their informed consent.</li>
   </ul>
-  <p class="note">Roughly 30&ndash;45 minutes, then a short break.</p>
+  <div class="discuss">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>Should we counterbalance the volatile and stable blocks?</li></ul>
+  </div>
 </section>
 
-<!-- ===================================================================== -->
+<!-- 14 =================================================================== -->
 <section class="section-slide">
-  <p class="eyebrow">Part three</p>
-  <h2>A first model</h2>
+  <p class="eyebrow">5&ndash;10 minutes</p>
+  <h2>Break</h2>
 </section>
 
+<!-- 15 =================================================================== -->
 <section>
-  <h2>Learning as error correction</h2>
-  <p>On each trial, compare what happened with what you expected:</p>
+  <h2>Last part for today: the RL model</h2>
+  <p class="lead">Just follow the Colab notebook, and ask us questions any time.</p>
+</section>
+
+<!-- 16 =================================================================== -->
+<section>
+  <h2>What are our research questions?</h2>
+  <ul>
+    <li>How do we learn, over time, which choices are more rewarding?</li>
+    <li>How do we decide between different choice options?</li>
+  </ul>
+</section>
+
+<!-- 17 =================================================================== -->
+<section>
+  <h2>Task recap</h2>
+  <figure>
+    <img src="../assets/img/s1/task-screen.png" alt="The task screen: a green deer worth 31 points beside an orange heron worth 66 points." style="max-height:400px">
+    <figcaption>Two options, each showing the points on offer this trial. How likely each is to
+      pay out has to be learnt from experience.</figcaption>
+  </figure>
+  <p class="citation">Behrens et al., <em>Nature Neuroscience</em>, 2007</p>
+</section>
+
+<!-- 18 =================================================================== -->
+<section>
+  <h2>Task recap</h2>
+  <div class="cols narrow-left">
+    <div class="stack-tight">
+      <p><strong>How do we learn, over time, which choices are more rewarding?</strong></p>
+      <p class="note">Stable vs volatile blocks</p>
+      <p style="margin-top:1em"><strong>How do we decide between different options?</strong></p>
+      <p class="note">Random reward magnitudes (points), drawn independently of the probabilities</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s1/behrens-schedule.png" alt="Three stacked panels showing reward probability and magnitude across trials.">
+      <figcaption>Magnitude runs 0&ndash;100 and is redrawn every trial; the reward probability
+        holds steady in the stable block and reverses in the volatile one.</figcaption>
+    </figure>
+  </div>
+  <p class="citation">Behrens et al., <em>Nature Neuroscience</em>, 2007</p>
+</section>
+
+<!-- 19 =================================================================== -->
+<section>
+  <h2>Recap of the reinforcement learning (RL) model</h2>
+  <p>Reinforcement learning models track the probabilities of different outcomes when different
+    actions are taken. In this task we need to estimate the probability that
+    <span class="term-opt1">green</span> is rewarded on each trial &mdash; the same as 1 minus the
+    probability that <span class="term-opt2">orange</span> will be, so we only need to track one
+    probability. We can learn it by calculating a <em>prediction error</em> on each trial:</p>
   <div class="eq">
-    $$\underbrace{\delta_t}_{\text{prediction error}}
-      = \underbrace{o_t}_{\text{outcome}} - \underbrace{p_t}_{\text{expectation}}$$
+    $$\delta_t = o_t - p_t$$
     <span class="eq-tag">(1)</span>
   </div>
-  <p>then move your expectation a fraction of the way towards it:</p>
+  <p class="eq-where">where $\delta_t$ is the prediction error on trial $t$, $o_t$ the outcome
+    (1 if green was rewarded, 0 if orange was) and $p_t$ the current probability that green will
+    be rewarded. We then use this prediction error to update our expectation:</p>
   <div class="eq">
-    $$\underbrace{p_{t+1}}_{\text{new expectation}}
-      = p_t + \underbrace{\alpha}_{\text{learning rate}} \delta_t$$
+    $$p_{t+1} = p_t + \alpha \delta_t$$
     <span class="eq-tag">(2)</span>
   </div>
-  <p class="eq-where">$o_t = 1$ if <span class="term-opt1">option 1 (green)</span> was rewarded and
-    $0$ if <span class="term-opt2">option 2 (orange)</span> was; $p_t$ is the current estimate that
-    option 1 will be rewarded, and $0 &lt; \alpha \le 1$.</p>
-  <aside class="notes">Only one probability is tracked: the two options are perfectly
-    anticorrelated, so P(option 2) = 1 - P(option 1).</aside>
+  <p class="eq-where">where $\alpha$ is the <em>learning rate</em>, with $0 &lt; \alpha \le 1$.</p>
 </section>
+
+<!-- 20 =================================================================== -->
+<section>
+  <h2>The learning rate captures the speed of learning</h2>
+  <figure class="fig fig-narrow" id="fig-weights">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="takeaway" style="margin-top:0.5em; max-width:44em; font-size:1.12em">By comparing the speed of learning ($\alpha$) in the
+    volatile and the stable phase, we can test our first hypothesis: how fast we learn and adjust
+    our behaviour depends on how quickly the environment is changing.</p>
+</section>
+
+<!-- 21 =================================================================== -->
+<section>
+  <h2>Expanding the model: integrating probabilities with magnitudes</h2>
+  <div class="cols narrow-left">
+    <div>
+      <!-- the model schematic, redrawn from the shapes on the original slide -->
+      <svg viewBox="0 0 440 310" width="100%" role="img"
+           aria-label="Outcome history feeds a learning model, which produces a learned probability. That and the shown magnitude feed a stage combining value dimensions, which gives a decision variable.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5b6670"/>
+          </marker>
+        </defs>
+        <g font-family="Inter, sans-serif" font-size="13" fill="#14171a">
+          <rect x="18"  y="4"   width="150" height="32" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
+          <text x="93"  y="25"  text-anchor="middle">Outcome history</text>
+          <rect x="108" y="62"  width="140" height="32" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
+          <text x="178" y="83"  text-anchor="middle">Learning model</text>
+          <rect x="8"   y="120" width="170" height="32" rx="5" fill="#eaf1ea" stroke="#9cc49e"/>
+          <text x="93"  y="141" text-anchor="middle">Learned probability</text>
+          <rect x="8"   y="236" width="170" height="32" rx="5" fill="#fdf0e4" stroke="#e8a86a"/>
+          <text x="93"  y="257" text-anchor="middle">Shown magnitude</text>
+          <rect x="212" y="158" width="104" height="50" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
+          <text x="264" y="178" text-anchor="middle">Combining</text>
+          <text x="264" y="196" text-anchor="middle">value dims</text>
+          <rect x="272" y="248" width="156" height="32" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
+          <text x="350" y="269" text-anchor="middle">Decision variable</text>
+          <g stroke="#5b6670" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+            <path d="M120,36 L162,60"/>
+            <path d="M162,96 L112,118"/>
+            <path d="M178,137 L210,168"/>
+            <path d="M178,252 L210,204"/>
+            <path d="M266,210 L304,246"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <p>How should the model combine what it has <em>learnt</em> with what it is
+        <em>shown</em>?</p>
+      <div class="eq">$$u = p \times m$$</div>
+      <p class="eq-where">or, less optimally,</p>
+      <div class="eq">$$u = \omega\, m + (1-\omega)\, p$$</div>
+      <p class="note">We build both in the notebook, and in week 3 we fit both to real
+        participants and ask which describes them better.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================
+     ADDED: the three slides below are not in the original deck. They are
+     live versions of figures that previously only existed in the Colab
+     notebook. Delete these sections if you would rather the deck ended at
+     slide 21.
+====================================================================== -->
 
 <section>
   <h2>What the learning rate does</h2>
@@ -237,8 +376,8 @@
     <div class="fig-controls"></div>
     <p class="fig-print-note"></p>
   </figure>
-  <p class="note">Drag $\alpha$ between a slow learner and a fast one. What does each
-    one buy you, and what does it cost?</p>
+  <p class="note">Drag $\alpha$ between a slow learner and a fast one. What does each one buy you,
+    and what does it cost?</p>
 </section>
 
 <section>
@@ -256,137 +395,21 @@
 </section>
 
 <section>
-  <h2>The hypothesis this sets up</h2>
-  <p class="takeaway">How fast we learn should depend on how fast the world is changing:
-    a higher learning rate when outcomes are volatile, a lower one when they are stable.</p>
-  <div class="cols" style="margin-top:1em">
-    <figure>
-      <img src="../assets/img/s1/behrens-volatility.png" alt="Estimated reward rate tracking a reversing true rate, and estimated volatility rising in the volatile blocks.">
-      <figcaption>An ideal observer does exactly this: its estimate of volatility
-        rises in the volatile blocks, and its learning speeds up to match.</figcaption>
-    </figure>
-    <div>
-      <p>We will test this in real participants in week 3, by fitting one learning
-        rate per block and asking whether the volatile one is larger.</p>
-      <p class="note">Behrens, T. E. J., Woolrich, M. W., Walton, M. E., &amp; Rushworth, M. F. S. (2007).
-        Learning the value of information in an uncertain world. <em>Nature Neuroscience</em>,
-        10(9), 1214&ndash;1221.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ===================================================================== -->
-<section class="section-slide">
-  <p class="eyebrow">Part four</p>
-  <h2>From probability to a decision</h2>
-</section>
-
-<section>
-  <h2>The model so far cannot choose</h2>
-  <p class="lead">It tracks how likely option 1 is to pay out. It says nothing about
-    the points on offer &mdash; so it cannot yet prefer one option over the other.</p>
-  <div class="discuss">
-    <span class="discuss-label">Discuss</span>
-    <ul>
-      <li>Name two ways a participant might combine points and probability.</li>
-      <li>Which is better, and better <em>for what</em>?</li>
-    </ul>
-  </div>
-</section>
-
-<section>
-  <h2>Multiplying the two</h2>
-  <div class="cols narrow-left">
-    <div>
-      <div class="eq">
-        $$u = m \times p$$
-        <span class="eq-tag">(3)</span>
-      </div>
-      <p class="eq-where">$m$ is the magnitude on offer, $p$ the learnt probability.</p>
-      <p>This is expected value. An option is worthless if either the points
-        or the chance of winning them is near zero.</p>
-    </div>
+  <h2>The two ways of combining them</h2>
+  <div class="cols">
     <figure class="fig" id="fig-utility-mult">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>
       <p class="fig-print-note"></p>
+      <figcaption>$u = p \times m$: curved contours, pinned to both axes.</figcaption>
     </figure>
-  </div>
-</section>
-
-<section>
-  <h2>Adding the two</h2>
-  <div class="cols narrow-left">
-    <div>
-      <div class="eq">
-        $$u = \omega m + (1-\omega)\,p$$
-        <span class="eq-tag">(4)</span>
-      </div>
-      <p class="eq-where">with magnitude rescaled to $0$&ndash;$1$, and $0 \le \omega \le 1$
-        setting how much weight goes on points rather than probability.</p>
-      <div class="discuss">
-        <span class="discuss-label">Discuss</span>
-        <ul><li>What does $\omega = 0$ describe? And $\omega = 1$?</li></ul>
-      </div>
-    </div>
     <figure class="fig" id="fig-utility-add">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>
       <p class="fig-print-note"></p>
+      <figcaption>$u = \omega m + (1-\omega) p$: straight, parallel contours.</figcaption>
     </figure>
   </div>
-</section>
-
-<section>
-  <h2>Two shapes, two predictions</h2>
-  <p class="lead">The multiplicative surface is curved and pinned to zero along both edges.
-    The additive surface is a tilted plane: a lot of points can compensate for a poor chance.</p>
-  <p>Which one describes real participants is an empirical question &mdash; and in week 3
-    we will answer it by fitting both and comparing them.</p>
-</section>
-
-<!-- ===================================================================== -->
-<section class="section-slide">
-  <p class="eyebrow">Harder, and optional</p>
-  <h2>The learning rate is a weighting</h2>
-</section>
-
-<section>
-  <h2>Unrolling the update</h2>
-  <p>Substituting equation 2 into itself, trial after trial, gives the expectation
-    at trial $T+1$ as a weighted sum of everything that has happened:</p>
-  <div class="eq">
-    $$p_{T+1} = (1-\alpha)^T p_1 + \sum_{t=1}^{T} w_t\, o_t,
-      \qquad w_t = \alpha(1-\alpha)^{T-t}$$
-    <span class="eq-tag">(5, 6)</span>
-  </div>
-  <p class="eq-where">The influence of any one outcome decays geometrically as it recedes
-    into the past, and the starting value $p_1$ is forgotten at the same rate.</p>
-</section>
-
-<section>
-  <h2>What that weighting looks like</h2>
-  <figure class="fig fig-narrow" id="fig-weights">
-    <div class="fig-plot"></div>
-    <div class="fig-controls"></div>
-    <p class="fig-print-note"></p>
-  </figure>
-  <p class="note">At $\alpha = 1$ only the last trial counts. As $\alpha$ falls the model
-    averages over a longer and longer window &mdash; which is exactly why a low $\alpha$ is
-    steady but slow.</p>
-  <p class="citation">Discussed in Daw &amp; Tobler (2014), <em>Neuroeconomics</em>, ch. 15</p>
-</section>
-
-<!-- ===================================================================== -->
-<section>
-  <h2>Before next week</h2>
-  <ul>
-    <li>Finish the Session 1 notebook if you have not already.</li>
-    <li>Answer the four exercise questions and bring them to session 2.</li>
-    <li>Try the derivation of equation 6 &mdash; we will work through it next time.</li>
-  </ul>
-  <p class="note" style="margin-top:1em">Notebook, with and without solutions:
-    <a href="https://github.com/JanGrohn/ComputationalModelingBlockPractical">github.com/JanGrohn/ComputationalModelingBlockPractical</a></p>
 </section>
 
 </div></div>

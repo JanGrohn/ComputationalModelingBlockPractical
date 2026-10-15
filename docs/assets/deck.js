@@ -118,6 +118,10 @@ export function initDeck({ title }) {
   // with an @media print rule.
   if (/[?&]export\b/.test(window.location.search)) {
     document.documentElement.classList.add('exporting');
+    // Flatten the click-to-reveal builds: without this the exporter would
+    // emit one page per build step, so a slide with four reveals would take
+    // four near-identical pages in the handout.
+    document.querySelectorAll('.fragment').forEach((el) => el.classList.remove('fragment'));
   }
 
   Reveal.initialize({
