@@ -12,7 +12,7 @@ import {
 } from '../assets/figures-shared.js';
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
-  parameterMatrix, MUL_LABELS, ADD_LABELS, drawModelRecovery, modelRecoveryNote,
+  parameterMatrix, MUL_LABELS, ADD_LABELS, drawModelFrequencies, modelFrequenciesNote,
 } from '../assets/figures-fits.js';
 import { FITS, SIMULATIONS, STATS } from '../assets/participant-fits.js';
 
@@ -120,7 +120,11 @@ const realFits = {
                 + 'parameter. An ω at 0 or 1 means the participant used only one of the two '
                 + 'dimensions.',
   },
-  'fig-model-recovery': { params: {}, draw: drawModelRecovery, note: modelRecoveryNote },
+  'fig-model-frequencies': {
+    params: {},
+    draw: (el) => drawModelFrequencies(el, { width: 620, height: 285 }),
+    note: modelFrequenciesNote,
+  },
 };
 
 /* --- the two control simulations ------------------------------------------ */

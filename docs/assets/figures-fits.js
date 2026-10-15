@@ -10,7 +10,9 @@
 
 import { layout, CONFIG, COL } from './deck.js';
 import { plotly, axis, blockKey } from './figures-shared.js';
-import { SIMULATIONS, STATS, CHI2, MODEL_RECOVERY } from './participant-fits.js';
+import {
+  SIMULATIONS, STATS, CHI2, MODEL_RECOVERY, MODEL_FREQUENCIES,
+} from './participant-fits.js';
 
 const N = STATS.nParticipants;
 
@@ -208,3 +210,46 @@ export const modelRecoveryNote = () =>
   `Over ${MODEL_RECOVERY.nDatasets} simulated datasets, how often the BIC picks each model out. `
   + 'The diagonal is every time it got the right answer: here it is complete, so a BIC comparison '
   + 'on these data can be trusted to tell the four models apart.';
+
+/* --- random effects: which model does each participant use? --------------- */
+
+/**
+ * Model frequencies with their exceedance probabilities, as section 3 of the
+ * session 3 notebook computes them.
+ *
+ * This is the random effects comparison: every participant is allowed their own
+ * model, and the frequency is the proportion of participants each model
+ * accounts for. The exceedance probability on top is the chance that model is
+ * the most common one of the four. It is worth noticing that this disagrees
+ * with the fixed effects BIC comparison on the same data, which is the point
+ * the notebook asks students about.
+ */
+export function drawModelFrequencies(el, { width = 940, height = 400 } = {}) {
+  const { labels, estimated, sd, exceedance } = MODEL_FREQUENCIES;
+  const names = labels.map((l) => l.replace(', ', '<br>'));
+  const best = Math.max(...exceedance);
+  plotly().react(el, [{
+    x: names, y: estimated, type: 'bar',
+    error_y: { type: 'data', array: sd, color: COL.ink, thickness: 1.5, width: 6 },
+    marker: { color: exceedance.map((x) => (x === best ? COL.opt1 : COL.faint)) },
+    hovertemplate: '%{x}<br>frequency %{y:.2f}<extra></extra>',
+  }], layout({
+    width, height, bargap: 0.45,
+    xaxis: axis(''),
+    yaxis: axis('frequency', { range: [0, 0.72], dtick: 0.2 }),
+    annotations: estimated.map((f, i) => ({
+      x: names[i], y: f + sd[i] + 0.04, xanchor: 'center', yanchor: 'bottom', showarrow: false,
+      text: `exceedance ${exceedance[i].toFixed(3)}`,
+      font: { size: 14, color: exceedance[i] === best ? COL.opt1 : COL.muted },
+    })),
+  }), CONFIG);
+}
+
+export const modelFrequenciesNote = () => {
+  const { labels, estimated, exceedance } = MODEL_FREQUENCIES;
+  const winner = exceedance.indexOf(Math.max(...exceedance));
+  return `${labels[winner]} wins, with an exceedance probability of `
+    + `${exceedance[winner].toFixed(3)} on a frequency of ${estimated[winner].toFixed(2)} `
+    + '— a different model from the one the summed BIC picked. Error bars are the standard '
+    + 'deviation of the Dirichlet estimate.';
+};

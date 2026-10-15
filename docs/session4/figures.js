@@ -13,6 +13,7 @@ import {
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
   parameterMatrix, MUL_LABELS, ADD_LABELS, drawModelRecovery, modelRecoveryNote,
+  drawModelFrequencies, modelFrequenciesNote,
 } from '../assets/figures-fits.js';
 import { FITS, SIMULATIONS, STATS, PARAMETER_RECOVERY } from '../assets/participant-fits.js';
 
@@ -50,7 +51,16 @@ const recap = {
   },
   'fig-chi2': { params: {}, draw: drawChiSquare, note: chiSquareNote },
   'fig-bic': { params: {}, draw: drawBic, note: bicNote },
-  'fig-model-recovery': { params: {}, draw: drawModelRecovery, note: modelRecoveryNote },
+  'fig-model-frequencies': {
+    params: {},
+    draw: (el) => drawModelFrequencies(el, { width: 700, height: 350 }),
+    note: modelFrequenciesNote,
+  },
+  'fig-model-recovery': {
+    params: {},
+    draw: (el) => drawModelRecovery(el, { width: 700, height: 360 }),
+    note: modelRecoveryNote,
+  },
   'fig-params-mul': {
     params: {},
     draw: (el) => parameterMatrix(el, FITS.mul2, MUL_LABELS, { width: 1060, height: 330 }),

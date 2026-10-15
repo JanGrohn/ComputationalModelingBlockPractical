@@ -520,24 +520,31 @@
 
 <!-- 30 =================================================================== -->
 <section>
-  <h2>Model frequency: can the BIC tell these models apart?</h2>
+  <h2>Model frequency and exceedance probability</h2>
   <div class="cols narrow-left">
-    <figure class="fig" id="fig-model-recovery">
+    <figure class="fig" id="fig-model-frequencies">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>
       <p class="fig-print-note"></p>
     </figure>
-    <p class="note">Simulate from each of the four models in turn, fit all four back, and count how
-      often the BIC picks the right one. A comparison we cannot trust on simulated data is not one
-      to trust on real data either.</p>
+    <div>
+      <p>Until now we assumed <span class="key">every participant uses the same model</span>, and
+        summed the BICs. Here each participant is allowed their own.</p>
+      <p class="note">The frequency is the share of participants a model accounts for; the
+        exceedance probability is the chance it is the most common one.</p>
+    </div>
   </div>
-  <aside class="notes">The notebook does this as model recovery rather than the exceedance
-    probability from Bayesian model selection (Stephan et al., 2009), which it does not
-    compute.</aside>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>A different model wins here than won the BIC comparison. How would you explain that, and
+        which would you trust?</li>
+    </ul>
+  </div>
+  <p class="citation">Stephan et al., <em>NeuroImage</em>, 2009</p>
 </section>
 
 </div></div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>

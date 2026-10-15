@@ -126,6 +126,32 @@ STATS = {
     'nTrials': N_TRIALS,
 }
 
+# --- random effects model comparison, from section 3 of the notebook --------
+
+# Stacked the way the notebook stacks them, one column per model, no
+# participants excluded: the slide shows the whole sample.
+BICs = np.column_stack([fits[name].BIC for name in
+                        ('data1AlphaMul', 'data2AlphaMul', 'data1AlphaAdd', 'data2AlphaAdd')])
+
+# The simple count first: which model has the lowest BIC for each participant.
+best_counts = np.zeros(len(MODELS))
+for row in BICs:
+    best_counts[np.argmin(row)] += 1
+
+print('estimating model frequencies and exceedance probabilities...')
+dirichlet_alphas, dirichlet_sd = fitting3.estimate_model_frequencies(BICs)
+exceedance = fitting3.estimate_exceedance_probabilities(dirichlet_alphas)
+
+MODEL_FREQUENCIES = {
+    'labels': MODELS,
+    # the count of participants each model wins outright, as a proportion
+    'counted': rounded(best_counts / best_counts.sum(), 3),
+    # and the Dirichlet estimate, which also weighs how clear each win was
+    'estimated': rounded(dirichlet_alphas / dirichlet_alphas.sum(), 3),
+    'sd': rounded(dirichlet_sd, 3),
+    'exceedance': rounded(exceedance, 3),
+}
+
 # --- the chi2 null distribution the likelihood ratio tests are read against --
 
 chi2_x = np.linspace(30, 430, 401)
@@ -174,6 +200,10 @@ blocks = [
                                  'run against the participants own schedules.'),
     ('STATS', STATS, 'The tests the slides quote, computed exactly as the notebook '
                      'computes them.'),
+    ('MODEL_FREQUENCIES', MODEL_FREQUENCIES,
+     'How often each model wins across participants, allowing different '
+     'participants to use different models, and how likely each is to be the '
+     'most common one.'),
     ('CHI2', CHI2, 'The chi2 null distribution the likelihood ratio statistics are read '
                    'against, and its 5% critical value.'),
     ('MODEL_RECOVERY', MODEL_RECOVERY, 'How often the BIC picks each model out, over '
@@ -201,5 +231,8 @@ for key, test in SIMULATIONS.items():
 for key, test in STATS['tTest'].items():
     print(f"  t test, {key}: t({test['df']}) = {test['t']}, p = {test['p']:.3g}")
 print('  BIC totals: ' + ', '.join(f'{k} {v}' for k, v in STATS['bic'].items()))
+print('  model frequencies: '
+      + ', '.join(f'{l.split(",")[0]} {f:.2f} (xp {x:.3f})' for l, f, x
+                  in zip(MODELS, MODEL_FREQUENCIES['estimated'], MODEL_FREQUENCIES['exceedance'])))
 print('  model recovery diagonal: '
       + ', '.join(f'{row[i]:.2f}' for i, row in enumerate(MODEL_RECOVERY['matrix'])))

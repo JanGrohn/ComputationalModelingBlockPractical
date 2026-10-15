@@ -17,7 +17,7 @@
 <body>
 <div class="reveal"><div class="slides">
 
-<!-- 1 ==================================================================== -->
+<!-- 1 =================================================================== -->
 <section class="title-slide">
   <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
   <p class="subtitle">Advanced Lab &middot; Session 4 of 4</p>
@@ -25,7 +25,7 @@
      Department of Experimental Psychology, University of Oxford</p>
 </section>
 
-<!-- 2 ==================================================================== -->
+<!-- 2 =================================================================== -->
 <section>
   <h2>Plan for the next 4 weeks</h2>
   <div class="weeks">
@@ -51,7 +51,7 @@
   </div>
 </section>
 
-<!-- 3 ==================================================================== -->
+<!-- 3 =================================================================== -->
 <section>
   <h2>Aims for today</h2>
   <ul>
@@ -62,13 +62,13 @@
   </ul>
 </section>
 
-<!-- 4 ==================================================================== -->
+<!-- 4 =================================================================== -->
 <section class="section-slide">
   <p class="eyebrow">Part one</p>
   <h2>Recap</h2>
 </section>
 
-<!-- 5 ==================================================================== -->
+<!-- 5 =================================================================== -->
 <section>
   <h2>Recap: the log likelihood</h2>
   <div class="eq">$$\textrm{LL} = \sum_t \log P(\textrm{the choice that was made on trial } t)$$<span class="eq-tag">(5)</span></div>
@@ -87,7 +87,7 @@
   </div>
 </section>
 
-<!-- 6 ==================================================================== -->
+<!-- 6 =================================================================== -->
 <section>
   <h2>Recap: how do we fit? Why not grid search?</h2>
   <div class="cols">
@@ -106,7 +106,7 @@
   </div>
 </section>
 
-<!-- 7 ==================================================================== -->
+<!-- 7 =================================================================== -->
 <section>
   <h2>One intuitive trick: gradient ascent</h2>
   <figure class="fig" id="fig-ascent">
@@ -118,7 +118,7 @@
     ten starting points, keeping whichever run ends highest.</p>
 </section>
 
-<!-- 8 ==================================================================== -->
+<!-- 8 =================================================================== -->
 <section>
   <h2>Learning rates of real participants</h2>
   <div class="cols">
@@ -144,7 +144,7 @@
   </div>
 </section>
 
-<!-- 9 ==================================================================== -->
+<!-- 9 =================================================================== -->
 <section>
   <h2>What is model comparison?</h2>
   <ul class="reasons">
@@ -248,17 +248,21 @@
 
 <!-- 14 =================================================================== -->
 <section>
-  <h2>Model frequency: can the BIC tell these models apart?</h2>
+  <h2>Model frequency and exceedance probability</h2>
   <div class="cols narrow-left">
-    <figure class="fig" id="fig-model-recovery">
+    <figure class="fig" id="fig-model-frequencies">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>
       <p class="fig-print-note"></p>
     </figure>
-    <p class="note">Simulate from each of the four models in turn, fit all four back, and count how
-      often the BIC picks the right one. A comparison we cannot trust on simulated data is not one
-      to trust on real data either.</p>
+    <div>
+      <p>Each participant is allowed <span class="key">their own model</span>, rather than all of
+        them sharing one.</p>
+      <p class="note">The frequency is the share of participants a model accounts for; the
+        exceedance probability is the chance it is the most common one of the four.</p>
+    </div>
   </div>
+  <p class="citation">Stephan et al., <em>NeuroImage</em>, 2009</p>
 </section>
 
 <!-- 15 =================================================================== -->
@@ -299,14 +303,8 @@
 </section>
 
 <!-- 18 =================================================================== -->
-<section class="section-slide">
-  <p class="eyebrow">Part two</p>
-  <h2>Report writing</h2>
-</section>
-
-<!-- 19 =================================================================== -->
 <section>
-  <h2>Before you write anything</h2>
+  <h2>Report writing</h2>
   <div class="discuss">
     <span class="discuss-label">Turn to your neighbour and discuss</span>
     <ul>
@@ -319,7 +317,7 @@
     yet. Start here, not at the abstract.</p>
 </section>
 
-<!-- 20 =================================================================== -->
+<!-- 19 =================================================================== -->
 <section>
   <h2>Abstract</h2>
   <ul>
@@ -328,7 +326,7 @@
   </ul>
 </section>
 
-<!-- 21 =================================================================== -->
+<!-- 20 =================================================================== -->
 <section>
   <h2>Introduction</h2>
   <ul>
@@ -339,7 +337,7 @@
   </ul>
 </section>
 
-<!-- 22 =================================================================== -->
+<!-- 21 =================================================================== -->
 <section>
   <h2>Methods</h2>
   <p class="lead">This is a key section.</p>
@@ -354,7 +352,7 @@
     <span class="key">why</span> and <span class="key">how</span>.</p>
 </section>
 
-<!-- 23 =================================================================== -->
+<!-- 22 =================================================================== -->
 <section>
   <h2>Results</h2>
   <ul>
@@ -367,7 +365,7 @@
   </ul>
 </section>
 
-<!-- 24 =================================================================== -->
+<!-- 23 =================================================================== -->
 <section>
   <h2>Discussion</h2>
   <ul>
@@ -380,13 +378,13 @@
   </ul>
 </section>
 
-<!-- 25 =================================================================== -->
+<!-- 24 =================================================================== -->
 <section class="section-slide">
   <p class="eyebrow">Part three</p>
   <h2>Potential plots</h2>
 </section>
 
-<!-- 26 =================================================================== -->
+<!-- 25 =================================================================== -->
 <section>
   <h2>The task schedule</h2>
   <div class="cols">
@@ -410,7 +408,7 @@
   </figure>
 </section>
 
-<!-- 27 =================================================================== -->
+<!-- 26 =================================================================== -->
 <section>
   <h2>What the model thinks happened</h2>
   <figure class="fig" id="fig-choices">
@@ -422,7 +420,7 @@
     themselves &mdash; a good way to show one participant, or to show what the model does.</p>
 </section>
 
-<!-- 28 =================================================================== -->
+<!-- 27 =================================================================== -->
 <section>
   <h2>Fitted learning rates, block by block</h2>
   <figure class="fig" id="fig-alpha-dist-2">
@@ -432,7 +430,7 @@
   </figure>
 </section>
 
-<!-- 29 =================================================================== -->
+<!-- 28 =================================================================== -->
 <section>
   <h2>The difference, participant by participant</h2>
   <figure class="fig" id="fig-alpha-diff-2">
@@ -444,7 +442,7 @@
     pairs.</p>
 </section>
 
-<!-- 30 =================================================================== -->
+<!-- 29 =================================================================== -->
 <section>
   <h2>Parameters against each other</h2>
   <figure class="fig" id="fig-params-mul-2">
@@ -452,6 +450,21 @@
     <div class="fig-controls"></div>
     <p class="fig-print-note"></p>
   </figure>
+</section>
+
+<!-- 30 =================================================================== -->
+<section>
+  <h2>For your write-up</h2>
+  <ul>
+    <li>Adapt these figures to the participants and models <em>you</em> want to show, and say why
+      each one is the right plot for the point it makes</li>
+    <li>Report the statistics that go with them: t tests, likelihood ratio tests, BIC
+      comparisons</li>
+  </ul>
+  <div class="discuss">
+    <span class="discuss-label">Any questions</span>
+    <ul><li>About when to use which test?</li></ul>
+  </div>
 </section>
 
 <!-- 31 =================================================================== -->
@@ -473,15 +486,19 @@
 
 <!-- 32 =================================================================== -->
 <section>
-  <h2>For your write-up</h2>
-  <ul>
-    <li>Adapt these figures to the participants and models <em>you</em> want to show, and say why
-      each one is the right plot for the point it makes</li>
-    <li>Report the statistics that go with them: t tests, likelihood ratio tests, BIC comparisons</li>
-  </ul>
-  <div class="discuss">
-    <span class="discuss-label">Any questions</span>
-    <ul><li>About when to use which test?</li></ul>
+  <h2>Model recovery</h2>
+  <div class="cols narrow-left">
+    <figure class="fig" id="fig-model-recovery">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <div>
+      <p>Simulate from each of the four models in turn, fit all four back, and count how often the
+        BIC picks the right one.</p>
+      <p class="note">A model comparison we cannot trust on simulated data is not one to trust on
+        real data either.</p>
+    </div>
   </div>
   <p class="takeaway">Well done &mdash; that is the Advanced Lab. Good luck with the report.</p>
 </section>
