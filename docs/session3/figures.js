@@ -6,15 +6,17 @@
    slide, at what size, and what its caption says in the PDF. */
 
 import {
-  registerAll, drawChoices, choicesNote, drawCondition, drawMagnitudes, magnitudesNote,
-  drawWeights, weightsNote, drawLikelihood, likelihoodNote, drawGridSearch, gridSearchNote,
-  drawRecovery, drawFalsification, drawAscent, ascentNote, ASCENT_STEPS,
+  registerAll, drawChoices, choicesNote, drawCondition, drawMagnitudes, SCHEDULE_MAGNITUDES,
+  drawWeights, weightsNote, drawGridSearch, gridSearchNote, drawRecovery, recoveryNote,
+  drawFalsification, drawAscent, ascentNote, ASCENT_STEPS, drawRegression, regressionNote,
+  drawErrorTerm, errorTermNote, drawLikelihoodSpike, likelihoodSpikeNote, drawFitComplexity,
+  fitComplexityNote, drawMiniLearning, drawMiniSoftmax,
 } from '../assets/figures-shared.js';
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
   parameterMatrix, MUL_LABELS, ADD_LABELS, drawModelFrequencies, modelFrequenciesNote,
 } from '../assets/figures-fits.js';
-import { FITS, SIMULATIONS, STATS } from '../assets/participant-fits.js';
+import { FITS, SIMULATIONS, STATS, REGRESSION } from '../assets/participant-fits.js';
 
 const N = STATS.nParticipants;
 
@@ -31,23 +33,46 @@ const recaps = {
   },
   'fig-magnitudes': {
     params: {},
-    draw: (el) => drawMagnitudes(el, { width: 1120, height: 150 }),
+    draw: (el) => drawMagnitudes(el, { width: 1120, height: 140 }),
     note: () => 'Points on offer, redrawn at random every trial, in both conditions alike.',
   },
+  // the magnitudes of the same schedule the choices plot above simulates
   'fig-magnitudes-2': {
     params: {},
-    draw: (el) => drawMagnitudes(el, { width: 1120, height: 140 }),
-    note: () => magnitudesNote,
+    draw: (el) => drawMagnitudes(el, { width: 1120, height: 140, magnitudes: SCHEDULE_MAGNITUDES }),
+    note: () => 'The magnitudes on offer in the same schedule, redrawn at random every trial.',
   },
   'fig-weights': {
     params: { alpha: { min: 0.02, max: 1, step: 0.01, value: 0.15, label: '&alpha;' } },
-    draw: (el, v) => drawWeights(el, v, { width: 1000, height: 290 }),
+    draw: (el, v) => drawWeights(el, v, { width: 560, height: 270 }),
     note: weightsNote,
   },
-  'fig-likelihood': {
+  'fig-regression': {
     params: {},
-    draw: (el) => drawLikelihood(el, { width: 700, height: 255 }),
-    note: () => likelihoodNote,
+    draw: (el) => drawRegression(el, REGRESSION, { width: 560, height: 270 }),
+    note: () => regressionNote(REGRESSION),
+  },
+  'fig-error-term': {
+    params: {},
+    draw: (el) => drawErrorTerm(el, { width: 540, height: 260 }),
+    note: () => errorTermNote,
+  },
+  'fig-likelihood-spike': {
+    params: {},
+    draw: (el) => drawLikelihoodSpike(el, { width: 420, height: 320 }),
+    note: () => likelihoodSpikeNote,
+  },
+  'fig-fit-complexity': {
+    params: {},
+    draw: (el) => drawFitComplexity(el, { width: 1100, height: 220 }),
+    note: () => fitComplexityNote,
+  },
+  'fig-mini-learning': { params: {}, draw: (el) => drawMiniLearning(el), note: () => '' },
+  'fig-mini-softmax': { params: {}, draw: (el) => drawMiniSoftmax(el), note: () => '' },
+  'fig-recovery-mini': {
+    params: {},
+    draw: (el) => drawRecovery(el, 'alpha', 'fitAlpha', '\u03b1', 0.72, { width: 340, height: 290 }),
+    note: () => recoveryNote('Learning rate'),
   },
   'fig-grid': {
     params: { points: { min: 4, max: 24, step: 1, value: 10, label: 'grid',
@@ -58,25 +83,24 @@ const recaps = {
   'fig-ascent': {
     params: { step: { min: 1, max: ASCENT_STEPS, step: 1, value: ASCENT_STEPS,
                       label: 'step', format: (v) => String(Math.round(v)) } },
-    draw: (el, v) => drawAscent(el, v),
+    draw: (el, v) => drawAscent(el, v, { width: 690, height: 320 }),
     note: ascentNote,
     opts: { play: { param: 'step', fps: 14 } },
   },
   'fig-recovery-alpha': {
     params: {},
     draw: (el) => drawRecovery(el, 'alpha', 'fitAlpha', 'α', 0.72, { width: 560, height: 360 }),
-    note: () => 'Simulated against recovered learning rate, for 36 simulated participants. The '
-                + 'dashed line is simulated = recovered.',
+    note: () => recoveryNote('Learning rate'),
   },
   'fig-falsify-same': {
     params: {},
-    draw: (el) => drawFalsification(el, 'same', { width: 520, height: 270 }),
+    draw: (el) => drawFalsification(el, 'same', { width: 520, height: 215 }),
     note: () => 'Simulated with one learning rate for both blocks: the two recovered distributions '
                 + 'sit on top of each other.',
   },
   'fig-falsify-diff': {
     params: {},
-    draw: (el) => drawFalsification(el, 'different', { width: 520, height: 270 }),
+    draw: (el) => drawFalsification(el, 'different', { width: 520, height: 215 }),
     note: () => 'Simulated with a higher learning rate in the volatile block: the difference comes '
                 + 'back out.',
   },
@@ -128,7 +152,7 @@ const realFits = {
   },
   'fig-model-frequencies': {
     params: {},
-    draw: (el) => drawModelFrequencies(el, { width: 620, height: 285 }),
+    draw: (el) => drawModelFrequencies(el, { width: 700, height: 290 }),
     note: modelFrequenciesNote,
   },
 };
@@ -138,7 +162,7 @@ const realFits = {
 const simulations = Object.fromEntries(Object.entries(SIMULATIONS).map(([key, sim]) => [
   `fig-sim-${key}`, {
     params: {},
-    draw: (el) => alphaDifference(el, sim, { width: 540, height: 270 }),
+    draw: (el) => alphaDifference(el, sim, { width: 540, height: 230 }),
     note: () => 'Recovered differences when the data were simulated '
                 + (key === 'same'
                   ? 'with the same learning rate in both blocks. '

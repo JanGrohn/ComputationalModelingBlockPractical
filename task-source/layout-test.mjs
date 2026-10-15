@@ -1,6 +1,7 @@
 /**
- * Checks that nothing on any slide runs off the slide or into its footer, and
- * that no equation number is drawn over its equation.
+ * Checks that nothing on any slide runs off the slide or into its footer, that
+ * no equation number is drawn over its equation, and that no diagram is shrunk
+ * until its labels are too small to read.
  *
  *   node layout-test.mjs
  *
@@ -76,6 +77,17 @@ for (const n of [1, 2, 3, 4]) {
             out.push(`slide ${i + 1} "${title}": ${e.tagName.toLowerCase()}.${(e.className.baseVal ?? e.className).split(' ')[0]}`
               + (bottom > limit + 1 ? ` reaches y=${Math.round(bottom)}, limit ${Math.round(limit)}` : '')
               + (right > 1281 ? ` reaches x=${Math.round(right)}` : ''));
+          }
+        });
+        // a diagram is drawn at 16px and scaled to fit its box; shrunk much
+        // further than that, its labels stop being readable from the back
+        s.querySelectorAll('.mermaid-figure > svg').forEach((svg) => {
+          const vb = svg.viewBox.baseVal;
+          if (!vb || !vb.width) return;
+          const px = 16 * (svg.getBoundingClientRect().width / scale) / vb.width;
+          if (px < 14.5) {
+            out.push(`slide ${i + 1} "${title}": diagram "${svg.parentElement.dataset.diagram}" `
+              + `labels drawn at ${px.toFixed(1)}px`);
           }
         });
         // KaTeX pins an equation's \\tag to the right edge of its box, so in a

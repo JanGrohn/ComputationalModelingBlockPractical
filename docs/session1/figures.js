@@ -5,7 +5,7 @@ import {
 } from '../assets/models.js';
 import { layout, CONFIG, COL, CONTINUOUS } from '../assets/deck.js';
 import {
-  plotly, registerAll, drawCondition, conditionNote, drawMagnitudes, magnitudesNote,
+  plotly, registerAll, drawCondition, drawMagnitudes,
   drawWeights, weightsNote,
 } from '../assets/figures-shared.js';
 const trials = (n) => Array.from({ length: n }, (_, i) => i);
@@ -136,15 +136,17 @@ const reversal = {
 // drawn by ../assets/figures-shared.js, which sessions 2 to 4 use as well
 const conditions = Object.fromEntries([1, 2].map((condition) => [`fig-condition-${condition}`, {
   params: {},
-  draw: (el) => drawCondition(el, condition, { width: 530, height: 205 }),
-  note: () => conditionNote(condition),
+  draw: (el) => drawCondition(el, condition, { width: 530, height: 160 }),
+  // the line beneath each plot already names its condition, so the caption is short
+  note: () => (condition === 1 ? 'P(option 1 rewarded) holds at 0.75.'
+                               : 'P(option 1 rewarded) reverses every 25 trials.'),
 }]));
 
 const magnitudes = {
   'fig-magnitudes': {
     params: {},
-    draw: (el) => drawMagnitudes(el, { width: 1120, height: 145 }),
-    note: () => magnitudesNote,
+    draw: (el) => drawMagnitudes(el, { width: 1120, height: 125 }),
+    note: () => 'Magnitudes, redrawn at random every trial.',
   },
 };
 

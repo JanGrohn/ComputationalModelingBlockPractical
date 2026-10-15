@@ -33,12 +33,15 @@ function simulate(alpha, beta, seed, trueProbability = stableThenVolatile()) {
 
 /* --- parameter recovery --------------------------------------------------- */
 
-console.log('fitting 36 simulated participants for the recovery plots...');
+// β runs down to almost nothing on purpose: a participant who chooses nearly at
+// random says almost nothing about their learning rate, and the slides ask
+// students to find those points among the rest.
+console.log('fitting 48 simulated participants for the recovery plots...');
 const rng = makeRng(8086);
 const RECOVERY = [];
-for (let i = 0; i < 36; i++) {
+for (let i = 0; i < 48; i++) {
   const alpha = 0.05 + rng() * 0.6;
-  const beta = 0.03 + rng() * 0.25;
+  const beta = 0.003 + rng() * 0.28;
   const data = simulate(alpha, beta, 1000 + i);
   const fit = fitAlphaBeta(data);
   RECOVERY.push({ alpha, beta, fitAlpha: fit.alpha, fitBeta: fit.beta });

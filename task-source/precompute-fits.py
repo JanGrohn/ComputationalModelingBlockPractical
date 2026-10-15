@@ -4,6 +4,10 @@ once, and writes it to docs/assets/participant-fits.js.
 
     cd task-source && python3 precompute-fits.py
 
+Run it with the notebooks' own requirements installed (sessionN/requirements.txt):
+the numbers on the slides are only the notebooks' numbers if the same versions of
+jax, scipy and statsmodels produce them.
+
 Those two decks show fits to real participants, two simulations run against the
 participants' own schedules, and a model recovery over 100 simulated datasets.
 None of that can be redone in a browser, so it is done here with the practical's
@@ -13,6 +17,7 @@ notebooks call -- and the results are written out as a JavaScript module.
 Re-run this if the model, the fitting routine or the saved fits change.
 """
 
+import ast
 import json
 import os
 import sys
@@ -20,6 +25,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import statsmodels.formula.api as smf
 from scipy.stats import chi2, ttest_1samp
 
 REPO = Path(__file__).resolve().parent.parent
@@ -30,6 +36,7 @@ os.chdir(REPO)
 
 from session3 import fitting as fitting3          # noqa: E402
 from session4 import fitting as fitting4          # noqa: E402
+from session4 import plotting as plotting4        # noqa: E402
 
 N_PARTICIPANTS = 75
 N_TRIALS = 160
@@ -153,6 +160,58 @@ MODEL_FREQUENCIES = {
     'exceedance': rounded(exceedance, 3),
 }
 
+# --- the model written as a logistic regression, as session 2 ends -----------
+
+def notebook_functions(notebook, names):
+    """The named functions exactly as a notebook defines them, so the slide runs
+    the same code students wrote rather than a copy of it."""
+    cells = json.loads((REPO / notebook).read_text())['cells']
+    found = {}
+    for cell in cells:
+        if cell['cell_type'] != 'code':
+            continue
+        try:
+            tree = ast.parse(''.join(cell['source']))
+        except SyntaxError:      # cells with shell commands in them
+            continue
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name in names:
+                found[node.name] = ast.get_source_segment(''.join(cell['source']), node)
+    missing = set(names) - set(found)
+    if missing:
+        raise RuntimeError(f'{notebook} no longer defines {sorted(missing)}')
+    return found
+
+print('fitting the logistic regression from the end of session 2...')
+regression_rng = np.random.default_rng(SEED)
+namespace = {'np': np, 'rng': regression_rng}
+for name, source in notebook_functions(
+        'session2_completed.ipynb',
+        ['generate_schedule', 'multiplicative_utility', 'additive_utility', 'softmax',
+         'simulate_RL_model']).items():
+    exec(source, namespace)   # noqa: S102 -- the course's own notebook code
+
+# the notebook's cell, verbatim in its numbers: many trials, so the weights are
+# tightly estimated, and omega = 0, so only the outcomes matter
+reg_trials, reg_alpha, reg_beta, reg_omega = 100000, 0.6, 0.05, 0
+trueProbability = np.ones(reg_trials, dtype=float) * 0.75
+opt1Rewarded, magOpt1, magOpt2 = namespace['generate_schedule'](trueProbability, rng=regression_rng)
+_, choiceProb1 = namespace['simulate_RL_model'](
+    opt1Rewarded, magOpt1, magOpt2, reg_alpha, reg_beta, reg_omega,
+    utility_function=namespace['additive_utility'])
+choice1 = (choiceProb1 > regression_rng.random(reg_trials)).astype(int)
+transformed = 2 * opt1Rewarded - 1
+regData = pd.DataFrame({f'lag{k}': np.concatenate((np.full(k, np.nan), transformed[:-k]))
+                        for k in range(1, 6)} | {'choice1': choice1})
+weights = smf.logit('choice1 ~ -1 + lag1 + lag2 + lag3 + lag4 + lag5', data=regData).fit(disp=False).params
+
+REGRESSION = {
+    'alpha': reg_alpha, 'beta': reg_beta, 'nTrials': reg_trials,
+    'weights': rounded(weights.values),
+    'normalised': rounded(weights.values / weights.sum()),
+    'betaFromWeights': round(float(weights.sum() / 100), 4),
+}
+
 # --- the chi2 null distribution the likelihood ratio tests are read against --
 
 chi2_x = np.linspace(30, 430, 401)
@@ -180,17 +239,35 @@ MODEL_RECOVERY = {
                             'recov1AlphaAdd', 'recov2AlphaAdd')],
 }
 
-# One dataset's worth of simulated against recovered parameters, rather than all
-# 100: the scatter makes its point at 75 points and stays small enough to ship.
-one_dataset = recoveries['recov2AlphaMul'].iloc[:N_PARTICIPANTS * 4]
+# Twenty of the hundred datasets: 1,500 points draw the same cloud as 7,500, at
+# a fifth of the size to ship with every deck that shows it.
+N_RECOVERY_DATASETS = 20
+some_datasets = recoveries['recov2AlphaMul'].iloc[:N_PARTICIPANTS * N_RECOVERY_DATASETS]
 PARAMETER_RECOVERY = {
-    'alphaStable': {'simulated': rounded(one_dataset.alphaStable),
-                    'recovered': rounded(one_dataset.recovered2MulAlphaS)},
-    'alphaVolatile': {'simulated': rounded(one_dataset.alphaVolatile),
-                      'recovered': rounded(one_dataset.recovered2MulAlphaV)},
-    'beta': {'simulated': rounded(one_dataset.beta),
-             'recovered': rounded(one_dataset.recovered2MulBeta)},
+    'nDatasets': N_RECOVERY_DATASETS,
+    'alphaStable': {'simulated': rounded(some_datasets.alphaStable, 3),
+                    'recovered': rounded(some_datasets.recovered2MulAlphaS, 3)},
+    'alphaVolatile': {'simulated': rounded(some_datasets.alphaVolatile, 3),
+                      'recovered': rounded(some_datasets.recovered2MulAlphaV, 3)},
+    'beta': {'simulated': rounded(some_datasets.beta, 3),
+             'recovered': rounded(some_datasets.recovered2MulBeta, 3)},
 }
+
+# --- one real participant, as the session 4 notebook plots them --------------
+
+# Drawn by the notebook's own plot_schedule, so the slide shows exactly what a
+# student sees for this participant; only the series it draws are kept.
+PARTICIPANT_ID = 0
+schedule_figure = plotting4.plot_schedule(PARTICIPANT_ID, fits['data2AlphaAdd'])
+PARTICIPANT = {'id': PARTICIPANT_ID, 'model': '2 α, additive utility', 'series': {}}
+for trace in schedule_figure.data:
+    y = np.asarray(trace.y, dtype=float)
+    PARTICIPANT['series'][trace.name] = [None if np.isnan(v) else round(float(v), 3) for v in y]
+expected = {'true probability', 'RL model probability', 'choice probability', 'correct choice',
+            'incorrect choice', 'magnitude option 1', 'magnitude option 2', 'utility option 1',
+            'utility option 2'}
+if set(PARTICIPANT['series']) != expected:
+    raise RuntimeError(f'plot_schedule now draws {sorted(PARTICIPANT["series"])}')
 
 # --- write it out ------------------------------------------------------------
 
@@ -205,12 +282,16 @@ blocks = [
      'How often each model wins across participants, allowing different '
      'participants to use different models, and how likely each is to be the '
      'most common one.'),
+    ('REGRESSION', REGRESSION, 'The session 2 notebook\'s logistic regression on the last five '
+                               'outcomes, fitted with its own simulation code.'),
     ('CHI2', CHI2, 'The chi2 null distribution the likelihood ratio statistics are read '
                    'against, and its 5% critical value.'),
     ('MODEL_RECOVERY', MODEL_RECOVERY, 'How often the BIC picks each model out, over '
                                        f'{n_reps} simulated datasets.'),
     ('PARAMETER_RECOVERY', PARAMETER_RECOVERY, 'Simulated against recovered parameters '
-                                               'for four simulated datasets.'),
+                                               f'for {N_RECOVERY_DATASETS} simulated datasets.'),
+    ('PARTICIPANT', PARTICIPANT, 'One participant, as the session 4 notebook\'s '
+                                 'plot_schedule draws them.'),
 ]
 
 out = ['/* Generated by task-source/precompute-fits.py. Do not edit by hand:',
@@ -235,5 +316,7 @@ print('  BIC totals: ' + ', '.join(f'{k} {v}' for k, v in STATS['bic'].items()))
 print('  model frequencies: '
       + ', '.join(f'{l.split(",")[0]} {f:.2f} (xp {x:.3f})' for l, f, x
                   in zip(MODELS, MODEL_FREQUENCIES['estimated'], MODEL_FREQUENCIES['exceedance'])))
+print(f"  regression: normalised weights {REGRESSION['normalised']}, "
+      f"beta from weights {REGRESSION['betaFromWeights']} (simulated {reg_beta})")
 print('  model recovery diagonal: '
       + ', '.join(f'{row[i]:.2f}' for i, row in enumerate(MODEL_RECOVERY['matrix'])))

@@ -8,10 +8,10 @@
    practical's own fitting code, so a slide and the notebook cannot disagree.
 --------------------------------------------------------------------------- */
 
-import { layout, CONFIG, COL, CONTINUOUS } from './deck.js';
-import { plotly, axis, blockKey } from './figures-shared.js';
+import { layout, CONFIG, COL, CONTINUOUS, HEADROOM } from './deck.js';
+import { plotly, axis, blockKey, boxesAbove } from './figures-shared.js';
 import {
-  SIMULATIONS, STATS, CHI2, MODEL_RECOVERY, MODEL_FREQUENCIES,
+  SIMULATIONS, STATS, CHI2, MODEL_RECOVERY, MODEL_FREQUENCIES, PARTICIPANT,
 } from './participant-fits.js';
 
 const N = STATS.nParticipants;
@@ -25,6 +25,8 @@ const N = STATS.nParticipants;
  */
 export function alphaDistributions(el, fits, { width = 560, height = 300 } = {}) {
   const xbins = { start: 0, end: 1, size: 0.05 };
+  const boxes = boxesAbove([{ x: fits.alphaVolatile, color: COL.volatile, name: 'volatile block' },
+                            { x: fits.alphaStable, color: COL.stable, name: 'stable block' }]);
   plotly().react(el, [
     { x: fits.alphaStable, type: 'histogram', xbins,
       marker: { color: COL.stable, opacity: 0.55 },
@@ -32,10 +34,13 @@ export function alphaDistributions(el, fits, { width = 560, height = 300 } = {})
     { x: fits.alphaVolatile, type: 'histogram', xbins,
       marker: { color: COL.volatile, opacity: 0.55 },
       hovertemplate: 'volatile block<br>%{y} participants<extra></extra>' },
+    ...boxes.traces,
   ], layout({
-    width, height, barmode: 'overlay',
+    margin: HEADROOM,
+    width, height, barmode: 'overlay', showlegend: false,
     xaxis: axis('fitted learning rate', { range: [0, 1] }),
-    yaxis: axis('participants'),
+    yaxis: Object.assign(axis('participants'), boxes.axes.yaxis),
+    yaxis2: boxes.axes.yaxis2,
     annotations: blockKey(),
   }), CONFIG);
 }
@@ -44,23 +49,27 @@ export function alphaDistributions(el, fits, { width = 560, height = 300 } = {})
 export function alphaDifference(el, fits, { width = 560, height = 300 } = {}) {
   const difference = fits.alphaVolatile.map((v, i) => v - fits.alphaStable[i]);
   const mean = difference.reduce((a, b) => a + b, 0) / difference.length;
+  const boxes = boxesAbove([{ x: difference, color: COL.neutral, name: 'difference' }]);
   plotly().react(el, [
     { x: difference, type: 'histogram', xbins: { start: -1, end: 1, size: 0.1 },
       marker: { color: COL.neutral, opacity: 0.7 },
       hovertemplate: 'difference %{x}<br>%{y} participants<extra></extra>' },
+    ...boxes.traces,
   ], layout({
-    width, height,
+    width, height, showlegend: false,
     xaxis: axis('volatile α − stable α', { range: [-1, 1], zeroline: false }),
-    yaxis: axis('participants'),
+    yaxis: Object.assign(axis('participants'), boxes.axes.yaxis),
+    yaxis2: boxes.axes.yaxis2,
+    // zero and the mean are drawn over the histogram only, not through the box
     shapes: [
-      { type: 'line', x0: 0, x1: 0, yref: 'paper', y0: 0, y1: 1,
+      { type: 'line', x0: 0, x1: 0, yref: 'paper', y0: 0, y1: 0.74,
         line: { color: COL.faint, width: 1.5, dash: 'dot' } },
-      { type: 'line', x0: mean, x1: mean, yref: 'paper', y0: 0, y1: 0.86,
+      { type: 'line', x0: mean, x1: mean, yref: 'paper', y0: 0, y1: 0.66,
         line: { color: COL.ink, width: 2 } },
     ],
     annotations: [
-      { x: mean, y: 0.95, yref: 'paper', xanchor: 'left', showarrow: false,
-        text: `mean ${mean.toFixed(2)}`, font: { size: 15, color: COL.ink } },
+      { x: mean, y: 0.7, yref: 'paper', xanchor: 'left', showarrow: false,
+        text: `  mean ${mean.toFixed(2)}`, font: { size: 15, color: COL.ink } },
     ],
   }), CONFIG);
 }
@@ -260,3 +269,74 @@ export const modelFrequenciesNote = () => {
     + '— a different model from the one the summed BIC picked. Error bars are the standard '
     + 'deviation of the Dirichlet estimate.';
 };
+
+/* --- one real participant, as the session 4 notebook plots them ----------- */
+
+/**
+ * One participant's run through the task: what they chose and whether it was
+ * the rewarded option, the magnitudes they were offered, and, with the model,
+ * what the fitted model made of it. The series are the ones the notebook's
+ * plot_schedule draws for this participant, redrawn in the course's colours.
+ */
+export function drawParticipant(el, { withModel = true, width = 1120, height = 470 } = {}) {
+  const S = PARTICIPANT.series;
+  const x = S['true probability'].map((_, i) => i + 1);
+  const rows = withModel ? 3 : 2;
+  // a choice sits on the row of the option chosen and takes that option's
+  // colour; whether it was the rewarded option is told by its shape
+  const choices = (name, symbol) => {
+    const pick = x.map((_, i) => S[name][i]);
+    return { x, y: pick, mode: 'markers', name, cliponaxis: false,
+      marker: { size: 6, symbol, color: pick.map((v) => (v === 1 ? COL.option1 : COL.option2)) },
+      hovertemplate: `trial %{x}<br>${name}<extra></extra>` };
+  };
+  const traces = [
+    { x, y: S['true probability'], mode: 'lines', name: 'true probability',
+      line: { color: COL.truth, dash: 'dash', width: 1.8 } },
+    choices('correct choice', 'circle'),
+    choices('incorrect choice', 'x'),
+  ];
+  if (withModel) {
+    traces.push(
+      { x, y: S['RL model probability'], mode: 'lines', name: 'RL model probability',
+        line: { color: COL.option1, width: 2.4 } },
+      { x, y: S['choice probability'], mode: 'lines', name: 'choice probability',
+        line: { color: COL.option1, width: 1.4, dash: 'dot' } });
+  }
+  const lower = [['magnitude', 'y2']];
+  if (withModel) lower.push(['utility', 'y3']);
+  for (const [what, yaxis] of lower) {
+    traces.push(
+      { x, y: S[`${what} option 1`], mode: 'lines', name: `${what} option 1`, yaxis,
+        line: { color: COL.option1, width: 1.4 } },
+      { x, y: S[`${what} option 2`], mode: 'lines', name: `${what} option 2`, yaxis,
+        line: { color: COL.option2, width: 1.4, dash: 'dot' } });
+  }
+  const gap = 0.07;
+  const h = (1 - gap * (rows - 1)) / rows;
+  const domain = (r) => [1 - (r + 1) * h - r * gap, 1 - r * h - r * gap];
+  const key = [
+    ['– – true probability', COL.truth], ['● correct choice', COL.ink], ['✕ incorrect choice', COL.ink],
+    ...(withModel ? [['— RL model probability', COL.option1], ['·· choice probability', COL.option1]] : []),
+  ];
+  plotly().react(el, traces, layout({
+    margin: HEADROOM,
+    width, height, showlegend: false,
+    xaxis: axis('trial number', { range: [0.5, x.length + 0.5], anchor: rows === 3 ? 'y3' : 'y2' }),
+    yaxis: axis('option 1 rewarded?', { domain: domain(0), range: [-0.1, 1.1], tickvals: [0, 0.5, 1] }),
+    yaxis2: axis('magnitude', { domain: domain(1), anchor: 'x' }),
+    ...(withModel ? { yaxis3: axis('utility', { domain: domain(2), anchor: 'x' }) } : {}),
+    annotations: key.map(([text, color], i) => ({ x: i / key.length, y: 1.02, xref: 'paper',
+      yref: 'paper', xanchor: 'left', yanchor: 'bottom', showarrow: false, text,
+      font: { size: 14, color } })).concat([
+      { x: 1, y: domain(1)[1] + 0.005, xref: 'paper', yref: 'paper', xanchor: 'right',
+        yanchor: 'bottom', showarrow: false, font: { size: 14, color: COL.ink },
+        text: `<span style="color:${COL.option1}">— option 1</span>   `
+          + `<span style="color:${COL.option2Text}">··· option 2</span>` }]),
+  }), CONFIG);
+}
+
+export const participantNote = (withModel) => `Participant ${PARTICIPANT.id} of the Blain and `
+  + 'Rutledge data, as the session 4 notebook plots them: each choice on the row of the option '
+  + 'chosen, a circle when it was the rewarded option and a cross when not'
+  + (withModel ? `, with what the fitted model (${PARTICIPANT.model}) made of the run.` : '.');

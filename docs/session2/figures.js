@@ -4,10 +4,13 @@
 import { softmax } from '../assets/models.js';
 import { layout, CONFIG, COL } from '../assets/deck.js';
 import {
-  plotly, axis, registerAll, drawChoices, choicesNote, drawCondition, conditionNote,
-  drawMagnitudes, magnitudesNote, drawLikelihood, likelihoodNote, drawRecovery,
-  drawFalsification, drawAscent, ascentNote, ASCENT_STEPS,
+  plotly, axis, registerAll, drawChoices, choicesNote, drawCondition,
+  drawMagnitudes, drawLikelihood, likelihoodNote, drawRecovery, recoveryNote,
+  drawFalsification, drawAscent, ascentNote, ASCENT_STEPS, drawWeights, weightsNote,
+  drawGridSearch, gridSearchNote, drawErrorTerm, errorTermNote, drawBlockLandscapes,
+  blockLandscapesNote, drawRegression, regressionNote, drawSoftmaxPair, softmaxPairNote,
 } from '../assets/figures-shared.js';
+import { REGRESSION } from '../assets/participant-fits.js';
 
 /* --- the softmax ---------------------------------------------------------- */
 
@@ -24,7 +27,7 @@ const softmaxFigure = {
           name: 'softmax', line: { color: COL.option1, width: 3 },
           hovertemplate: 'u<sub>1</sub> − u<sub>2</sub> = %{x}<br>P(c<sub>1</sub>) = %{y:.2f}<extra></extra>' },
       ], layout({
-        width: 1080, height: 390,
+        width: 1080, height: 300,
         xaxis: Object.assign(axis('utility 1 − utility 2  (u<sub>1</sub> − u<sub>2</sub>)'),
                              { zeroline: true, zerolinecolor: '#e2e6ea' }),
         yaxis: axis('probability of choosing option 1',
@@ -107,35 +110,71 @@ const choiceFigure = {
 
 const conditions = Object.fromEntries([1, 2].map((condition) => [`fig-condition-${condition}`, {
   params: {},
-  draw: (el) => drawCondition(el, condition),
-  note: () => conditionNote(condition),
+  draw: (el) => drawCondition(el, condition, { width: 530, height: 160 }),
+  // the tag beside each title already names the condition
+  note: () => (condition === 1 ? 'P(option 1 rewarded) holds at 0.75.'
+                               : 'P(option 1 rewarded) reverses every 25 trials.'),
 }]));
 
 const magnitudes = {
-  'fig-magnitudes': { params: {}, draw: drawMagnitudes, note: () => magnitudesNote },
+  'fig-magnitudes': {
+    params: {},
+    draw: (el) => drawMagnitudes(el, { width: 1120, height: 125 }),
+    note: () => 'Magnitudes, redrawn at random every trial.',
+  },
 };
 
 const landscape = {
-  'fig-likelihood': { params: {}, draw: drawLikelihood, note: () => likelihoodNote },
+  'fig-likelihood': {
+    params: {},
+    draw: (el) => drawLikelihood(el, { width: 470, height: 360 }),
+    note: () => likelihoodNote,
+  },
+  'fig-block-landscapes': {
+    params: {},
+    draw: (el) => drawBlockLandscapes(el, { width: 700, height: 360 }),
+    note: () => blockLandscapesNote,
+  },
+  'fig-grid': {
+    params: { points: { min: 4, max: 24, step: 1, value: 10, label: 'grid',
+                        format: (v) => `${v}\u00d7${v}` } },
+    draw: (el, v) => drawGridSearch(el, v, { width: 560, height: 340 }),
+    note: gridSearchNote,
+  },
+  'fig-error-term': {
+    params: {},
+    draw: (el) => drawErrorTerm(el, { width: 560, height: 250 }),
+    note: () => errorTermNote,
+  },
 };
 
-const recovery = {
-  'fig-recovery-alpha-2': {
+const recovery = Object.fromEntries([
+  ['fig-recovery-alpha', 'alpha', 'fitAlpha', '\u03b1', 0.72, 'Learning rate'],
+  ['fig-recovery-beta', 'beta', 'fitBeta', '\u03b2', 0.32, 'Inverse temperature'],
+  ['fig-recovery-alpha-2', 'alpha', 'fitAlpha', '\u03b1', 0.72, 'Learning rate'],
+  ['fig-recovery-beta-2', 'beta', 'fitBeta', '\u03b2', 0.32, 'Inverse temperature'],
+].map(([id, key, fitKey, label, hi, name]) => [id, {
+  params: {},
+  draw: (el) => drawRecovery(el, key, fitKey, label, hi, { width: 540, height: 300 }),
+  note: () => recoveryNote(name),
+}]));
+
+const weights = Object.fromEntries(['fig-weights'].map((id) => [id, {
+  params: { alpha: { min: 0.02, max: 1, step: 0.01, value: 0.15, label: '&alpha;' } },
+  draw: (el, v) => drawWeights(el, v, { width: 1000, height: id === 'fig-weights' ? 340 : 200 }),
+  note: weightsNote,
+}]));
+
+const regression = {
+  'fig-regression': {
     params: {},
-    draw: (el) => drawRecovery(el, 'alpha', 'fitAlpha', 'α', 0.72),
-    note: () => 'Simulated against recovered learning rate, for 36 simulated participants.',
+    draw: (el) => drawRegression(el, REGRESSION, { width: 1100, height: 380 }),
+    note: () => regressionNote(REGRESSION),
   },
-  'fig-recovery-alpha': {
+  'fig-softmax-pair': {
     params: {},
-    draw: (el) => drawRecovery(el, 'alpha', 'fitAlpha', 'α', 0.72),
-    note: () => 'Learning rate: 36 simulated participants, each fitted back with the same model. '
-                + 'The dashed line is simulated = recovered.',
-  },
-  'fig-recovery-beta': {
-    params: {},
-    draw: (el) => drawRecovery(el, 'beta', 'fitBeta', 'β', 0.32),
-    note: () => 'Inverse temperature, the same 36 participants. It recovers less tightly than the '
-                + 'learning rate, which is what the ridge in the likelihood landscape predicts.',
+    draw: (el) => drawSoftmaxPair(el, { width: 640, height: 360 }),
+    note: () => softmaxPairNote(),
   },
 };
 
@@ -149,12 +188,12 @@ const falsification = {
     note: () => 'Simulated with a higher learning rate in the volatile block.',
   },
   'fig-falsify-same': {
-    params: {}, draw: (el) => drawFalsification(el, 'same', { width: 520, height: 285 }),
+    params: {}, draw: (el) => drawFalsification(el, 'same', { width: 520, height: 240 }),
     note: () => 'Simulated with one learning rate for both blocks: the two recovered distributions '
                 + 'sit on top of each other, as they should.',
   },
   'fig-falsify-diff': {
-    params: {}, draw: (el) => drawFalsification(el, 'different', { width: 520, height: 285 }),
+    params: {}, draw: (el) => drawFalsification(el, 'different', { width: 520, height: 240 }),
     note: () => 'Simulated with a higher learning rate in the volatile block: the difference comes '
                 + 'back out, so the task can find it when it is really there.',
   },
@@ -171,4 +210,4 @@ const ascent = {
 };
 
 registerAll(softmaxFigure, deterministic, choiceFigure, conditions, magnitudes, landscape,
-            recovery, falsification, ascent);
+            recovery, weights, regression, falsification, ascent);

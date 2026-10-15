@@ -35,6 +35,17 @@
   --truth:    #14171a;   /* true values a simulation used; drawn dashed          */
   --neutral:  #7d868d;   /* data with no category of its own                     */
 
+  /* Interface accents: hues no data uses, so the slides can carry some colour
+     without any of it being mistaken for an option or a block. */
+  --accent:      #0e7c86;   /* teal: today's week, progress, takeaways, play  */
+  --accent-tint: #e2f1f2;
+  --level-1:     #e2f1f2;   /* Marr's three levels: teal, sand, lilac-grey    */
+  --level-1-ink: #0b5f66;
+  --level-2:     #f5eedb;
+  --level-2-ink: #6e530c;
+  --level-3:     #ece9f3;
+  --level-3-ink: #4e4766;
+
   /* One sans family throughout, separated by weight and size rather than by
      switching to a serif. Maths is left to KaTeX's own faces, where the serif
      is the convention and matches how the notebooks render. */
@@ -90,6 +101,13 @@
 
 .reveal p { line-height: 1.5; margin: 0 0 0.7em 0; }
 
+/* A slide of words alone gets the room a figure would have taken: deck.js
+   sets its text as large as it fits, while its title stays the size of every
+   other slide's. The footer and citations are sized in px, so they stay too. */
+.reveal .slides section.text-slide { font-size: calc(var(--text-scale, 1) * 1em); }
+.reveal .slides section.text-slide h2 { font-size: calc(1.62em / var(--text-scale, 1)); }
+.reveal .slides section.measuring * { transition: none !important; }
+
 .reveal strong { font-weight: 600; }
 /* Emphasis is carried by weight or colour, never by slanting the type:
    italics are harder to read at projector distance and all but vanish in a
@@ -135,6 +153,8 @@
 }
 .title-slide .byline { font-size: 0.82em; color: var(--muted); }
 .title-slide .byline strong { color: var(--ink); font-weight: 600; }
+/* a research question heading the figure that asks it, as the originals have */
+.reveal p.question { font-weight: 600; margin: 0.1em 0 0.15em; font-size: 0.95em; }
 
 /* --- section divider ----------------------------------------------------- */
 
@@ -158,6 +178,7 @@
 }
 .cols.narrow-left  { grid-template-columns: 0.8fr 1.2fr; }
 .cols.narrow-right { grid-template-columns: 1.2fr 0.8fr; }
+.cols.cols-3 { grid-template-columns: 1fr 1fr 1fr; gap: 1em; }
 .cols > div { min-width: 0; }
 
 .stack-tight p, .stack-tight li { margin-bottom: 0.3em; }
@@ -188,7 +209,7 @@ figcaption {
   border-radius: 10px;
   padding: 0.9em 1em 1em;
 }
-.week-now { background: #e6eaed; }
+.week-now { background: var(--accent-tint); }
 .week-n {
   font-family: var(--display);
   font-weight: 600;
@@ -201,7 +222,7 @@ figcaption {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--level-1-ink);
   margin-left: 0.4em;
 }
 .week ul { margin: 0; font-size: 0.82em; }
@@ -236,7 +257,12 @@ figcaption {
   margin-right: 0.5em;
   vertical-align: 0.08em;
 }
-.level-1, .level-2, .level-3 { background: var(--panel); color: var(--ink); }
+.level-1 { background: var(--level-1); color: var(--level-1-ink); }
+.level-2 { background: var(--level-2); color: var(--level-2-ink); }
+.level-3 { background: var(--level-3); color: var(--level-3-ink); }
+/* the asides that pair with each level take that level's colour */
+.inset-2 { border-left-color: var(--level-2-ink); }
+.inset-3 { border-left-color: var(--level-3-ink); }
 
 /* an aside that comments on the point above it */
 .inset {
@@ -347,7 +373,7 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
   flex-direction: column;
   align-items: center;
   gap: 0.2em;
-  width: 270px;
+  width: 310px;
   padding: 0.9em 0.7em 0.6em;
   background: #fff;
   border: 1.5px solid var(--rule);
@@ -358,8 +384,8 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 }
 .task-card:hover:not(:disabled) { border-color: var(--faint); box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
 .task-card:disabled { cursor: default; }
-.task-card img { height: 150px; width: auto; }
-.task-points { font-size: 2.3em; font-family: var(--sans); line-height: 1.1; }
+.task-card img { height: 195px; width: auto; }
+.task-points { font-size: 2.8em; font-family: var(--sans); line-height: 1.1; }
 .task-select {
   display: inline-flex;
   align-items: center;
@@ -414,7 +440,7 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
   color: var(--ink);
   max-width: 22em;
   padding-left: 0.8em;
-  border-left: 3px solid var(--ink);
+  border-left: 3px solid var(--accent);
 }
 /* a takeaway short enough to sit on one line across the slide */
 .takeaway.wide { max-width: none; }
@@ -430,6 +456,20 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
    than an equation standing on its own */
 .eq-stack .eq { margin: 0.25em 0; }
 .eq-stack .katex-display { margin: 0.1em 0; }
+/* a recap that sets each step of the model beside its equations and, where
+   one helps, a small plot of it at work */
+.recap { display: flex; flex-direction: column; gap: 0.35em; }
+.recap-row {
+  display: grid; grid-template-columns: 0.7fr 2.1fr 0.7fr; gap: 0 0.8em; align-items: center;
+  border-top: 1px solid var(--rule); padding-top: 0.25em;
+}
+.recap-step { font-size: 0.78em; margin: 0; color: var(--muted); }
+.recap-op {
+  display: inline-block; padding: 0 0.45em; border: 1px solid var(--neutral); border-radius: 1em;
+  background: var(--panel); color: var(--ink);
+}
+.recap-fig { margin: 0; }
+
 /* a recap with many equations to fit on one slide */
 .reveal .eq-compact .katex { font-size: 0.82em; }
 .reveal .katex { font-size: 1.08em; }
@@ -499,7 +539,7 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 .fig-controls .ctrl-name { font-family: var(--display); font-size: 1.15em; color: var(--ink); }
 .fig-controls input[type="range"] {
   width: 8.5em;
-  accent-color: var(--ink);
+  accent-color: var(--accent);
   cursor: pointer;
 }
 .fig-controls output {
@@ -526,10 +566,10 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
   min-width: 6.4em;
   font-weight: 600;
   color: #fff;
-  background: var(--ink);
-  border-color: var(--ink);
+  background: var(--accent);
+  border-color: var(--accent);
 }
-.fig-controls .fig-play:hover { background: #3a4046; }
+.fig-controls .fig-play:hover { background: #0b5f66; }
 
 /* Shown only in the PDF, where the sliders are dead: states what the figure
    is set to, so the printed figure still means something. */
@@ -567,7 +607,7 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 
 /* --- progress / controls ------------------------------------------------- */
 
-.reveal .progress { color: var(--ink); height: 3px; }
+.reveal .progress { color: var(--accent); height: 3px; }
 .reveal .controls { color: var(--faint); }
 
 /* --- export and print ----------------------------------------------------

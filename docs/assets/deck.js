@@ -33,6 +33,10 @@ export const COL = {
 // competes with the categorical colours above.
 export const CONTINUOUS = 'Viridis';
 
+/** The margins for a figure with a key or titles above its plotting area,
+    which automargin does not count when it sizes the margins. */
+export const HEADROOM = { l: 10, r: 16, t: 34, b: 10 };
+
 /** Plot styling shared by every figure, so the decks read as one system. */
 export function layout(extra = {}) {
   return Object.assign({
@@ -171,6 +175,42 @@ function addFooters(deckTitle) {
   });
 }
 
+/**
+ * Set the text of each slide that carries words and nothing else as large as
+ * it will go, up to a third larger than usual. The original decks set such
+ * slides large, with no figure to make room for; how far each can grow depends
+ * on how much it says, so it is measured rather than fixed.
+ */
+const VISUAL = '.fig, .mermaid-figure, img, .task-demo, .weeks, .eq, .measure, .katex-display';
+const TEXT_SCALES = [1.32, 1.24, 1.16, 1.08, 1];
+
+function fitTextSlides() {
+  const canvas = document.querySelector('.reveal .slides');
+  document.querySelectorAll('.reveal .slides > section').forEach((s) => {
+    if (s.matches('.title-slide, .section-slide') || s.querySelector(VISUAL)) return;
+    s.classList.add('text-slide');
+    // measured while forced into view, since reveal hides every slide but one,
+    // and with transitions off: reveal animates every property of a fragment,
+    // so a fragment would otherwise still be at its old size when measured
+    const shown = s.style.display;
+    s.style.display = 'block';
+    s.classList.add('measuring');
+    const scale = canvas.getBoundingClientRect().height / 720;
+    const top = s.getBoundingClientRect().top;
+    const at = (e) => (e.getBoundingClientRect().top - top) / scale;
+    const limit = s.querySelector('.citation') ? at(s.querySelector('.citation'))
+      : at(s.querySelector('.deck-footer > *') || s.querySelector('.deck-footer'));
+    const content = [...s.children].filter((e) => !e.matches('.deck-footer, .citation, aside'));
+    const bottom = () => Math.max(...content.map((e) => (e.getBoundingClientRect().bottom - top) / scale));
+    for (const k of TEXT_SCALES) {
+      s.style.setProperty('--text-scale', k);
+      if (bottom() <= limit - 8) break;
+    }
+    s.classList.remove('measuring');
+    s.style.display = shown;
+  });
+}
+
 export function initDeck({ title }) {
   addFooters(title);
   renderMath();
@@ -205,6 +245,9 @@ export function initDeck({ title }) {
     pdfMaxPagesPerSlide: 1,
     plugins: [RevealNotes],
   });
+  // measured once the webfont is in: the fallback font sets narrower, so a
+  // slide sized against it would overflow once Inter arrives
+  Reveal.on('ready', () => document.fonts.ready.then(fitTextSlides));
 
   // Figures are sized in slide coordinates and drawn on load, so there is
   // nothing to resize and nothing to wait for when the deck is exported.

@@ -2,18 +2,18 @@
 
    Most of the session revisits week 3, so most of these are the same figures
    under new ids, drawn by ../assets/figures-shared.js and ../assets/figures-fits.js.
-   The one new figure is the parameter recovery the session 4 notebook runs. */
+   The new ones are what the session 4 notebook adds: one real participant's
+   run through the task, and the parameter recovery. */
 
 import { layout, CONFIG, COL } from '../assets/deck.js';
 import {
-  plotly, axis, registerAll, drawChoices, choicesNote, drawCondition, conditionNote,
-  drawMagnitudes, magnitudesNote, drawLikelihood, likelihoodNote, drawGridSearch,
-  gridSearchNote, drawAscent, ascentNote, ASCENT_STEPS,
+  plotly, axis, registerAll, drawGridSearch, gridSearchNote, drawAscent, ascentNote,
+  ASCENT_STEPS, drawErrorTerm, errorTermNote, drawFitComplexity, fitComplexityNote, correlation,
 } from '../assets/figures-shared.js';
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
   parameterMatrix, MUL_LABELS, ADD_LABELS, drawModelRecovery, modelRecoveryNote,
-  drawModelFrequencies, modelFrequenciesNote,
+  drawModelFrequencies, modelFrequenciesNote, drawParticipant, participantNote,
 } from '../assets/figures-fits.js';
 import { FITS, SIMULATIONS, STATS, PARAMETER_RECOVERY } from '../assets/participant-fits.js';
 
@@ -22,11 +22,10 @@ const N = STATS.nParticipants;
 /* --- the recap, straight from week 3 -------------------------------------- */
 
 const recap = {
-  'fig-likelihood': {
-    params: {},
-    draw: (el) => drawLikelihood(el, { width: 700, height: 255 }),
-    note: () => likelihoodNote,
-  },
+  'fig-error-term': { params: {}, draw: (el) => drawErrorTerm(el, { width: 540, height: 260 }),
+                      note: () => errorTermNote },
+  'fig-fit-complexity': { params: {}, draw: (el) => drawFitComplexity(el, { width: 1100, height: 220 }),
+                          note: () => fitComplexityNote },
   'fig-grid': {
     params: { points: { min: 4, max: 24, step: 1, value: 10, label: 'grid',
                         format: (v) => `${v}×${v}` } },
@@ -59,7 +58,7 @@ const recap = {
   'fig-bic': { params: {}, draw: drawBic, note: bicNote },
   'fig-model-frequencies': {
     params: {},
-    draw: (el) => drawModelFrequencies(el, { width: 700, height: 350 }),
+    draw: (el) => drawModelFrequencies(el, { width: 700, height: 330 }),
     note: modelFrequenciesNote,
   },
   'fig-model-recovery': {
@@ -83,7 +82,7 @@ const recap = {
 const simulations = Object.fromEntries(Object.entries(SIMULATIONS).map(([key, sim]) => [
   `fig-sim-${key}`, {
     params: {},
-    draw: (el) => alphaDifference(el, sim, { width: 540, height: 290 }),
+    draw: (el) => alphaDifference(el, sim, { width: 540, height: 240 }),
     note: () => `Simulated ${key === 'same' ? 'unshuffled' : 'with the volatile learning rates '
       + 'shuffled between participants'}: χ²(${sim.test.df}) = ${sim.test.lambda}, `
       + `p = ${sim.test.p.toPrecision(2)}.`,
@@ -92,27 +91,19 @@ const simulations = Object.fromEntries(Object.entries(SIMULATIONS).map(([key, si
 /* --- plots worth putting in the report ------------------------------------ */
 
 const plotsForTheReport = {
-  'fig-choices': {
-    params: {
-      alpha: { min: 0.01, max: 1, step: 0.01, value: 0.3, label: '&alpha;' },
-      beta:  { min: 0.01, max: 0.5, step: 0.01, value: 0.05, label: '&beta;' },
-    },
-    draw: (el, v) => drawChoices(el, v, { width: 1080, height: 330 }),
-    note: choicesNote,
-  },
-  'fig-magnitudes': {
+  'fig-participant-schedule': {
     params: {},
-    draw: (el) => drawMagnitudes(el, { width: 1080, height: 170 }),
-    note: () => magnitudesNote,
+    draw: (el) => drawParticipant(el, { withModel: false, width: 1120, height: 470 }),
+    note: () => participantNote(false),
+  },
+  'fig-participant-model': {
+    params: {},
+    draw: (el) => drawParticipant(el, { withModel: true, width: 1120, height: 520 }),
+    note: () => participantNote(true),
   },
 };
 
-Object.assign(plotsForTheReport,
-  Object.fromEntries([1, 2].map((condition) => [`fig-condition-${condition}`, {
-    params: {},
-    draw: (el) => drawCondition(el, condition, { width: 530, height: 215 }),
-    note: () => conditionNote(condition),
-  }])));
+
 
 /* The same three plots again, larger, on the slides about what to put in the
    report: there each one is the whole slide rather than half of it. */
@@ -154,30 +145,33 @@ function leastSquares(x, y) {
   return { slope, intercept: my - slope * mx };
 }
 
-function recoveryPanel(el, key, label, hi, { width = 520, height = 330 } = {}) {
+function recoveryPanel(el, key, label, hi, { width = 370, height = 330 } = {}) {
   const { simulated, recovered } = PARAMETER_RECOVERY[key];
   const { slope, intercept } = leastSquares(simulated, recovered);
   plotly().react(el, [
     { x: [0, hi], y: [0, hi], mode: 'lines', name: 'simulated = recovered',
       line: { color: COL.truth, width: 1.2, dash: 'dash' }, hoverinfo: 'skip' },
-    { x: [0, hi], y: [intercept, intercept + slope * hi], mode: 'lines', name: 'best fit',
-      line: { color: COL.estimate, width: 2 }, hoverinfo: 'skip' },
     { x: simulated, y: recovered, mode: 'markers',
-      marker: { size: 5, color: COL.neutral, opacity: 0.45 },
+      marker: { size: 4, color: COL.neutral, opacity: 0.3 },
       hovertemplate: 'simulated %{x:.3f}<br>recovered %{y:.3f}<extra></extra>' },
+    { x: [0, hi], y: [intercept, intercept + slope * hi], mode: 'lines', name: 'best fit',
+      line: { color: COL.estimate, width: 2.5 }, hoverinfo: 'skip' },
   ], layout({
     width, height,
     xaxis: axis(`simulated ${label}`, { range: [0, hi], constrain: 'domain' }),
     yaxis: axis(`recovered ${label}`, { range: [0, hi], scaleanchor: 'x', scaleratio: 1,
                                         constrain: 'domain' }),
     annotations: [
-      { x: 0.04, y: 0.94, xref: 'paper', yref: 'paper', xanchor: 'left', showarrow: false,
-        text: `slope ${slope.toFixed(2)}`, font: { size: 15, color: COL.estimate } },
+      { x: 0.04, y: 0.97, xref: 'x domain', yref: 'y domain', xanchor: 'left', yanchor: 'top',
+        showarrow: false, align: 'left', font: { size: 15, color: COL.ink },
+        text: `r = ${correlation(simulated, recovered).toFixed(2)}<br>`
+          + `<span style="color:${COL.estimate}">slope ${slope.toFixed(2)}</span>` },
     ],
   }), CONFIG);
 }
 
 const RECOVERY_PANELS = {
+  'fig-recovery-alpha-stable': { key: 'alphaStable', label: 'α stable', hi: 1 },
   'fig-recovery-alpha': { key: 'alphaVolatile', label: 'α volatile', hi: 1 },
   'fig-recovery-beta': { key: 'beta', label: 'β', hi: 0.6 },
 };
@@ -185,10 +179,9 @@ const RECOVERY_PANELS = {
 const recovery = Object.fromEntries(Object.entries(RECOVERY_PANELS).map(([id, p]) => [id, {
   params: {},
   draw: (el) => recoveryPanel(el, p.key, p.label, p.hi),
-  note: () => `Simulated against recovered ${p.label}, for four simulated datasets of ${N} `
-              + 'participants each. The dashed line is simulated = recovered; the purple line is '
-              + 'the least squares fit through the points. The closer its slope is to 1, and the '
-              + 'tighter the scatter around it, the better this parameter recovers.',
+  note: () => `Simulated against recovered ${p.label}, ${PARAMETER_RECOVERY.nDatasets} simulated `
+              + `datasets of ${N} participants; dashed, simulated = recovered; purple, the least `
+              + 'squares fit.',
 }]));
 
 registerAll(recap, simulations, plotsForTheReport, recovery);

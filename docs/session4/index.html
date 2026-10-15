@@ -19,9 +19,9 @@
 
 <!-- 1 =================================================================== -->
 <section class="title-slide">
-  <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
+  <h1>Computational modelling of decision making and action selection</h1>
   <p class="subtitle">Advanced Lab &middot; Session 4 of 4</p>
-  <p class="byline">Organisers: <strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
+  <p class="byline">Organisers: <strong>Dr Miriam Klein-Fl&uuml;gge</strong> &middot; <strong>Dr Jan Grohn</strong><br>
      Department of Experimental Psychology, University of Oxford</p>
 </section>
 
@@ -56,8 +56,8 @@
   <h2>Aims for today</h2>
   <ul>
     <li>Recap the key concepts from last week</li>
-    <li>Validate the model fits &mdash; parameter recovery and model recovery</li>
     <li>Prepare for <span class="key">report writing</span></li>
+    <li>Validate the model fits &mdash; parameter recovery and model recovery</li>
     <li>Talk through the structure of your write-up</li>
   </ul>
 </section>
@@ -73,7 +73,7 @@
   <h2>Recap: the log likelihood</h2>
   <div class="eq">$$\underbrace{\log L}_\textrm{log likelihood} = \sum_{t} \log \underbrace{P(c_t \mid \alpha, \beta)}_\textrm{probability the model gave the observed choice}$$</div>
   <div class="cols narrow-right">
-    <figure class="fig" id="fig-likelihood">
+    <figure class="fig" id="fig-error-term">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>
       <p class="fig-print-note"></p>
@@ -153,7 +153,13 @@
     <li class="fragment">What happens to the fit when a model gains parameters? Is it fair to
       compare their errors directly?</li>
   </ul>
-  <div class="eq fragment">$$\textrm{more parameters} \;\Longrightarrow\; \textrm{fit never gets worse}$$</div>
+  <div class="fragment">
+  <figure class="fig" id="fig-fit-complexity">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
   <ul class="reasons">
     <li class="fragment">So how do we account for the number of parameters?</li>
     <li class="fragment">And why is a smaller error not always a better model?</li>
@@ -163,6 +169,7 @@
 <!-- 10 =================================================================== -->
 <section>
   <h2>Nested models: the likelihood ratio test</h2>
+  <div class="eq eq-compact">$$\underbrace{\lambda_{\textrm{LR}}}_\textrm{likelihood ratio test statistic} = 2 \log \left( \frac{\textrm{likelihood for the alternative model}}{\textrm{likelihood for the null model}} \right) \tag{Equation 6}$$</div>
   <div class="eq eq-compact">$$\lambda_{\textrm{LR}} = 2 \left(\log(\textrm{likelihood for the alternative model}) - \log (\textrm{likelihood for the null model})\right) \tag{Equation 7}$$</div>
   <figure class="fig" id="fig-chi2">
     <div class="fig-plot"></div>
@@ -198,7 +205,8 @@
   <div class="discuss fragment">
     <span class="discuss-label">Discuss</span>
     <ul>
-      <li>Why was the test significant in the second case but not the first?</li>
+      <li>Did you expect the $\chi^2$ test to be significant in both cases? Why was it
+        significant in the second but not the first?</li>
       <li>Is a significant $\chi^2$ enough to say learning rates are <em>higher</em> when
         volatile?</li>
     </ul>
@@ -249,8 +257,8 @@
 <!-- 14 =================================================================== -->
 <section>
   <h2>Model frequency and exceedance probability</h2>
-  <div class="cols narrow-left">
-    <figure class="fig" id="fig-model-frequencies">
+<div class="cols narrow-right">
+  <figure class="fig" id="fig-model-frequencies">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>
       <p class="fig-print-note"></p>
@@ -277,7 +285,7 @@
     <span class="discuss-label">Discuss</span>
     <ul class="reasons">
       <li class="fragment">What do you notice? Does anyone stand out?</li>
-      <li class="fragment">What values would we judge normal?</li>
+      <li class="fragment">What values would we expect, or judge normal?</li>
     </ul>
   </div>
 </section>
@@ -290,8 +298,6 @@
     <div class="fig-controls"></div>
     <p class="fig-print-note"></p>
   </figure>
-  <p class="note">Additive utility adds $\omega$, the weight on magnitude. An $\omega$ pinned at 0
-    or 1 says the participant used only one of the two dimensions.</p>
 </section>
 
 <!-- 17 =================================================================== -->
@@ -372,9 +378,10 @@
     <li><span class="key">1000 to 1500 words</span></li>
     <li>Start with a short summary of your findings</li>
     <li>What do the results mean? Were they what you expected?</li>
-    <li>How do they relate to the previous literature &mdash; how does Blain and Rutledge differ
-      from Behrens?</li>
-    <li>Limitations, and what you would have analysed with more time</li>
+    <li>How do they relate to the previous literature? How is the Blain and Rutledge paper
+      different from the Behrens paper?</li>
+    <li>Limitations of the data and analyses, and future analyses: with more time, what would you
+      have liked to analyse, and why?</li>
   </ul>
 </section>
 
@@ -387,21 +394,7 @@
 <!-- 25 =================================================================== -->
 <section>
   <h2>The task schedule</h2>
-  <div class="cols">
-    <figure class="fig" id="fig-condition-1">
-      <p class="cond-title"><span class="cond-tag cond-stable">Condition 1</span> stable</p>
-      <div class="fig-plot"></div>
-      <div class="fig-controls"></div>
-      <p class="fig-print-note"></p>
-    </figure>
-    <figure class="fig" id="fig-condition-2">
-      <p class="cond-title"><span class="cond-tag cond-volatile">Condition 2</span> volatile</p>
-      <div class="fig-plot"></div>
-      <div class="fig-controls"></div>
-      <p class="fig-print-note"></p>
-    </figure>
-  </div>
-  <figure class="fig" id="fig-magnitudes">
+  <figure class="fig" id="fig-participant-schedule">
     <div class="fig-plot"></div>
     <div class="fig-controls"></div>
     <p class="fig-print-note"></p>
@@ -411,13 +404,11 @@
 <!-- 26 =================================================================== -->
 <section>
   <h2>What the model thinks happened</h2>
-  <figure class="fig" id="fig-choices">
+  <figure class="fig" id="fig-participant-model">
     <div class="fig-plot"></div>
     <div class="fig-controls"></div>
     <p class="fig-print-note"></p>
   </figure>
-  <p class="note">The model's trial-by-trial estimate, its choice probability, and the choices
-    themselves &mdash; a good way to show one participant, or to show what the model does.</p>
 </section>
 
 <!-- 27 =================================================================== -->
@@ -458,8 +449,13 @@
   <ul>
     <li>Adapt these figures to the participants and models <em>you</em> want to show, and say why
       each one is the right plot for the point it makes</li>
-    <li>Report the statistics that go with them: t tests, likelihood ratio tests, BIC
-      comparisons</li>
+    <li>Statistical tests
+      <ul>
+        <li>t test</li>
+        <li>Likelihood ratio test</li>
+        <li>BIC comparisons</li>
+      </ul>
+    </li>
   </ul>
   <div class="discuss">
     <span class="discuss-label">Any questions</span>
@@ -470,7 +466,12 @@
 <!-- 31 =================================================================== -->
 <section>
   <h2>Parameter recovery</h2>
-  <div class="cols">
+  <div class="cols cols-3">
+    <figure class="fig" id="fig-recovery-alpha-stable">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
     <figure class="fig" id="fig-recovery-alpha">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>

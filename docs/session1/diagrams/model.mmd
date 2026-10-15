@@ -3,11 +3,11 @@
 %% dimensions is a single step that both the learned probability and the
 %% shown magnitude feed into.
 flowchart LR
-  OH["Outcome History"] --> LM(["Learning Model"])
-  LM --> LP["Learned Probability"]
-  LP --> CV(["Combining Value Dims"])
-  SM["Shown Magnitude"] --> CV
-  CV --> DV["Decision Variable"]
+  OH["Outcome<br>History"] --> LM(["Learning<br>Model"])
+  LM --> LP["Learned<br>Probability"]
+  LP --> CV(["Combining<br>Value Dims"])
+  SM["Shown<br>Magnitude"] --> CV
+  CV --> DV["Decision<br>Variable"]
 
   classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
   classDef op fill:#f4f6f7,stroke:#7d868d,stroke-width:1.2px,color:#14171a;

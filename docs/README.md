@@ -68,7 +68,7 @@ Two files under `assets/` are written by scripts and should not be edited:
 ```bash
 cd task-source
 node precompute-session2.mjs   # -> assets/simulated-fits.js
-python3 precompute-fits.py     # -> assets/participant-fits.js
+python3 precompute-fits.py     # -> assets/participant-fits.js; needs the notebooks' requirements
 ```
 
 The first simulates and refits participants for the recovery, falsification and
