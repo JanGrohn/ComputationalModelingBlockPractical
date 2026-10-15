@@ -158,10 +158,121 @@ figcaption {
   line-height: 1.4;
 }
 
+/* --- the four weeks ------------------------------------------------------ */
+
+.weeks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9em; margin-top: 0.3em; }
+.week {
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 0.9em 1em 1em;
+}
+.week-now { background: #eef4ee; }
+.week-n {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.05em;
+  margin: 0 0 0.5em;
+}
+.week-n span {
+  font-family: var(--sans);
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--opt1-text);
+  margin-left: 0.4em;
+}
+.week ul { margin: 0; font-size: 0.82em; }
+.week li { margin-bottom: 0.3em; }
+.week li::before { top: 0.55em; }
+
+/* --- a panel of related points ------------------------------------------ */
+
+.panel { background: var(--panel); border-radius: 10px; padding: 1em 1.2em; }
+.panel-label {
+  font-size: 0.68em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.6em;
+}
+.panel ul { margin-bottom: 0; }
+.panel li:last-child { margin-bottom: 0; }
+
+/* --- the levels of an explanation, named in colour rather than italics --- */
+
+.level {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.12em 0.5em;
+  border-radius: 5px;
+  margin-right: 0.5em;
+  vertical-align: 0.08em;
+}
+.level-1 { background: #e7eef5; color: #1f4b73; }
+.level-2 { background: #eef4ee; color: #2e7d32; }
+.level-3 { background: #fdf0e4; color: #9c4706; }
+
+/* an aside that comments on the point above it */
+.inset {
+  margin-left: 1.6em;
+  padding-left: 0.9em;
+  border-left: 2px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.92em;
+}
+.inset-2 { border-left-color: #9cc49e; }
+.inset-3 { border-left-color: #e8a86a; }
+
+/* --- a centred figure with its text beneath ----------------------------- */
+
+figure.centred { text-align: center; margin-bottom: 0.7em; }
+.centred-text { text-align: center; }
+.centred-text p { margin-bottom: 0.3em; font-size: 1.08em; }
+
+.big-link { font-size: 1.15em; margin: 0.3em 0 0.8em; }
+.big-link a { border-bottom-width: 2px; }
+
+/* --- the two conditions -------------------------------------------------- */
+
+.cond-title { font-family: var(--serif); font-weight: 600; font-size: 1.05em; margin: 0 0 0.2em; }
+.cond-reveal { font-size: 0.92em; margin: 0.45em 0 0; color: var(--muted); }
+.cond-tag {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.76em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.14em 0.55em;
+  border-radius: 5px;
+  margin-right: 0.45em;
+}
+.cond-stable   { background: #e7eef5; color: #1f4b73; }
+.cond-volatile { background: #fdf0e4; color: #9c4706; }
+
+/* --- mermaid ------------------------------------------------------------- */
+
+/* a diagram authored in mermaid and pre-rendered to svg by
+   task-source/prerender-mermaid.mjs, so nothing has to run at display time */
+.mermaid-figure { text-align: center; }
+.mermaid-figure svg { max-width: 100%; height: auto; }
+
+/* --- a box that appears on click, with its text there from the start ----- */
+
+.reveal .fragment.box { opacity: 1; visibility: visible; border-color: transparent; }
+.reveal .fragment.box.visible { border-color: var(--faint); }
+
 /* --- a point the original slide drew a box around --------------------- */
 
 .reveal li.marked {
   border: 1.5px solid var(--faint);
+  transition: border-color 0.25s ease;
   border-radius: 6px;
   padding: 0.22em 0.6em 0.22em 1.1em;
   margin-left: -0.5em;
@@ -183,7 +294,13 @@ figcaption {
 
 /* --- a few playable trials --------------------------------------------- */
 
-.task-board { text-align: center; }
+.task-board {
+  text-align: center;
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 1em 1.2em 0.9em;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.07);
+}
 .task-cards { display: flex; justify-content: center; gap: 2.6em; margin-bottom: 0.6em; }
 .task-card {
   display: flex;
@@ -201,8 +318,23 @@ figcaption {
 }
 .task-card:hover:not(:disabled) { border-color: var(--faint); box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
 .task-card:disabled { cursor: default; }
-.task-card img { height: 190px; width: auto; }
-.task-points { font-size: 1.5em; font-family: var(--serif); }
+.task-card img { height: 150px; width: auto; }
+.task-points { font-size: 2.3em; font-family: var(--sans); line-height: 1.1; }
+.task-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin-top: 0.45em;
+  padding: 0.3em 0.9em;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.task-card:disabled .task-select { background: #b9c2c9; }
 /* the outcome is shown with a word as well as a tint, never a tint alone */
 .task-card[data-result="rewarded"]     { border-color: var(--opt1); background: #f2f8f2; }
 .task-card[data-result="not-rewarded"] { border-color: var(--rule); opacity: 0.55; }

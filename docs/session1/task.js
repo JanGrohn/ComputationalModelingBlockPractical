@@ -83,6 +83,8 @@ export function playableTask(rootId) {
       img.alt = option === 1 ? 'the green option' : 'the orange option';
       const pts = el('span', 'task-points', card);
       pts.textContent = state.mag[option - 1];
+      const select = el('span', 'task-select', card);
+      select.textContent = '\u2713 Select';
       card.addEventListener('click', () => choose(option));
     });
     const block = trial < STABLE_TRIALS ? 'stable block' : 'volatile block';

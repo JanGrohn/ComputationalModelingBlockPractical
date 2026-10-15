@@ -106,3 +106,18 @@ Node. Vite installs 132 packages in about 20 seconds and builds in just over a
 second, against several minutes for CRA, and the bundle came out 80 KB smaller
 once `react-helmet` and `web-vitals` went. `react-helmet` existed only to
 inject a preloadjs script that nothing used.
+
+## prerender-mermaid.mjs
+
+The model schematic on the session 1 slides is authored in mermaid but is not
+rendered in the browser: mermaid races reveal's own setup, and under DeckTape
+it lost that race and exported its error card instead of the diagram. The
+script renders the mermaid source to a static SVG and writes it into the slide,
+leaving the source in a comment above it.
+
+```bash
+cd docs && python3 -m http.server 8731 &
+cd task-source && node prerender-mermaid.mjs ../docs/session1/index.html
+```
+
+Edit the mermaid source in the comment, re-run, and the SVG is replaced.

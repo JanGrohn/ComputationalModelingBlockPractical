@@ -19,19 +19,15 @@ const trials = (n) => Array.from({ length: n }, (_, i) => i);
 /* --- 1. a fixed 80% schedule, and what the learner makes of it ------------ */
 
 /**
- * Traces for a schedule plot. The series are labelled on the plot itself
- * rather than in a legend or a caption: Tufte's rule for the data, and Mayer's
- * spatial-contiguity principle, both say the name belongs next to the thing it
- * names, not in a key the eye has to travel to and hold in memory.
- *
- * The two lines also differ in dash pattern, so nothing here is carried by
- * colour alone.
+ * Traces for a schedule plot. Outcomes are drawn as dots, the true probability
+ * as a dashed black line and the model's running estimate as a solid green
+ * one, so the two lines differ in more than colour.
  */
 function scheduleTrace(opt1Rewarded, trueProbability, probOpt1) {
   const x = trials(opt1Rewarded.length);
   return [
     { x, y: opt1Rewarded, mode: 'markers', name: 'outcome',
-      marker: { size: 5, color: COL.faint, symbol: 'line-ew-open', line: { width: 1.5, color: COL.faint } },
+      marker: { size: 5, color: COL.faint },
       hovertemplate: 'trial %{x}<br>%{y}<extra></extra>' },
     { x, y: trueProbability, mode: 'lines', name: 'true probability',
       line: { color: COL.ink, dash: 'dash', width: 1.5 },
@@ -42,18 +38,21 @@ function scheduleTrace(opt1Rewarded, trueProbability, probOpt1) {
   ];
 }
 
-/** Labels placed on the data, with the y taken from the series itself. */
-function scheduleLabels(n, trueProbability, probOpt1) {
-  const at = Math.round(n * 0.34);
-  const lift = probOpt1[at] < trueProbability[at] ? -0.11 : 0.11;
+/**
+ * Series names, in the headroom above the plot. They were placed on the data
+ * itself, with the y read off the series, which meant they wandered about as
+ * soon as anyone touched a slider. Fixed positions in the band above the trace
+ * stay next to the data without ever moving.
+ */
+function scheduleLabels(n) {
+  const label = (x, text, color) => ({
+    x, y: 1.1, xanchor: 'left', showarrow: false, text,
+    font: { size: 13, color },
+  });
   return [
-    { x: n * 0.97, y: trueProbability[n - 1] + 0.1, xanchor: 'right', showarrow: false,
-      text: 'true probability', font: { size: 12, color: COL.ink } },
-    { x: at, y: probOpt1[at] + lift, xanchor: 'left', showarrow: false,
-      text: "model's estimate", font: { size: 12, color: COL.opt1 } },
-    { x: 0, y: 1.0, xanchor: 'left', yanchor: 'bottom', showarrow: false,
-      text: 'ticks at 1 = option 1 rewarded, at 0 = option 2 rewarded',
-      font: { size: 11, color: COL.muted } },
+    label(0, '\u2014\u2009outcome: 1 = option 1 rewarded, 0 = option 2', COL.muted),
+    label(n * 0.46, '\u2013\u2009\u2013\u2009true probability', COL.ink),
+    label(n * 0.76, '\u2014\u2009model\u2019s estimate', COL.opt1),
   ];
 }
 
@@ -74,12 +73,12 @@ const fixedSchedule = {
         width: 1080, height: 330,
         xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0, n] }),
         yaxis: Object.assign(layout().yaxis, { title: 'P(option 1 rewarded)', range: [-0.05, 1.18] }),
-        annotations: scheduleLabels(n, trueProbability, probOpt1),
+        annotations: scheduleLabels(n),
       }), CONFIG);
     },
     note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}, a starting estimate of `
                  + `${v.startingProb.toFixed(2)} and a true reward probability of ${v.trueProb.toFixed(2)}. `
-                 + `Ticks along the top and bottom are the trial outcomes, the dashed line the `
+                 + `Dots along the top and bottom are the trial outcomes, the dashed line the `
                  + `true probability, the green line the model's running estimate.`,
   },
 };
@@ -102,11 +101,11 @@ const reversal = {
         yaxis: Object.assign(layout().yaxis, { title: 'P(option 1 rewarded)', range: [-0.05, 1.18] }),
         shapes: [{ type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: 100, y0: 0, y1: 1,
                    fillcolor: '#000', opacity: 0.035, line: { width: 0 }, layer: 'below' }],
-        annotations: scheduleLabels(trueProbability.length, trueProbability, probOpt1).concat([
-          { x: 50,  y: 1.15, text: 'volatile', showarrow: false,
-            font: { size: 13, color: COL.ink } },
-          { x: 150, y: 1.15, text: 'stable', showarrow: false,
-            font: { size: 13, color: COL.ink } },
+        annotations: scheduleLabels(trueProbability.length).concat([
+          { x: 50,  y: 1.015, text: 'volatile', showarrow: false,
+            font: { size: 13, color: COL.muted } },
+          { x: 150, y: 1.015, text: 'stable', showarrow: false,
+            font: { size: 13, color: COL.muted } },
         ]),
       }), CONFIG);
     },
@@ -115,6 +114,53 @@ const reversal = {
                  + `the stable block.`,
   },
 };
+
+/* --- the two conditions, side by side ----------------------------------- */
+
+const CONDITIONS = {
+  'fig-condition-1': { condition: 1, title: 'Condition 1' },
+  'fig-condition-2': { condition: 2, title: 'Condition 2' },
+};
+
+/**
+ * The reward schedule a participant in each condition actually meets. These
+ * are the schedules the task itself generates: condition 1 holds the
+ * contingency steady, condition 2 reverses it every 25 trials.
+ */
+function conditionSchedule(condition) {
+  const n = 102;
+  const pOption1 = condition === 1
+    ? new Array(n).fill(0.75)
+    : [...new Array(28).fill(0.75), ...new Array(25).fill(0.25),
+       ...new Array(25).fill(0.75), ...new Array(25).fill(0.25)].slice(0, n);
+  const rng = makeRng(condition === 1 ? 404 : 909);
+  return { pOption1, opt1Rewarded: generateSchedule(pOption1, rng) };
+}
+
+const conditions = Object.fromEntries(Object.entries(CONDITIONS).map(([id, spec]) => [id, {
+  params: {},
+  draw(el) {
+    const { pOption1, opt1Rewarded } = conditionSchedule(spec.condition);
+    const x = trials(pOption1.length);
+    plotly().react(el, [
+      { x, y: opt1Rewarded, mode: 'markers', name: 'outcome',
+        marker: { size: 4, color: COL.faint },
+        hovertemplate: 'trial %{x}<br>%{y}<extra></extra>' },
+      { x, y: pOption1, mode: 'lines', name: 'true probability',
+        line: { color: COL.ink, dash: 'dash', width: 1.8 },
+        hovertemplate: 'P(option 1 rewarded) %{y:.2f}<extra></extra>' },
+    ], layout({
+      width: 520, height: 250,
+      margin: { l: 46, r: 12, t: 26, b: 40 },
+      xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0, pOption1.length] }),
+      yaxis: Object.assign(layout().yaxis, {
+        title: 'P(option 1 rewarded)', range: [-0.08, 1.08], dtick: 0.25 }),
+    }), CONFIG);
+  },
+  note: () => spec.condition === 1
+    ? 'Condition 1: the probability that option 1 is rewarded stays at 0.75 for all 102 trials.'
+    : 'Condition 2: the probability starts at 0.75 and reverses every 25 trials from trial 29.',
+}]));
 
 /* --- 3 & 4. the two utility functions ------------------------------------ */
 
@@ -185,13 +231,19 @@ const weights = {
       }], layout({
         width: 700, height: 250,
         bargap: 0.35,
+        // the label is placed in data coordinates and clamped, so that it
+        // stays inside the plot even when alpha is 1 and the first bar fills
+        // the whole height
         annotations: [{
-          x: -1, y: w[0], ax: -40, ay: -30, text: 'the last trial carries weight \u03b1',
+          x: -1, y: w[0],
+          ax: -9, ay: Math.min(w[0] + 0.24, 0.93),
+          axref: 'x', ayref: 'y',
+          text: 'the last trial carries weight \u03b1',
           font: { size: 12, color: COL.ink }, arrowcolor: COL.muted,
           arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'right',
         }],
         xaxis: Object.assign(layout().xaxis, { title: 'trials into the past', dtick: 5, range: [-20.6, -0.4] }),
-        yaxis: Object.assign(layout().yaxis, { title: 'weight', range: [0, 1.02] }),
+        yaxis: Object.assign(layout().yaxis, { title: 'weight', range: [0, 1.08] }),
       }), CONFIG);
     },
     note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}: the most recent outcome carries `
@@ -202,7 +254,7 @@ const weights = {
 
 /* --- wire them all up ---------------------------------------------------- */
 
-for (const group of [fixedSchedule, reversal, utilities, weights]) {
+for (const group of [fixedSchedule, reversal, conditions, utilities, weights]) {
   for (const [id, spec] of Object.entries(group)) {
     interactiveFigure(id, spec.params, spec.draw, spec.note);
   }
