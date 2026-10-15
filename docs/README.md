@@ -86,7 +86,18 @@ Slides are plain HTML `<section>` elements. The pieces the theme provides:
 
 Colour means one thing only: `--opt1` green is option 1, `--opt2` orange is
 option 2, matching the task and the notebook plots. Nothing is distinguished by
-colour alone, so the greyscale print still works.
+colour alone, so the greyscale print still works. Type is one sans family
+throughout, separated by weight rather than by switching to a serif; maths is
+left to KaTeX's own faces, where a serif is the convention and matches how the
+notebooks render.
+
+Diagrams are authored in mermaid under `sessionN/diagrams/*.mmd` and
+pre-rendered to inline SVG, so nothing has to run at display time:
+
+```bash
+cd docs && python3 -m http.server 8731 &
+cd task-source && node prerender-mermaid.mjs ../docs/session1
+```
 
 ### Adding a live figure
 

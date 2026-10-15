@@ -27,9 +27,12 @@
   --opt1-text: #2e7d32;
   --opt2-text: #b35309;   /* 5.1:1 on white */
 
-  --serif: "Source Serif 4", Charter, Cambria, Georgia, serif;
-  --sans:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* One sans family throughout, separated by weight and size rather than by
+     switching to a serif. Maths is left to KaTeX's own faces, where the serif
+     is the convention and matches how the notebooks render. */
+  --sans:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 /* --- canvas -------------------------------------------------------------- */
@@ -55,11 +58,11 @@
 .reveal h1,
 .reveal h2,
 .reveal h3 {
-  font-family: var(--serif);
-  font-weight: 600;
+  font-family: var(--display);
+  font-weight: 650;
   color: var(--ink);
   text-transform: none;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.021em;
   margin: 0 0 0.6em 0;
   text-align: left;
 }
@@ -106,7 +109,8 @@
 
 .title-slide { display: flex; flex-direction: column; justify-content: center; height: 100%; }
 .title-slide h1 {
-  font-size: 2.15em;
+  font-weight: 700;
+  font-size: 2.05em;
   line-height: 1.12;
   margin-bottom: 0.35em;
   max-width: 19em;
@@ -173,7 +177,7 @@ figcaption {
 }
 .week-now { background: #eef4ee; }
 .week-n {
-  font-family: var(--serif);
+  font-family: var(--display);
   font-weight: 600;
   font-size: 1.05em;
   margin: 0 0 0.5em;
@@ -245,7 +249,7 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 
 /* --- the two conditions -------------------------------------------------- */
 
-.cond-title { font-family: var(--serif); font-weight: 600; font-size: 1.05em; margin: 0 0 0.2em; }
+.cond-title { font-family: var(--display); font-weight: 600; font-size: 1.05em; margin: 0 0 0.2em; }
 .cond-reveal { font-size: 0.92em; margin: 0.45em 0 0; color: var(--muted); }
 .cond-tag {
   display: inline-block;
@@ -374,9 +378,10 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 /* --- key takeaway -------------------------------------------------------- */
 
 .takeaway {
-  font-family: var(--serif);
-  font-size: 1.25em;
-  line-height: 1.4;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 1.2em;
+  line-height: 1.45;
   color: var(--ink);
   max-width: 22em;
   padding-left: 0.8em;
@@ -454,7 +459,7 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
   gap: 0.55em;
   white-space: nowrap;
 }
-.fig-controls .ctrl-name { font-family: var(--serif); font-size: 1.15em; color: var(--ink); }
+.fig-controls .ctrl-name { font-family: var(--display); font-size: 1.15em; color: var(--ink); }
 .fig-controls input[type="range"] {
   width: 8.5em;
   accent-color: var(--opt1);
