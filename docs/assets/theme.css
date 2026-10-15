@@ -309,12 +309,15 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 
 .measure {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 0 1.1em;
+  grid-template-columns: 1fr auto 1.15fr;
+  gap: 0 0.7em;
   align-items: center;
   margin: 0.4em 0 0.8em;
 }
-.measure-photo img { max-height: 290px; }
+/* pushed to the right of its column so the arrow starts beside the photo
+   rather than a column's width away from it */
+.measure-photo { text-align: right; }
+.measure-photo img { max-height: 290px; margin: 0 0 0 auto; }
 .measure-arrow { display: flex; justify-content: center; }
 .measure-what p { margin-bottom: 0.5em; font-size: 1.05em; }
 

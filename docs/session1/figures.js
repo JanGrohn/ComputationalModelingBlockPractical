@@ -257,8 +257,10 @@ function contour(el, z, label) {
   }], layout({
     width: 540, height: 310,
     margin: { l: 52, r: 10, t: 10, b: 42 },
-    xaxis: Object.assign(layout().xaxis, { title: 'probability', dtick: 0.25 }),
-    yaxis: Object.assign(layout().yaxis, { title: 'magnitude', showgrid: false }),
+    xaxis: Object.assign(layout().xaxis, {
+      title: { text: 'probability', standoff: 12 }, automargin: true, dtick: 0.25 }),
+    yaxis: Object.assign(layout().yaxis, {
+      title: { text: 'magnitude', standoff: 12 }, automargin: true, showgrid: false }),
   }), CONFIG);
   el.setAttribute('aria-label', label);
 }
