@@ -2,13 +2,8 @@ import React, { useState } from "react";
 import { Button, Container, Box, Typography } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import Choice from "./components/Choice";
-import EnterData from "./components/EnterData"; 
-import TwoButtons from "./components/TwoButtons"; 
-
-import { Helmet } from "react-helmet";
-
-
-
+import EnterData from "./components/EnterData";
+import TwoButtons from "./components/TwoButtons";
 
 function FullscreenMessage({ onConfirm }) {
   return (
@@ -39,7 +34,6 @@ function FullscreenMessage({ onConfirm }) {
 window.participantData = [];
 
 function App() {
-
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [textSubmitted, setTextSubmitted] = useState(false);
   const [conditionSelected, setConditionSelected] = useState(false);
@@ -47,49 +41,32 @@ function App() {
 
   const handleTextInputSubmit = (text) => {
     setTextSubmitted(true);
-    window.participantData.push({userID:text}); 
+    window.participantData.push({ userID: text });
   };
 
-  const handleConditionSelect = (selectedCondition) => {
+  const handleConditionSelect = (condition) => {
     setConditionSelected(true);
-    setSelectedCondition(selectedCondition);
-    window.participantData.push({condition:selectedCondition}); 
-    // console.log(selectedCondition);
+    setSelectedCondition(condition);
+    window.participantData.push({ condition });
   };
-
 
   const handleFullscreenConfirm = () => {
     setIsFullScreen(true);
-  
     const docEl = document.documentElement;
-    const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-    
+    const requestFullScreen =
+      docEl.requestFullscreen ||
+      docEl.mozRequestFullScreen ||
+      docEl.webkitRequestFullScreen ||
+      docEl.msRequestFullscreen;
     if (requestFullScreen) {
       requestFullScreen.call(docEl);
     }
   };
 
-  return (
-    <div>
-      <Helmet>
-        <script
-          src="https://cdn.jsdelivr.net/npm/preloadjs@1.0.1/lib/preloadjs.min.js"
-          crossorigin="anonymous"
-          async
-        ></script>
-      </Helmet>
-      {!isFullScreen ? (
-        <FullscreenMessage onConfirm={handleFullscreenConfirm} />
-      ) : !textSubmitted ? ( 
-        <EnterData onSubmit={handleTextInputSubmit} />
-      ) : !conditionSelected? (
-        // <TwoButtons onClick={handleConditionSelect} />
-        <TwoButtons onClick={handleConditionSelect} />  
-      ) : (
-        <Choice condition={selectedCondition} />
-      )}  
-    </div>
-  );
+  if (!isFullScreen) return <FullscreenMessage onConfirm={handleFullscreenConfirm} />;
+  if (!textSubmitted) return <EnterData onSubmit={handleTextInputSubmit} />;
+  if (!conditionSelected) return <TwoButtons onClick={handleConditionSelect} />;
+  return <Choice condition={selectedCondition} />;
 }
 
 export default App;

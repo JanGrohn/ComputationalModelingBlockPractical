@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Container, Box, Typography, TextField } from "@mui/material";
+import { Button, Container, Box, TextField } from "@mui/material";
 
 function EnterData({ onSubmit }) {
   const [text, setText] = useState("");
@@ -13,13 +13,9 @@ function EnterData({ onSubmit }) {
         alignItems="center"
         minHeight="100vh"
       >
-        {/* <Typography variant="h4" gutterBottom>
-          Please enter text
-        </Typography> */}
         <TextField
           label="Enter a username"
-        //   variant="outlined"
-        //   value={text}
+          value={text}
           onChange={(event) => setText(event.target.value)}
           sx={{ mb: 2 }}
         />

@@ -1,23 +1,20 @@
 import React, { useState } from "react";
 import { Button, Container, Box, Typography, TextField } from "@mui/material";
 
-function EndStudy({ url }) {
+function EndStudy() {
   const [text, setText] = useState("");
 
   const handleDownload = () => {
-    window.participantData.push({
-      comments: text,
-    });
-    const data = JSON.stringify(window.participantData);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    window.participantData.push({ comments: text });
+    const blob = new Blob([JSON.stringify(window.participantData)], { type: "application/json" });
+    const href = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = url;
+    link.href = href;
     link.download = "participantData.json";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(href);
   };
 
   return (
@@ -39,19 +36,9 @@ function EndStudy({ url }) {
           onChange={(event) => setText(event.target.value)}
           multiline
           rows={4}
-          sx={{
-            mb: 2,
-            width: "80%",
-          }}
+          sx={{ mb: 2, width: "80%" }}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleDownload}
-          sx={{
-            mt: 2,
-          }}
-        >
+        <Button variant="contained" color="primary" onClick={handleDownload} sx={{ mt: 2 }}>
           Download results
         </Button>
       </Box>

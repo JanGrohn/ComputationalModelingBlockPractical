@@ -8,96 +8,93 @@ The learning task students play in session 1. It used to live in the private
 
 ## Where the source came from
 
-That repository only ever held the compiled output — no source tree. The build
-did ship source maps with `sourcesContent`, so the original React source was
-recovered from `static/js/main.e52e1237.js.map` and is what you see in `src/`.
-It is the real source, not a decompilation, but it has never been built from
-this directory, so treat the first `npm install && npm run build` as unproven.
-
-`package.json` is reconstructed from the package list in the same source map.
-The versions are the latest of each major that the bundle is consistent with,
-not necessarily the exact ones originally used.
+The old repository only ever held the compiled output — no source tree. The
+build did ship source maps with `sourcesContent`, so the original React source
+was recovered from `static/js/main.e52e1237.js.map`. What is in `src/` is that
+source, with the fixes below applied and the build moved from create-react-app
+to Vite.
 
 ## Layout
 
 ```
-task-source/           this directory: the source, not served
+task-source/            this directory: the source, not served
+  index.html            Vite entry point
+  vite.config.js        base: "./" so the build works at any URL
+  schedule-test.mjs     statistical checks on the trial schedule
+  e2e-test.mjs          drives the built app in a real browser
   src/
-    App.js             fullscreen prompt -> username -> condition -> task
+    main.jsx
+    App.jsx             fullscreen prompt -> username -> condition -> task
+    schedule.js         the trial schedule, free of React so it can be tested
     components/
-      Choice.js        the task itself: trials, outcomes, instructions
-      EnterData.js     username entry
-      TwoButtons.js    condition 1 or condition 2
-      EndStudy.js      comments box and the results download
-      img/             the two stimuli, as SVG
-../docs/task/          the compiled app that is actually served
+      Choice.jsx        the task itself: trials, outcomes, instructions
+      EnterData.jsx     username entry
+      TwoButtons.jsx    condition 1 (stable) or condition 2 (volatile)
+      EndStudy.jsx      comments box and the results download
+      img/              the two stimuli, as SVG
+../docs/task/           the compiled app that is served
 ```
 
-## Rebuilding
+## Working on it
 
 ```bash
 cd task-source
 npm install
-npm run build
-rm -rf ../docs/task && cp -R build ../docs/task
+npm run dev            # live reload at localhost:5173
+
+npm run build          # writes dist/
+node schedule-test.mjs # schedule properties over 4000 runs
+node e2e-test.mjs      # 40 trials in a real browser
+
+rm -rf ../docs/task && cp -R dist ../docs/task
 ```
 
-`homepage` is set to `.` so the build uses relative paths and works at whatever
-URL it is served from. The copy currently in `docs/task/` predates this setting
-and had its absolute `/volatility_study/` paths rewritten to relative ones by
-hand; a fresh build will produce them correctly.
+`e2e-test.mjs` drives the Google Chrome already installed on the machine
+through puppeteer-core; nothing is downloaded.
 
-`react-scripts` 5.0.1 is unmaintained and may need an older Node than the one
-you have. If it refuses to build, migrating to Vite is a half-hour job for an
-app this small and removes the problem permanently.
+## The two conditions
 
-## Known problems in the current build
+Condition 1 is the stable schedule and condition 2 the volatile one. The
+probability array holds P(option 2 rewarded), so the value 0.25 means option 1
+pays out on three trials in four. Condition 1 holds that for all 102 trials;
+condition 2 runs 28 trials at 0.25 and then reverses every 25.
 
-Found by reading the recovered source. None of them are fixed in what is
-currently served, because fixing them needs a rebuild, and the first two are
-questions about what the task is meant to do rather than clear defects.
+The first two trials are fixed at magnitudes 66/45 and 31/60 with the deer on
+the left, so the instruction screens always describe the same thing.
 
-**1. Condition 1 has no volatile block.** `Choice.js` builds `prob1` as 103
-trials at a constant 0.25, and `prob2` as 28 trials at 0.25 then alternating
-blocks of 25. So condition 1 is stable throughout and condition 2 is volatile
-after trial 28. The course teaches a within-participant stable *and* volatile
-design, counterbalanced, and the Blain data has 80 trials of each. Whether the
-two conditions are meant to be the two block orders, and are simply missing
-their second half, is a question for whoever designed it.
+## What was fixed
 
-**2. The outcome of each trial is drawn from the previous trial's
-probability.** In `handleConfirmClick` the index is advanced and the next
-outcome drawn in the same handler, using `prob[currentIndex]` — the index
-before the increment. Every reversal therefore lands one trial late. It makes
-no difference in condition 1, where the probability never changes.
+Found by reading the recovered source, and each one covered by a test.
 
-**3. The first trial's outcome is never drawn at all.** `oneRewarded` is
-initialised to `true` and only changes on the first "next choice", so trial 1
-always rewards option 1.
+- **Each trial's outcome was drawn from the previous trial's probability.**
+  `handleConfirmClick` advanced the index and drew the next outcome in the same
+  handler, reading `prob[currentIndex]` before the increment, so every reversal
+  landed one trial late. The whole schedule is now drawn once up front, in
+  `schedule.js`, which removes the class of bug rather than the instance.
+- **The first trial's outcome was never drawn.** `oneRewarded` started as
+  `true`, so trial 1 always rewarded option 1.
+- **An unknown condition silently produced `undefined`.** `prob` was declared
+  with `var` inside two branches; it now raises a clear error.
+- **Left and right were not balanced over the trials actually run.** The side
+  order was shuffled over 200 entries of which only 102 were used. It is now
+  shuffled over exactly the trials that run, so every run is 50/50.
+- **The first two trials carried their magnitudes as strings** while the rest
+  were numbers, so any arithmetic on them would have concatenated.
+- **Prolific is gone**, along with the dead completion link whose `url` prop
+  was shadowed by `URL.createObjectURL` and never used.
+- **The expectation slider is gone.** It was unreachable anyway, since nothing
+  ever set `showSlider`.
+- A stray `displaySide` attribute on an `<img>`, missing `alt` text on both
+  stimuli, an empty 60-second `setInterval`, a commented-out dialog and a
+  number of unused imports have all gone.
 
-**4. `prob` is undefined for any condition other than 1 or 2**, because it is
-declared with `var` inside the two branches. Nothing currently passes anything
-else, so it cannot fire today.
+Magnitudes stay at 1–99 and the two conditions stay as they are, both as
+intended.
 
-**5. The Prolific completion link never works.** `EndStudy` takes a `url`
-prop, but `handleDownload` declares `const url = URL.createObjectURL(blob)`,
-which shadows it, and the prop is never used. Harmless here — the course does
-not use Prolific — but the link in `Choice.js` is dead.
+## Why Vite rather than create-react-app
 
-**6. The expectation slider is unreachable.** `showSlider` is initialised to
-`false` and nothing ever sets it to `true`, so the "how many points do you
-expect?" rating never appears. Blain & Rutledge, whose data the course
-analyses, do collect ratings, so this may have been switched off deliberately.
-
-**7. Magnitudes run 1–99, not 1–100.** `Math.floor(Math.random() * 99) + 1`.
-The notebooks and slides say 1–100.
-
-**8. The first two trials carry string magnitudes** (`"66"`, `"45"`, `"31"`,
-`"60"` are unshifted as strings while the rest are numbers). Only display is
-affected now, but any arithmetic on them would concatenate.
-
-Smaller things: `displaySide` is shuffled over 200 entries but only the first
-102 are used, so left/right is not balanced across the trials actually run; a
-stray `displaySide` attribute is passed to an `<img>`; neither stimulus has an
-`alt`; a 60-second `setInterval` runs an empty function; and several imports
-are unused.
+`react-scripts` 5.0.1 is unmaintained and does not build reliably on current
+Node. Vite installs 132 packages in about 20 seconds and builds in just over a
+second, against several minutes for CRA, and the bundle came out 80 KB smaller
+once `react-helmet` and `web-vitals` went. `react-helmet` existed only to
+inject a preloadjs script that nothing used.
