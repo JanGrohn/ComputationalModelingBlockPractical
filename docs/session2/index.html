@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 2 &middot; Advanced Lab</title>
+<meta name="description" content="Utility, the softmax decision rule, simulation and parameter recovery.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 ==================================================================== -->
+<section class="title-slide">
+  <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
+  <p class="subtitle">Advanced Lab &middot; Session 2 of 4</p>
+  <p class="byline">Organisers: <strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
+     Department of Experimental Psychology, University of Oxford</p>
+</section>
+
+<!-- 2 ==================================================================== -->
+<section>
+  <h2>Plan for the next 4 weeks</h2>
+  <div class="weeks">
+    <div class="week">
+      <p class="week-n">Week 1</p>
+      <ul><li>Python and Colab basics</li><li>Experience the task</li>
+          <li>Build a learning model</li><li>Understand its parameters</li></ul>
+    </div>
+    <div class="week week-now">
+      <p class="week-n">Week 2 <span>today</span></p>
+      <ul><li>Utility and choice probability</li><li>Model simulations</li>
+          <li>Parameter recovery</li></ul>
+    </div>
+    <div class="week">
+      <p class="week-n">Week 3</p>
+      <ul><li>Checking data quality</li><li>Data analysis</li>
+          <li>Model comparison</li></ul>
+    </div>
+    <div class="week">
+      <p class="week-n">Week 4</p>
+      <ul><li>Statistics</li><li>Write-up planning</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ==================================================================== -->
+<section>
+  <h2>What we're aiming to model</h2>
+  <figure class="centred">
+    <img src="../assets/img/s2/task-screen.png" alt="The task screen: a green deer worth 31 points beside an orange heron worth 66 points." style="max-height:300px">
+  </figure>
+  <div class="fragment centred-text">
+    <p>How do we learn across time which stimulus is more likely to be rewarded?</p>
+    <p>How do we decide between different options?</p>
+  </div>
+  <p class="citation">Behrens et al., <span class="work">Nature Neuroscience</span>, 2007</p>
+</section>
+
+<!-- 4 ==================================================================== -->
+<section>
+  <h2>Task recap</h2>
+  <div class="cols narrow-left">
+    <div class="stack-tight">
+      <p><strong>How do we learn, over time, which choices are more rewarding?</strong></p>
+      <p class="note">Stable vs volatile blocks</p>
+      <p style="margin-top:1em"><strong>How do we decide between different options?</strong></p>
+      <p class="note">Random reward magnitudes (points), drawn independently of the probabilities</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s2/behrens-schedule.png" alt="Reward probability and magnitude across the trials of a session.">
+    </figure>
+  </div>
+  <p class="citation">Behrens et al., <span class="work">Nature Neuroscience</span>, 2007</p>
+</section>
+
+<!-- 5 ==================================================================== -->
+<section>
+  <h2>Recap of the reinforcement learning (RL) model</h2>
+  <p>On each trial the model compares what happened with what it expected, and moves its
+    expectation a fraction of the way towards the outcome:</p>
+  <div class="eq">
+    $$\underbrace{\delta_t}_\textrm{prediction error} = \underbrace{o_t}_\textrm{outcome} - \underbrace{p_t}_\textrm{model prediction} \tag{Equation 1}$$
+  </div>
+  <div class="eq">
+    $$\underbrace{p_{t+1}}_\textrm{new prediction} = \underbrace{p_t}_\textrm{old prediction} + \underbrace{\alpha \delta_t}_\textrm{scaled prediction error} \tag{Equation 2}$$
+  </div>
+  <p class="eq-where">$o_t = 1$ if <span class="term-opt1">option 1 (green)</span> was rewarded and
+    $0$ if <span class="term-opt2">option 2 (orange)</span> was; $\alpha$ is the
+    <span class="key">learning rate</span>, with $0 &lt; \alpha \le 1$.</p>
+</section>
+
+<!-- 6 ==================================================================== -->
+<section>
+  <h2>The learning rate captures the speed of learning</h2>
+  <p class="takeaway" style="max-width:44em; font-size:1.12em">By comparing the speed of learning
+    ($\alpha$) in the volatile and the stable phase, we can test our first hypothesis: how fast we
+    learn and adjust our behaviour depends on how quickly the environment is changing.</p>
+  <p class="note" style="margin-top:1em">Last week you saw what a high and a low $\alpha$ do to the
+    model's estimate. Today we give the model a way of turning that estimate into a choice.</p>
+</section>
+
+<!-- 7 ==================================================================== -->
+<section>
+  <h2>Expanding the model: integrating probabilities with magnitudes</h2>
+  <div class="cols narrow-left">
+    <div class="mermaid-figure" data-diagram="pipeline-utility"><svg id="dtvlxnjukduj" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 461.828125px;" viewBox="0 0 461.828125 326" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#dtvlxnjukduj{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;fill:#14171a;}#dtvlxnjukduj .error-icon{fill:#ffffff;}#dtvlxnjukduj .error-text{fill:#000000;stroke:#000000;}#dtvlxnjukduj .edge-thickness-normal{stroke-width:1px;}#dtvlxnjukduj .edge-thickness-thick{stroke-width:3.5px;}#dtvlxnjukduj .edge-pattern-solid{stroke-dasharray:0;}#dtvlxnjukduj .edge-thickness-invisible{stroke-width:0;fill:none;}#dtvlxnjukduj .edge-pattern-dashed{stroke-dasharray:3;}#dtvlxnjukduj .edge-pattern-dotted{stroke-dasharray:2;}#dtvlxnjukduj .marker{fill:#14171a;stroke:#14171a;}#dtvlxnjukduj .marker.cross{stroke:#14171a;}#dtvlxnjukduj svg{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;}#dtvlxnjukduj p{margin:0;}#dtvlxnjukduj .label{font-family:Inter,Helvetica,Arial,sans-serif;color:#14171a;}#dtvlxnjukduj .cluster-label text{fill:#000000;}#dtvlxnjukduj .cluster-label span{color:#000000;}#dtvlxnjukduj .cluster-label span p{background-color:transparent;}#dtvlxnjukduj .label text,#dtvlxnjukduj span{fill:#14171a;color:#14171a;}#dtvlxnjukduj .node rect,#dtvlxnjukduj .node circle,#dtvlxnjukduj .node ellipse,#dtvlxnjukduj .node polygon,#dtvlxnjukduj .node path{fill:#f4f6f7;stroke:#14171a;stroke-width:1px;}#dtvlxnjukduj .rough-node .label text,#dtvlxnjukduj .node .label text,#dtvlxnjukduj .image-shape .label,#dtvlxnjukduj .icon-shape .label{text-anchor:middle;}#dtvlxnjukduj .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#dtvlxnjukduj .rough-node .label,#dtvlxnjukduj .node .label,#dtvlxnjukduj .image-shape .label,#dtvlxnjukduj .icon-shape .label{text-align:center;}#dtvlxnjukduj .node.clickable{cursor:pointer;}#dtvlxnjukduj .root .anchor path{fill:#14171a!important;stroke-width:0;stroke:#14171a;}#dtvlxnjukduj .arrowheadPath{fill:#0b0b0b;}#dtvlxnjukduj .edgePath .path{stroke:#14171a;stroke-width:2.0px;}#dtvlxnjukduj .flowchart-link{stroke:#14171a;fill:none;}#dtvlxnjukduj .edgeLabel{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dtvlxnjukduj .edgeLabel p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);}#dtvlxnjukduj .edgeLabel rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dtvlxnjukduj .labelBkg{background-color:rgba(245.9999999999, 247, 243.9999999999, 0.5);}#dtvlxnjukduj .cluster rect{fill:#ffffff;stroke:hsl(0, 0%, 90%);stroke-width:1px;}#dtvlxnjukduj .cluster text{fill:#000000;}#dtvlxnjukduj .cluster span{color:#000000;}#dtvlxnjukduj div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;background:#ffffff;border:1px solid hsl(0, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#dtvlxnjukduj .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#14171a;}#dtvlxnjukduj rect.text{fill:none;stroke-width:0;}#dtvlxnjukduj .icon-shape,#dtvlxnjukduj .image-shape{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dtvlxnjukduj .icon-shape p,#dtvlxnjukduj .image-shape p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);padding:2px;}#dtvlxnjukduj .icon-shape rect,#dtvlxnjukduj .image-shape rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dtvlxnjukduj :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#dtvlxnjukduj .state rect{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dtvlxnjukduj .state polygon{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dtvlxnjukduj .state ellipse{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dtvlxnjukduj .state circle{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dtvlxnjukduj .state path{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dtvlxnjukduj .state tspan{fill:#14171a!important;}#dtvlxnjukduj .op rect{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dtvlxnjukduj .op polygon{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dtvlxnjukduj .op ellipse{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dtvlxnjukduj .op circle{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dtvlxnjukduj .op path{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dtvlxnjukduj .op tspan{fill:#1f4b73!important;}</style><g><marker id="dtvlxnjukduj_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dtvlxnjukduj_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dtvlxnjukduj_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dtvlxnjukduj_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dtvlxnjukduj_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="dtvlxnjukduj_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M111.672,58L111.672,64.667C111.672,71.333,111.672,84.667,111.672,94.667C111.672,104.667,111.672,111.333,111.672,117.333C111.672,123.333,111.672,128.667,111.672,131.333L111.672,134" id="L_OH_LP_0" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dtvlxnjukduj_flowchart-v2-pointEnd)"></path><path d="M111.672,188L111.672,194.667C111.672,201.333,111.672,214.667,117.926,224.667C124.18,234.667,136.689,241.333,148.609,247.686C160.529,254.04,171.861,260.079,177.527,263.099L183.192,266.119" id="L_LP_DV_1" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dtvlxnjukduj_flowchart-v2-pointEnd)"></path><path d="M355.586,188L355.586,194.667C355.586,201.333,355.586,214.667,349.332,224.667C343.078,234.667,330.569,241.333,318.649,247.686C306.729,254.04,295.397,260.079,289.731,263.099L284.065,266.119" id="L_SM_DV_2" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dtvlxnjukduj_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(111.671875, 98)"><g class="label" transform="translate(-60.96875, -12)"><g><rect class="background" style="" x="-2" y="-2" width="121.9375" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learning</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Model</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(111.671875, 228)"><g class="label" transform="translate(-87.1640625, -12)"><g><rect class="background" style="" x="-2" y="-2" width="174.328125" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(355.5859375, 228)"><g class="label" transform="translate(-87.1640625, -12)"><g><rect class="background" style="" x="-2" y="-2" width="174.328125" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default state " id="flowchart-OH-18" transform="translate(111.671875, 33)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-93.7578125" y="-25" width="187.515625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Outcome</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> History</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-LP-19" transform="translate(111.671875, 163)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-103.671875" y="-25" width="207.34375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learned</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-DV-21" transform="translate(233.62890625, 293)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-95.5078125" y="-25" width="191.015625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Variable</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-SM-22" transform="translate(355.5859375, 163)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-98.2421875" y="-25" width="196.484375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Shown</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Magnitude</tspan></tspan></text></g></g></g></g></g></g></svg></div>
+    <div>
+      <p>The model tracks a probability. The task also shows points. Something has to put them
+        together into a single number that choices can be based on.</p>
+      <div class="eq">
+        $$\underbrace{u}_\textrm{utility} = \underbrace{m}_\textrm{magnitude} \times \underbrace{p}_\textrm{probability} \tag{Equation 3}$$
+      </div>
+      <p class="eq-where">or, less optimally, a weighted sum</p>
+      <div class="eq">
+        $$\underbrace{u}_\textrm{utility} = \overbrace{\omega}^\textrm{weight} \underbrace{m}_\textrm{magnitude} + (1-\omega)\, \underbrace{p}_\textrm{probability} \tag{Equation 4}$$
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 ==================================================================== -->
+<section>
+  <h2>Expanding the model: from utility to a choice</h2>
+  <div class="cols narrow-left">
+    <div class="mermaid-figure" data-diagram="pipeline-choice"><svg id="dzsy8selx5rd" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 461.828125px;" viewBox="0 0 461.828125 456" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#dzsy8selx5rd{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;fill:#14171a;}#dzsy8selx5rd .error-icon{fill:#ffffff;}#dzsy8selx5rd .error-text{fill:#000000;stroke:#000000;}#dzsy8selx5rd .edge-thickness-normal{stroke-width:1px;}#dzsy8selx5rd .edge-thickness-thick{stroke-width:3.5px;}#dzsy8selx5rd .edge-pattern-solid{stroke-dasharray:0;}#dzsy8selx5rd .edge-thickness-invisible{stroke-width:0;fill:none;}#dzsy8selx5rd .edge-pattern-dashed{stroke-dasharray:3;}#dzsy8selx5rd .edge-pattern-dotted{stroke-dasharray:2;}#dzsy8selx5rd .marker{fill:#14171a;stroke:#14171a;}#dzsy8selx5rd .marker.cross{stroke:#14171a;}#dzsy8selx5rd svg{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;}#dzsy8selx5rd p{margin:0;}#dzsy8selx5rd .label{font-family:Inter,Helvetica,Arial,sans-serif;color:#14171a;}#dzsy8selx5rd .cluster-label text{fill:#000000;}#dzsy8selx5rd .cluster-label span{color:#000000;}#dzsy8selx5rd .cluster-label span p{background-color:transparent;}#dzsy8selx5rd .label text,#dzsy8selx5rd span{fill:#14171a;color:#14171a;}#dzsy8selx5rd .node rect,#dzsy8selx5rd .node circle,#dzsy8selx5rd .node ellipse,#dzsy8selx5rd .node polygon,#dzsy8selx5rd .node path{fill:#f4f6f7;stroke:#14171a;stroke-width:1px;}#dzsy8selx5rd .rough-node .label text,#dzsy8selx5rd .node .label text,#dzsy8selx5rd .image-shape .label,#dzsy8selx5rd .icon-shape .label{text-anchor:middle;}#dzsy8selx5rd .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#dzsy8selx5rd .rough-node .label,#dzsy8selx5rd .node .label,#dzsy8selx5rd .image-shape .label,#dzsy8selx5rd .icon-shape .label{text-align:center;}#dzsy8selx5rd .node.clickable{cursor:pointer;}#dzsy8selx5rd .root .anchor path{fill:#14171a!important;stroke-width:0;stroke:#14171a;}#dzsy8selx5rd .arrowheadPath{fill:#0b0b0b;}#dzsy8selx5rd .edgePath .path{stroke:#14171a;stroke-width:2.0px;}#dzsy8selx5rd .flowchart-link{stroke:#14171a;fill:none;}#dzsy8selx5rd .edgeLabel{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dzsy8selx5rd .edgeLabel p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);}#dzsy8selx5rd .edgeLabel rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dzsy8selx5rd .labelBkg{background-color:rgba(245.9999999999, 247, 243.9999999999, 0.5);}#dzsy8selx5rd .cluster rect{fill:#ffffff;stroke:hsl(0, 0%, 90%);stroke-width:1px;}#dzsy8selx5rd .cluster text{fill:#000000;}#dzsy8selx5rd .cluster span{color:#000000;}#dzsy8selx5rd div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;background:#ffffff;border:1px solid hsl(0, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#dzsy8selx5rd .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#14171a;}#dzsy8selx5rd rect.text{fill:none;stroke-width:0;}#dzsy8selx5rd .icon-shape,#dzsy8selx5rd .image-shape{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dzsy8selx5rd .icon-shape p,#dzsy8selx5rd .image-shape p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);padding:2px;}#dzsy8selx5rd .icon-shape rect,#dzsy8selx5rd .image-shape rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dzsy8selx5rd :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#dzsy8selx5rd .state rect{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dzsy8selx5rd .state polygon{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dzsy8selx5rd .state ellipse{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dzsy8selx5rd .state circle{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dzsy8selx5rd .state path{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dzsy8selx5rd .state tspan{fill:#14171a!important;}</style><g><marker id="dzsy8selx5rd_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dzsy8selx5rd_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dzsy8selx5rd_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dzsy8selx5rd_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dzsy8selx5rd_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="dzsy8selx5rd_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M111.672,58L111.672,64.667C111.672,71.333,111.672,84.667,111.672,94.667C111.672,104.667,111.672,111.333,111.672,117.333C111.672,123.333,111.672,128.667,111.672,131.333L111.672,134" id="L_OH_LP_0" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dzsy8selx5rd_flowchart-v2-pointEnd)"></path><path d="M111.672,188L111.672,194.667C111.672,201.333,111.672,214.667,117.926,224.667C124.18,234.667,136.689,241.333,148.609,247.686C160.529,254.04,171.861,260.079,177.527,263.099L183.192,266.119" id="L_LP_DV_1" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dzsy8selx5rd_flowchart-v2-pointEnd)"></path><path d="M355.586,188L355.586,194.667C355.586,201.333,355.586,214.667,349.332,224.667C343.078,234.667,330.569,241.333,318.649,247.686C306.729,254.04,295.397,260.079,289.731,263.099L284.065,266.119" id="L_SM_DV_2" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dzsy8selx5rd_flowchart-v2-pointEnd)"></path><path d="M233.629,318L233.629,324.667C233.629,331.333,233.629,344.667,233.629,354.667C233.629,364.667,233.629,371.333,233.629,377.333C233.629,383.333,233.629,388.667,233.629,391.333L233.629,394" id="L_DV_CP_3" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dzsy8selx5rd_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(111.671875, 98)"><g class="label" transform="translate(-60.96875, -12)"><g><rect class="background" style="" x="-2" y="-2" width="121.9375" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learning</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Model</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(111.671875, 228)"><g class="label" transform="translate(-87.1640625, -12)"><g><rect class="background" style="" x="-2" y="-2" width="174.328125" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(355.5859375, 228)"><g class="label" transform="translate(-87.1640625, -12)"><g><rect class="background" style="" x="-2" y="-2" width="174.328125" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(233.62890625, 358)"><g class="label" transform="translate(-53.3671875, -12)"><g><rect class="background" style="" x="-2" y="-2" width="106.734375" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Rule</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default state " id="flowchart-OH-0" transform="translate(111.671875, 33)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-93.7578125" y="-25" width="187.515625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Outcome</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> History</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-LP-1" transform="translate(111.671875, 163)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-103.671875" y="-25" width="207.34375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learned</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-DV-3" transform="translate(233.62890625, 293)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-95.5078125" y="-25" width="191.015625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Variable</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-SM-4" transform="translate(355.5859375, 163)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-98.2421875" y="-25" width="196.484375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Shown</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Magnitude</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-CP-7" transform="translate(233.62890625, 423)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-99.03125" y="-25" width="198.0625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Choice</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g></g></g></g></svg></div>
+    <div>
+      <p>A utility for each option is still not a choice. The model needs a
+        <span class="key">decision rule</span> that turns the difference between the two utilities
+        into the probability of picking one of them.</p>
+      <p class="note">That probability is what we will later compare against what a participant
+        actually did, which is how the model gets fitted at all.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 ==================================================================== -->
+<section>
+  <h2>A deterministic rule</h2>
+  <div class="cols">
+    <div>
+      <p>If utility of A &gt; utility of B, always choose A.<br>
+         If utility of A &lt; utility of B, always choose B.</p>
+      <p class="note">The step sits at the <span class="key">indifference point</span>, where the
+        two options are worth the same.</p>
+    </div>
+    <div class="discuss fragment">
+      <span class="discuss-label">Discuss with each other</span>
+      <ul>
+        <li>Is a deterministic decision rule the best one in our experiment, and why?</li>
+        <li>How would the experiment need to change to make it a bad rule?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 10 =================================================================== -->
+<section>
+  <h2>A stochastic rule: the softmax</h2>
+  <div class="eq" style="margin:0 0 0.3em">
+    $$\underbrace{P(c_1)}_\textrm{probability of choosing option 1} = \frac{1}{1 + e^{-\beta(u_1 - u_2)}} \tag{Equation 5}$$
+  </div>
+  <figure class="fig" id="fig-softmax">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+</section>
+
+<!-- 11 =================================================================== -->
+<section>
+  <h2>Your turn</h2>
+  <p class="lead">Complete the Colab notebook up to the beginning of Section 2,
+    &ldquo;Creating simulations from the model&rdquo;.</p>
+  <p class="note">You will write the softmax yourself, and see what changing $\beta$ does to the
+    model's choices.</p>
+</section>
+
+<!-- 12 =================================================================== -->
+<section>
+  <h2>What $\beta$ does</h2>
+  <div class="cols narrow-right">
+    <div>
+      <p>$\beta$ is the <span class="key">inverse temperature</span>. The higher it is, the
+        steeper the curve, and the less often the model takes the worse option.</p>
+      <p class="note">The name is an allusion to thermodynamics: a high temperature, meaning a low
+        $\beta$, means particles moving at random, so behaviour is noisier.</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s2/softmax-curve.png" alt="Softmax curves at several inverse temperatures.">
+    </figure>
+  </div>
+</section>
+
+<!-- 13 =================================================================== -->
+<section>
+  <h2>The model's choice probabilities</h2>
+  <figure class="fig" id="fig-choices">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss with each other</span>
+    <ul><li>Why is the choice probability sometimes very different from the learnt reward
+      probability?</li></ul>
+  </div>
+</section>
+
+<!-- 14 =================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part two</p>
+  <h2>Checking the model with simulations</h2>
+</section>
+
+<!-- 15 =================================================================== -->
+<section>
+  <h2>Is the task design appropriate for fitting the model?</h2>
+  <div class="mermaid-figure wide" data-diagram="recovery"><svg id="djmlb0sjpic8" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 1040.828125px;" viewBox="0 0 1040.828125 180.60000610351562" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#djmlb0sjpic8{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;fill:#14171a;}#djmlb0sjpic8 .error-icon{fill:#ffffff;}#djmlb0sjpic8 .error-text{fill:#000000;stroke:#000000;}#djmlb0sjpic8 .edge-thickness-normal{stroke-width:1px;}#djmlb0sjpic8 .edge-thickness-thick{stroke-width:3.5px;}#djmlb0sjpic8 .edge-pattern-solid{stroke-dasharray:0;}#djmlb0sjpic8 .edge-thickness-invisible{stroke-width:0;fill:none;}#djmlb0sjpic8 .edge-pattern-dashed{stroke-dasharray:3;}#djmlb0sjpic8 .edge-pattern-dotted{stroke-dasharray:2;}#djmlb0sjpic8 .marker{fill:#14171a;stroke:#14171a;}#djmlb0sjpic8 .marker.cross{stroke:#14171a;}#djmlb0sjpic8 svg{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;}#djmlb0sjpic8 p{margin:0;}#djmlb0sjpic8 .label{font-family:Inter,Helvetica,Arial,sans-serif;color:#14171a;}#djmlb0sjpic8 .cluster-label text{fill:#000000;}#djmlb0sjpic8 .cluster-label span{color:#000000;}#djmlb0sjpic8 .cluster-label span p{background-color:transparent;}#djmlb0sjpic8 .label text,#djmlb0sjpic8 span{fill:#14171a;color:#14171a;}#djmlb0sjpic8 .node rect,#djmlb0sjpic8 .node circle,#djmlb0sjpic8 .node ellipse,#djmlb0sjpic8 .node polygon,#djmlb0sjpic8 .node path{fill:#f4f6f7;stroke:#14171a;stroke-width:1px;}#djmlb0sjpic8 .rough-node .label text,#djmlb0sjpic8 .node .label text,#djmlb0sjpic8 .image-shape .label,#djmlb0sjpic8 .icon-shape .label{text-anchor:middle;}#djmlb0sjpic8 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#djmlb0sjpic8 .rough-node .label,#djmlb0sjpic8 .node .label,#djmlb0sjpic8 .image-shape .label,#djmlb0sjpic8 .icon-shape .label{text-align:center;}#djmlb0sjpic8 .node.clickable{cursor:pointer;}#djmlb0sjpic8 .root .anchor path{fill:#14171a!important;stroke-width:0;stroke:#14171a;}#djmlb0sjpic8 .arrowheadPath{fill:#0b0b0b;}#djmlb0sjpic8 .edgePath .path{stroke:#14171a;stroke-width:2.0px;}#djmlb0sjpic8 .flowchart-link{stroke:#14171a;fill:none;}#djmlb0sjpic8 .edgeLabel{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#djmlb0sjpic8 .edgeLabel p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);}#djmlb0sjpic8 .edgeLabel rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#djmlb0sjpic8 .labelBkg{background-color:rgba(245.9999999999, 247, 243.9999999999, 0.5);}#djmlb0sjpic8 .cluster rect{fill:#ffffff;stroke:hsl(0, 0%, 90%);stroke-width:1px;}#djmlb0sjpic8 .cluster text{fill:#000000;}#djmlb0sjpic8 .cluster span{color:#000000;}#djmlb0sjpic8 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;background:#ffffff;border:1px solid hsl(0, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#djmlb0sjpic8 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#14171a;}#djmlb0sjpic8 rect.text{fill:none;stroke-width:0;}#djmlb0sjpic8 .icon-shape,#djmlb0sjpic8 .image-shape{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#djmlb0sjpic8 .icon-shape p,#djmlb0sjpic8 .image-shape p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);padding:2px;}#djmlb0sjpic8 .icon-shape rect,#djmlb0sjpic8 .image-shape rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#djmlb0sjpic8 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#djmlb0sjpic8 .state rect{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .state polygon{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .state ellipse{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .state circle{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .state path{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .state tspan{fill:#14171a!important;}#djmlb0sjpic8 .out rect{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .out polygon{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .out ellipse{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .out circle{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .out path{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#djmlb0sjpic8 .out tspan{fill:#14171a!important;}</style><g><marker id="djmlb0sjpic8_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="djmlb0sjpic8_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="djmlb0sjpic8_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="djmlb0sjpic8_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="djmlb0sjpic8_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="djmlb0sjpic8_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M205.719,19.668L210.385,18.624C215.052,17.579,224.385,15.489,231.385,15.031C238.385,14.574,243.052,15.747,247.072,16.758C251.092,17.769,254.466,18.617,256.153,19.041L257.84,19.466" id="L_P_CM_0" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#djmlb0sjpic8_flowchart-v2-pointEnd)"></path><path d="M154.547,131.924L167.742,128.97C180.938,126.016,207.328,120.108,225.541,113.937C243.754,107.767,253.79,101.333,263.264,95.26C272.738,89.186,281.651,83.473,286.107,80.616L290.564,77.759" id="L_T_CM_1" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#djmlb0sjpic8_flowchart-v2-pointEnd)"></path><path d="M431.594,41.8L436.26,41.8C440.927,41.8,450.26,41.8,457.26,41.8C464.26,41.8,468.927,41.8,472.927,41.8C476.927,41.8,480.26,41.8,481.927,41.8L483.594,41.8" id="L_CM_D_2" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#djmlb0sjpic8_flowchart-v2-pointEnd)"></path><path d="M622.281,41.8L626.948,41.8C631.615,41.8,640.948,41.8,647.948,41.8C654.948,41.8,659.615,41.8,663.615,41.8C667.615,41.8,670.948,41.8,672.615,41.8L674.281,41.8" id="L_D_F_3" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#djmlb0sjpic8_flowchart-v2-pointEnd)"></path><path d="M830.656,41.8L835.323,41.8C839.99,41.8,849.323,41.8,856.323,42.031C863.323,42.262,867.99,42.723,871.993,43.119C875.996,43.515,879.336,43.846,881.006,44.011L882.676,44.176" id="L_F_R_4" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#djmlb0sjpic8_flowchart-v2-pointEnd)"></path><path d="M928.906,85.6L917.197,98.433C905.489,111.267,882.073,136.933,853,149.767C823.927,162.6,789.198,162.6,754.469,162.6C719.74,162.6,685.01,162.6,651.755,162.6C618.5,162.6,586.719,162.6,554.938,162.6C523.156,162.6,491.375,162.6,456.661,162.6C421.948,162.6,384.302,162.6,346.656,162.6C309.01,162.6,271.365,162.6,244.928,155.35C218.491,148.1,203.264,133.6,188.52,119.56C173.775,105.519,159.513,91.939,152.382,85.149L145.252,78.358" id="L_R_P_5" class=" edge-thickness-normal edge-pattern-dotted edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#djmlb0sjpic8_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel" transform="translate(554.9375, 162.5999984741211)"><g class="label" transform="translate(-64.5234375, -12)"><g><rect class="background" style="" x="-2" y="-2" width="129.046875" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">do</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> these</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> match?</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default state " id="flowchart-P-24" transform="translate(106.859375, 41.79999923706055)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-98.859375" y="-33.79999923706055" width="197.71875" height="67.5999984741211"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -18.799999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Model</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> parameters</tspan></tspan><tspan class="text-outer-tspan" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">you</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> choose</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-CM-25" transform="translate(346.65625, 41.79999923706055)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-84.9375" y="-33.79999923706055" width="169.875" height="67.5999984741211"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -18.799999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Computational</tspan></tspan><tspan class="text-outer-tspan" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">model</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-T-26" transform="translate(106.859375, 142.5999984741211)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-47.6875" y="-25" width="95.375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Task</tspan></tspan></text></g></g></g><g class="node default out " id="flowchart-D-29" transform="translate(554.9375, 41.79999923706055)"><rect class="basic label-container" style="fill:#eaf1ea !important;stroke:#2e7d32 !important;stroke-width:1.5px !important" x="-67.34375" y="-33.79999923706055" width="134.6875" height="67.5999984741211"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -18.799999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Simulated</tspan></tspan><tspan class="text-outer-tspan" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">data</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-F-31" transform="translate(754.46875, 41.79999923706055)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-76.1875" y="-33.79999923706055" width="152.375" height="67.5999984741211"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -18.799999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Fit</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> the</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> same</tspan></tspan><tspan class="text-outer-tspan" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">model</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> back</tspan></tspan></text></g></g></g><g class="node default out " id="flowchart-R-33" transform="translate(959.7421875, 51.79999923706055)"><rect class="basic label-container" style="fill:#eaf1ea !important;stroke:#2e7d32 !important;stroke-width:1.5px !important" x="-73.0859375" y="-33.79999923706055" width="146.171875" height="67.5999984741211"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -18.799999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Recovered</tspan></tspan><tspan class="text-outer-tspan" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">parameters</tspan></tspan></text></g></g></g></g></g></g></svg></div>
+  <p class="takeaway" style="max-width:46em; font-size:1.12em; margin-top:0.6em">The key
+    advantage of simulating data is that we know the ground truth: we chose the parameters,
+    so we can check whether fitting gets them back. With real participants there is nothing
+    to check against, so this has to be done before anyone is tested.</p>
+  <p class="citation">Palminteri et al., <span class="work">TiCS</span>, 2017 &middot;
+    Wilson &amp; Collins, <span class="work">eLife</span>, 2019</p>
+</section>
+
+<!-- 16 =================================================================== -->
+<section>
+  <h2>How do we check the recovery is working?</h2>
+  <div class="cols narrow-right">
+    <div>
+      <p>Plot the parameter you simulated with against the one you recovered, for many simulated
+        participants. On a task that can measure what you want, the points sit on the diagonal.</p>
+      <div class="discuss" style="margin-top:0.8em">
+        <span class="discuss-label">Discuss</span>
+        <ul><li>What would it mean if they sat on a line that was not the diagonal?</li></ul>
+      </div>
+    </div>
+    <figure>
+      <img src="../assets/img/s2/recovery-scatter.png" alt="Simulated against recovered learning rates and inverse temperatures.">
+    </figure>
+  </div>
+</section>
+
+<!-- 17 =================================================================== -->
+<section>
+  <h2>Overview: the whole pipeline</h2>
+  <div class="cols narrow-left">
+    <div class="mermaid-figure" data-diagram="pipeline-simulate"><svg id="dasdi3wm2m26" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 461.828125px;" viewBox="0 0 461.828125 586" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#dasdi3wm2m26{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;fill:#14171a;}#dasdi3wm2m26 .error-icon{fill:#ffffff;}#dasdi3wm2m26 .error-text{fill:#000000;stroke:#000000;}#dasdi3wm2m26 .edge-thickness-normal{stroke-width:1px;}#dasdi3wm2m26 .edge-thickness-thick{stroke-width:3.5px;}#dasdi3wm2m26 .edge-pattern-solid{stroke-dasharray:0;}#dasdi3wm2m26 .edge-thickness-invisible{stroke-width:0;fill:none;}#dasdi3wm2m26 .edge-pattern-dashed{stroke-dasharray:3;}#dasdi3wm2m26 .edge-pattern-dotted{stroke-dasharray:2;}#dasdi3wm2m26 .marker{fill:#14171a;stroke:#14171a;}#dasdi3wm2m26 .marker.cross{stroke:#14171a;}#dasdi3wm2m26 svg{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;}#dasdi3wm2m26 p{margin:0;}#dasdi3wm2m26 .label{font-family:Inter,Helvetica,Arial,sans-serif;color:#14171a;}#dasdi3wm2m26 .cluster-label text{fill:#000000;}#dasdi3wm2m26 .cluster-label span{color:#000000;}#dasdi3wm2m26 .cluster-label span p{background-color:transparent;}#dasdi3wm2m26 .label text,#dasdi3wm2m26 span{fill:#14171a;color:#14171a;}#dasdi3wm2m26 .node rect,#dasdi3wm2m26 .node circle,#dasdi3wm2m26 .node ellipse,#dasdi3wm2m26 .node polygon,#dasdi3wm2m26 .node path{fill:#f4f6f7;stroke:#14171a;stroke-width:1px;}#dasdi3wm2m26 .rough-node .label text,#dasdi3wm2m26 .node .label text,#dasdi3wm2m26 .image-shape .label,#dasdi3wm2m26 .icon-shape .label{text-anchor:middle;}#dasdi3wm2m26 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#dasdi3wm2m26 .rough-node .label,#dasdi3wm2m26 .node .label,#dasdi3wm2m26 .image-shape .label,#dasdi3wm2m26 .icon-shape .label{text-align:center;}#dasdi3wm2m26 .node.clickable{cursor:pointer;}#dasdi3wm2m26 .root .anchor path{fill:#14171a!important;stroke-width:0;stroke:#14171a;}#dasdi3wm2m26 .arrowheadPath{fill:#0b0b0b;}#dasdi3wm2m26 .edgePath .path{stroke:#14171a;stroke-width:2.0px;}#dasdi3wm2m26 .flowchart-link{stroke:#14171a;fill:none;}#dasdi3wm2m26 .edgeLabel{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dasdi3wm2m26 .edgeLabel p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);}#dasdi3wm2m26 .edgeLabel rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dasdi3wm2m26 .labelBkg{background-color:rgba(245.9999999999, 247, 243.9999999999, 0.5);}#dasdi3wm2m26 .cluster rect{fill:#ffffff;stroke:hsl(0, 0%, 90%);stroke-width:1px;}#dasdi3wm2m26 .cluster text{fill:#000000;}#dasdi3wm2m26 .cluster span{color:#000000;}#dasdi3wm2m26 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;background:#ffffff;border:1px solid hsl(0, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#dasdi3wm2m26 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#14171a;}#dasdi3wm2m26 rect.text{fill:none;stroke-width:0;}#dasdi3wm2m26 .icon-shape,#dasdi3wm2m26 .image-shape{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dasdi3wm2m26 .icon-shape p,#dasdi3wm2m26 .image-shape p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);padding:2px;}#dasdi3wm2m26 .icon-shape rect,#dasdi3wm2m26 .image-shape rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dasdi3wm2m26 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#dasdi3wm2m26 .state rect{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .state polygon{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .state ellipse{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .state circle{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .state path{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .state tspan{fill:#14171a!important;}#dasdi3wm2m26 .out rect{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .out polygon{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .out ellipse{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .out circle{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .out path{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dasdi3wm2m26 .out tspan{fill:#14171a!important;}</style><g><marker id="dasdi3wm2m26_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dasdi3wm2m26_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dasdi3wm2m26_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dasdi3wm2m26_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dasdi3wm2m26_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="dasdi3wm2m26_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M111.672,58L111.672,64.667C111.672,71.333,111.672,84.667,111.672,94.667C111.672,104.667,111.672,111.333,111.672,117.333C111.672,123.333,111.672,128.667,111.672,131.333L111.672,134" id="L_OH_LP_0" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dasdi3wm2m26_flowchart-v2-pointEnd)"></path><path d="M111.672,188L111.672,194.667C111.672,201.333,111.672,214.667,117.926,224.667C124.18,234.667,136.689,241.333,148.609,247.686C160.529,254.04,171.861,260.079,177.527,263.099L183.192,266.119" id="L_LP_DV_1" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dasdi3wm2m26_flowchart-v2-pointEnd)"></path><path d="M355.586,188L355.586,194.667C355.586,201.333,355.586,214.667,349.332,224.667C343.078,234.667,330.569,241.333,318.649,247.686C306.729,254.04,295.397,260.079,289.731,263.099L284.065,266.119" id="L_SM_DV_2" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dasdi3wm2m26_flowchart-v2-pointEnd)"></path><path d="M233.629,318L233.629,324.667C233.629,331.333,233.629,344.667,233.629,354.667C233.629,364.667,233.629,371.333,233.629,377.333C233.629,383.333,233.629,388.667,233.629,391.333L233.629,394" id="L_DV_CP_3" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dasdi3wm2m26_flowchart-v2-pointEnd)"></path><path d="M233.629,448L233.629,454.667C233.629,461.333,233.629,474.667,233.629,484.667C233.629,494.667,233.629,501.333,233.629,507.333C233.629,513.333,233.629,518.667,233.629,521.333L233.629,524" id="L_CP_MC_4" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dasdi3wm2m26_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(111.671875, 98)"><g class="label" transform="translate(-60.96875, -12)"><g><rect class="background" style="" x="-2" y="-2" width="121.9375" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learning</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Model</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(111.671875, 228)"><g class="label" transform="translate(-87.1640625, -12)"><g><rect class="background" style="" x="-2" y="-2" width="174.328125" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(355.5859375, 228)"><g class="label" transform="translate(-87.1640625, -12)"><g><rect class="background" style="" x="-2" y="-2" width="174.328125" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(233.62890625, 358)"><g class="label" transform="translate(-86.71875, -12)"><g><rect class="background" style="" x="-2" y="-2" width="173.4375" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Softmax</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Rule</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(233.62890625, 488)"><g class="label" transform="translate(-41.3203125, -12)"><g><rect class="background" style="" x="-2" y="-2" width="82.640625" height="24"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Simulation</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default state " id="flowchart-OH-8" transform="translate(111.671875, 33)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-93.7578125" y="-25" width="187.515625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Outcome</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> History</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-LP-9" transform="translate(111.671875, 163)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-103.671875" y="-25" width="207.34375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learned</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-DV-11" transform="translate(233.62890625, 293)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-95.5078125" y="-25" width="191.015625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Variable</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-SM-12" transform="translate(355.5859375, 163)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-98.2421875" y="-25" width="196.484375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Shown</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Magnitude</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-CP-15" transform="translate(233.62890625, 423)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-99.03125" y="-25" width="198.0625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Choice</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g><g class="node default out " id="flowchart-MC-17" transform="translate(233.62890625, 553)"><rect class="basic label-container" style="fill:#eaf1ea !important;stroke:#2e7d32 !important;stroke-width:1.5px !important" x="-86.5390625" y="-25" width="173.078125" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Model</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Choices</tspan></tspan></text></g></g></g></g></g></g></svg></div>
+    <div class="stack-tight">
+      <p><strong>Session 1.</strong> A reinforcement learner, free parameter $\alpha$.</p>
+      <p><strong>Session 2.</strong> Combine magnitude and probability into a utility, then feed
+        the difference in utility into a softmax with free parameter $\beta$.</p>
+      <p><strong>Session 2.</strong> To simulate a choice, compare the choice probability against
+        a random number.</p>
+      <p class="note">Later, a learner with two learning rates, $\alpha_S$ and $\alpha_V$, one for
+        each block.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 18 =================================================================== -->
+<section>
+  <h2>Model falsification: stable against volatile</h2>
+  <div class="cols">
+    <figure>
+      <img src="../assets/img/s2/falsification-same.png" alt="Recovered learning rates when the simulation used one learning rate.">
+      <figcaption>Simulated with <strong>one</strong> learning rate: the recovered rates should
+        not differ between blocks.</figcaption>
+    </figure>
+    <figure>
+      <img src="../assets/img/s2/falsification-diff.png" alt="Recovered learning rates when the simulation used two learning rates.">
+      <figcaption>Simulated with <strong>two</strong>: the difference should come back out.</figcaption>
+    </figure>
+  </div>
+  <div class="discuss fragment" style="margin-top:0.4em">
+    <span class="discuss-label">Discuss with each other</span>
+    <ul><li>Why do we need to simulate data for our hypothesis being both true and false? How could
+      we otherwise misread the real data?</li></ul>
+  </div>
+</section>
+
+<!-- 19 =================================================================== -->
+<section>
+  <h2>Why might recovery or falsification fail?</h2>
+  <ul>
+    <li class="fragment" data-fragment-index="1">Too few trials &mdash; say 20 stable and 20
+      volatile</li>
+    <li class="fragment" data-fragment-index="2">Too little or too much variance in the relevant
+      variables &mdash; only stable blocks, or blocks that switch every 5 trials</li>
+  </ul>
+  <p class="note fragment" data-fragment-index="2" style="margin-top:1em">Either way you find out
+    before collecting a single participant, which is the whole point of doing it first.</p>
+  <p class="citation">Palminteri et al., <span class="work">TiCS</span>, 2017</p>
+</section>
+
+<!-- 20 =================================================================== -->
+<section>
+  <h2>Simulating our hypothesis as false</h2>
+  <div class="cols narrow-right">
+    <div>
+      <p>Simulate every participant with a <strong>single</strong> $\alpha$ across both blocks,
+        then fit the two-learning-rate model to the result.</p>
+      <p class="note">If the fitting invents a difference that was never there, a difference in the
+        real data would mean nothing.</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s2/sim-one-alpha.png" alt="Simulation pipeline with one learning rate feeding a two learning rate fit.">
+    </figure>
+  </div>
+</section>
+
+<!-- 21 =================================================================== -->
+<section>
+  <h2>Simulating our hypothesis as true</h2>
+  <div class="cols narrow-right">
+    <div>
+      <p>Now simulate with <strong>two</strong> learning rates, $\alpha_S$ in the stable block and
+        $\alpha_V$ in the volatile one, and fit the same model.</p>
+      <p class="note">If the difference does not come back out, the task cannot measure the thing
+        the whole study is about.</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s2/sim-two-alphas.png" alt="Simulation pipeline with two learning rates feeding a two learning rate fit.">
+    </figure>
+  </div>
+</section>
+
+<!-- 22 =================================================================== -->
+<section>
+  <h2>Over to you</h2>
+  <p class="lead">Complete the remaining exercises in the Colab notebook.</p>
+  <p class="note">You will run both simulations and see whether the task can tell them apart.</p>
+</section>
+
+<!-- 23 =================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part three</p>
+  <h2>Fitting a model</h2>
+</section>
+
+<!-- 24 =================================================================== -->
+<section>
+  <h2>What makes a good fit?</h2>
+  <p class="lead">A good fit assigns a high choice probability to the choices the participant
+    actually made.</p>
+  <p>So for a given $\alpha$ and $\beta$ we can compute, trial by trial, how likely the model
+    thought the observed choice was &mdash; and multiply those together across trials.</p>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>Why might multiplying hundreds of probabilities together be a problem on a computer?</li></ul>
+  </div>
+</section>
+
+<!-- 25 =================================================================== -->
+<section>
+  <h2>The (negative) log likelihood</h2>
+  <div class="eq">
+    $$\underbrace{\log L}_\textrm{log likelihood} = \sum_{t} \log \underbrace{P(c_t \mid \alpha, \beta)}_\textrm{probability the model gave the observed choice} \tag{Equation 6}$$
+  </div>
+  <p class="eq-where">Taking logs turns the product into a sum, which stays representable. Fitting
+    maximises this, or equivalently minimises its negative.</p>
+  <div class="discuss fragment" style="margin-top:0.6em">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>Which trials dominate the sum, and why is that a good thing?</li></ul>
+  </div>
+</section>
+
+<!-- 26 =================================================================== -->
+<section>
+  <h2>Grid search: the likelihood landscape</h2>
+  <figure class="fig" id="fig-likelihood">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+</section>
+
+<!-- 27 =================================================================== -->
+<section>
+  <h2>Why not always use grid search?</h2>
+  <ul>
+    <li>It spends most of its time computing the error in parts of the parameter space that are
+      obviously wrong</li>
+    <li>It becomes intractable with many parameters: if two parameters give 100 combinations, four
+      give 10,000</li>
+    <li>There are ways to find the maximum without measuring every single point</li>
+    <li>Those ways can get stuck in a local maximum, so they are run from several starting points</li>
+  </ul>
+</section>
+
+<!-- 28 =================================================================== -->
+<section>
+  <h2>One intuitive trick: gradient ascent</h2>
+  <div class="cols narrow-right">
+    <div>
+      <p>Start somewhere on the landscape, work out which way is uphill, take a step, and repeat
+        until the ground is flat.</p>
+      <p class="note">This is what the fitting routine in the notebook does, from ten different
+        starting points, keeping whichever run ends highest.</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s2/gradient-descent.png" alt="Gradient ascent stepping uphill on a likelihood surface.">
+    </figure>
+  </div>
+</section>
+
+<!-- 29 =================================================================== -->
+<section>
+  <h2>Validating the model: correlating parameters</h2>
+  <div class="cols narrow-right">
+    <div>
+      <p>Plot each simulated parameter against its recovered value. The closer to the diagonal, the
+        better the task measures that parameter.</p>
+      <div class="discuss" style="margin-top:0.8em">
+        <span class="discuss-label">Discuss</span>
+        <ul><li>What did you notice about the outlying points, and what explains them?</li></ul>
+      </div>
+    </div>
+    <figure>
+      <img src="../assets/img/s2/recovery-scatter.png" alt="Simulated against recovered parameters.">
+    </figure>
+  </div>
+</section>
+
+<!-- 30 =================================================================== -->
+<section>
+  <h2>Validating the model: falsification</h2>
+  <div class="cols">
+    <figure>
+      <img src="../assets/img/s2/falsification-diff.png" alt="Recovered learning rates from a simulation with different rates.">
+      <figcaption>Simulated with <strong>different</strong> learning rates</figcaption>
+    </figure>
+    <figure>
+      <img src="../assets/img/s2/falsification-same.png" alt="Recovered learning rates from a simulation with the same rate.">
+      <figcaption>Simulated with the <strong>same</strong> learning rate</figcaption>
+    </figure>
+  </div>
+  <p class="note" style="margin-top:0.4em">Together these say the task can find the effect when it
+    is there, and does not invent it when it is not.</p>
+</section>
+
+<!-- 31 =================================================================== -->
+<section>
+  <h2>Before next week</h2>
+  <ul>
+    <li>Finish the Session 2 notebook, including the optional regression section if you have time</li>
+    <li>Answer the four exercise questions and bring them to session 3</li>
+  </ul>
+  <div class="cols narrow-right" style="margin-top:0.8em">
+    <p class="note">The optional section shows that the model can be written as a logistic
+      regression, with the regression weights standing in for $\alpha$ and $\beta$.</p>
+    <figure>
+      <img src="../assets/img/s2/regression-weights.png" alt="Regression weights on the outcomes of the previous five trials." style="max-height:150px">
+    </figure>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script type="module">
+  import { initDeck } from '../assets/deck.js';
+  initDeck({ title: 'Computational modelling of decision making and action selection &middot; Advanced Lab &middot; Session 2' });
+  await import('./figures.js');
+</script>
+</body>
+</html>

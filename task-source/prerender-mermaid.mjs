@@ -22,7 +22,8 @@ if (!files.length) { console.log('no .mmd files'); process.exit(0); }
 const browser = await puppeteer.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: 'new' });
 const page = await browser.newPage();
-await page.goto('http://localhost:8731/session1/', { waitUntil: 'networkidle0' });
+const deckName = deck.replace(/\/$/, '').split('/').pop();
+await page.goto(`http://localhost:8731/${deckName}/`, { waitUntil: 'networkidle0' });
 await page.evaluate(() => document.fonts.ready);
 
 for (const file of files) {
@@ -49,7 +50,8 @@ for (const file of files) {
     console.error(`mermaid failed on ${file}:\n${src}`); process.exit(1);
   }
 
-  const re = new RegExp(`(<div class="mermaid-figure" data-diagram="${name}">)[\\s\\S]*?(</div>)`);
+  // the placeholder may carry extra classes, such as "wide"
+  const re = new RegExp(`(<div class="mermaid-figure[^"]*" data-diagram="${name}">)[\\s\\S]*?(</div>)`);
   if (!re.test(html)) { console.error(`no placeholder for "${name}" in ${htmlPath}`); process.exit(1); }
   html = html.replace(re, `$1${svg}$2`);
   console.log(`rendered ${file}`);

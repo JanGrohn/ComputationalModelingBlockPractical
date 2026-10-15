@@ -276,6 +276,8 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
    task-source/prerender-mermaid.mjs, so nothing has to run at display time */
 .mermaid-figure { text-align: center; }
 .mermaid-figure svg { max-width: 100%; height: auto; }
+/* a wide diagram given the whole slide rather than a column */
+.mermaid-figure.wide svg { max-height: 300px; }
 
 /* --- a box that appears on click, with its text there from the start ----- */
 

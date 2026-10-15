@@ -1,0 +1,12 @@
+flowchart LR
+  P["Model parameters<br>you choose"] --> CM["Computational<br>model"]
+  T["Task"] --> CM
+  CM --> D["Simulated<br>data"]
+  D --> F["Fit the same<br>model back"]
+  F --> R["Recovered<br>parameters"]
+  R -. "do these match?" .-> P
+
+  classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
+  classDef out fill:#eaf1ea,stroke:#2e7d32,stroke-width:1.5px,color:#14171a;
+  class P,T,CM,F state;
+  class D,R out;
