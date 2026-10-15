@@ -29,7 +29,9 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 await page.setViewport({ width: 1280, height: 900 });
-await page.goto('http://localhost:8799/', { waitUntil: 'networkidle0' });
+const target = process.argv[2] ?? 'http://localhost:8799/';
+console.log(`testing ${target}`);
+await page.goto(target, { waitUntil: 'networkidle0' });
 
 const clickText = async (text) => {
   await page.waitForFunction(
