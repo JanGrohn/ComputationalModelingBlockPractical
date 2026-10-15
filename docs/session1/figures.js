@@ -103,15 +103,16 @@ const reversal = {
         shapes: [{ type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: 100, y0: 0, y1: 1,
                    fillcolor: '#000', opacity: 0.035, line: { width: 0 }, layer: 'below' }],
         annotations: scheduleLabels(trueProbability.length, trueProbability, probOpt1).concat([
-          { x: 50,  y: 1.04, xref: 'x', yref: 'paper', text: 'reversals every 25 trials', showarrow: false,
-            font: { size: 12, color: COL.muted } },
-          { x: 150, y: 1.04, xref: 'x', yref: 'paper', text: 'stable', showarrow: false,
-            font: { size: 12, color: COL.muted } },
+          { x: 50,  y: 1.15, text: 'volatile', showarrow: false,
+            font: { size: 13, color: COL.ink } },
+          { x: 150, y: 1.15, text: 'stable', showarrow: false,
+            font: { size: 13, color: COL.ink } },
         ]),
       }), CONFIG);
     },
-    note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}. The first 100 trials reverse `
-                 + `every 25 trials; the last 100 are stable.`,
+    note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}. The reward probability `
+                 + `reverses every 25 trials in the volatile block (shaded) and holds steady in `
+                 + `the stable block.`,
   },
 };
 

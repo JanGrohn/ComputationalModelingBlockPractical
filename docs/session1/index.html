@@ -55,9 +55,9 @@
 <!-- 3 ==================================================================== -->
 <section>
   <h2>Why build a model?</h2>
-  <div class="discuss fragment">
+  <div class="discuss">
     <span class="discuss-label">Discuss with each other</span>
-    <ul>
+    <ul class="fragment">
       <li>What models have you come across in your course so far?</li>
       <li>What has modelling taught us about behaviour?</li>
       <li>What has modelling taught us about the brain?</li>
@@ -70,15 +70,15 @@
 <section>
   <h2>Why build a model?</h2>
   <div class="cols narrow-right">
-    <ul class="stack-tight">
-      <li>To make inferences about latent causes of behaviour that we cannot observe directly</li>
+    <ul class="stack-tight" style="font-size:0.92em">
+      <li class="marked">To make inferences about latent causes of behaviour that we cannot observe directly</li>
       <li>To get closer to a simplified form of people's cognitive processes</li>
       <li>Because we want to infer latent variables and mechanisms</li>
-      <li>To say something about the computations involved in completing a task</li>
+      <li class="marked">To say something about the computations involved in completing a task</li>
       <li>To infer what is really happening inside the black box</li>
       <li>To create order in the universe</li>
       <li>Models let us ask questions that are hard to answer with experiments</li>
-      <li>To quantify evidence for our theories and hypotheses</li>
+      <li class="marked">To quantify evidence for our theories and hypotheses</li>
     </ul>
     <figure>
       <img src="../assets/img/s1/brain-circuit.png" alt="A brain, half anatomical and half printed circuit.">
@@ -94,7 +94,7 @@
     <li>Understand some simple maths behind the model (GCSE level)</li>
     <li>Understand what the parameters and variables in the model mean</li>
   </ol>
-  <div class="fragment" style="margin-top:0.7em">
+  <div class="fragment" data-fragment-index="1" style="margin-top:0.7em">
     <ul class="stack-tight">
       <li><strong>Computational theory.</strong> What is the goal of the computation? Why is it
         appropriate, and what is the logic of the strategy by which it can be carried out?</li>
@@ -104,7 +104,7 @@
         realised physically?</li>
     </ul>
   </div>
-  <p class="citation fragment">Marr &amp; Poggio, <em>Vision</em>, 1982</p>
+  <p class="citation fragment" data-fragment-index="1">Marr &amp; Poggio, <em>Vision</em>, 1982</p>
 </section>
 
 <!-- 6 ==================================================================== -->
@@ -114,16 +114,16 @@
     <div class="stack-tight">
       <p><strong>Computation.</strong> The goal of a cash register is to do arithmetic, so we need
         a theory of addition, subtraction, and so on.</p>
-      <p class="fragment"><strong>Algorithm.</strong> It uses Arabic numerals, not Roman ones &mdash;
-        so algorithms for addition that operate on Arabic numerals: add the last digit first, carry
-        if the sum exceeds 9, and so on.</p>
-      <p class="fragment"><em>Even if the computational goal is the same, the algorithm can be
-        very different.</em></p>
-      <p class="fragment"><strong>Implementation.</strong> The cash register may be mechanical, with
-        each number a notch on a circular wheel, or electrical, with binary numbers stored in the
-        wires and transistors of a circuit.</p>
-      <p class="fragment"><em>Even if the algorithm is the same, the implementation can be very
-        different.</em></p>
+      <p class="fragment" data-fragment-index="1"><strong>Algorithm.</strong> It uses Arabic
+        numerals, not Roman ones &mdash; so algorithms for addition that operate on Arabic numerals:
+        add the last digit first, carry if the sum exceeds 9, and so on.</p>
+      <p class="fragment" data-fragment-index="1"><em>Even if the computational goal is the same,
+        the algorithm can be very different.</em></p>
+      <p class="fragment" data-fragment-index="2"><strong>Implementation.</strong> The cash register
+        may be mechanical, with each number a notch on a circular wheel, or electrical, with binary
+        numbers stored in the wires and transistors of a circuit.</p>
+      <p class="fragment" data-fragment-index="2"><em>Even if the algorithm is the same, the
+        implementation can be very different.</em></p>
     </div>
     <figure>
       <img src="../assets/img/s1/cash-register.png" alt="A cash register.">
@@ -153,29 +153,34 @@
 <!-- 8 ==================================================================== -->
 <section>
   <h2>What measurements do we obtain from participants in our task?</h2>
-  <div class="cols narrow-right">
-    <div>
-      <ul class="fragment stack-tight">
-        <li>Reaction times (milliseconds)</li>
-        <li>Choice (right or left, green or orange)</li>
-      </ul>
-      <p class="fragment takeaway" style="margin-top:1em"><strong>Problem.</strong> Reaction time
-        and choice data cannot tell us how fast participants learn, or how much they weigh reward
-        magnitude against probability.</p>
-    </div>
-    <figure class="fragment">
+  <div class="measure">
+    <figure class="measure-photo">
       <img src="../assets/img/s1/button-box.jpg" alt="A two-button response box with its cable.">
     </figure>
+    <div class="measure-arrow fragment" data-fragment-index="1" aria-hidden="true">
+      <svg viewBox="0 0 120 40" width="120" height="40">
+        <defs><marker id="m8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#5b6670"/></marker></defs>
+        <path d="M4,20 L104,20" stroke="#5b6670" stroke-width="3" fill="none" marker-end="url(#m8)"/>
+      </svg>
+    </div>
+    <div class="measure-what fragment" data-fragment-index="1">
+      <p>Reaction times, in milliseconds</p>
+      <p>Which option was chosen, left or right</p>
+    </div>
   </div>
+  <p class="takeaway fragment" data-fragment-index="2" style="max-width:46em">
+    <strong>Problem.</strong> Reaction time and choice data cannot tell us how fast participants
+    learn, or how much they weigh reward magnitude against probability.</p>
 </section>
 
 <!-- 9 ==================================================================== -->
 <section>
   <h2>Why learn to code?</h2>
   <p class="lead">Building models often needs you to code them up&hellip;</p>
-  <div class="discuss fragment">
+  <div class="discuss">
     <span class="discuss-label">Discuss with each other</span>
-    <ul>
+    <ul class="fragment">
       <li>How will it help you if you want to do research?</li>
       <li>How will it help you if you want to pursue other careers?</li>
     </ul>
@@ -251,12 +256,13 @@
 <!-- 17 =================================================================== -->
 <section>
   <h2>Task recap</h2>
-  <figure>
-    <img src="../assets/img/s1/task-screen.png" alt="The task screen: a green deer worth 31 points beside an orange heron worth 66 points." style="max-height:400px">
-    <figcaption>Two options, each showing the points on offer this trial. How likely each is to
-      pay out has to be learnt from experience.</figcaption>
-  </figure>
-  <p class="citation">Behrens et al., <em>Nature Neuroscience</em>, 2007</p>
+  <div id="task-demo"></div>
+  <p class="note" style="text-align:center; margin-top:0.5em">
+    Points are redrawn at random every trial; which option pays out has to be learnt. The first
+    six trials are stable, after which the contingency starts reversing.</p>
+  <p class="fig-print-note">A few trials of the task, played live on the slide: the green and the
+    orange option each show the points on offer, and only one of them is rewarded on any trial.
+    The full experiment is at jangrohn.github.io/volatility_study.</p>
 </section>
 
 <!-- 18 =================================================================== -->
@@ -318,35 +324,38 @@
   <h2>Expanding the model: integrating probabilities with magnitudes</h2>
   <div class="cols narrow-left">
     <div>
-      <!-- the model schematic, redrawn from the shapes on the original slide -->
-      <svg viewBox="0 0 440 310" width="100%" role="img"
-           aria-label="Outcome history feeds a learning model, which produces a learned probability. That and the shown magnitude feed a stage combining value dimensions, which gives a decision variable.">
+      <!-- the model schematic, redrawn from the original slide -->
+      <svg viewBox="0 0 500 300" width="100%" role="img"
+           aria-label="Outcome history feeds down into learned probability; that arrow is the learning model. Learned probability and shown magnitude then both feed into decision variable; those two arrows are the combining of value dimensions.">
         <defs>
-          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="#5b6670"/>
+          <marker id="ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#14171a"/>
           </marker>
         </defs>
-        <g font-family="Inter, sans-serif" font-size="13" fill="#14171a">
-          <rect x="18"  y="4"   width="150" height="32" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
-          <text x="93"  y="25"  text-anchor="middle">Outcome history</text>
-          <rect x="108" y="62"  width="140" height="32" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
-          <text x="178" y="83"  text-anchor="middle">Learning model</text>
-          <rect x="8"   y="120" width="170" height="32" rx="5" fill="#eaf1ea" stroke="#9cc49e"/>
-          <text x="93"  y="141" text-anchor="middle">Learned probability</text>
-          <rect x="8"   y="236" width="170" height="32" rx="5" fill="#fdf0e4" stroke="#e8a86a"/>
-          <text x="93"  y="257" text-anchor="middle">Shown magnitude</text>
-          <rect x="212" y="158" width="104" height="50" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
-          <text x="264" y="178" text-anchor="middle">Combining</text>
-          <text x="264" y="196" text-anchor="middle">value dims</text>
-          <rect x="272" y="248" width="156" height="32" rx="5" fill="#f4f6f7" stroke="#c9d0d5"/>
-          <text x="350" y="269" text-anchor="middle">Decision variable</text>
-          <g stroke="#5b6670" stroke-width="1.4" fill="none" marker-end="url(#ar)">
-            <path d="M120,36 L162,60"/>
-            <path d="M162,96 L112,118"/>
-            <path d="M178,137 L210,168"/>
-            <path d="M178,252 L210,204"/>
-            <path d="M266,210 L304,246"/>
+        <g font-family="Inter, sans-serif" font-size="15" fill="#14171a">
+          <rect x="22"  y="4"   width="172" height="40" fill="none" stroke="#14171a" stroke-width="1.6"/>
+          <text x="108" y="30"  text-anchor="middle">Outcome History</text>
+
+          <rect x="4"   y="140" width="208" height="40" fill="none" stroke="#14171a" stroke-width="1.6"/>
+          <text x="108" y="166" text-anchor="middle">Learned Probability</text>
+
+          <rect x="4"   y="252" width="208" height="40" fill="none" stroke="#14171a" stroke-width="1.6"/>
+          <text x="108" y="278" text-anchor="middle" font-weight="600">Shown Magnitude</text>
+
+          <rect x="330" y="196" width="166" height="40" fill="none" stroke="#14171a" stroke-width="1.6"/>
+          <text x="413" y="222" text-anchor="middle" font-weight="600">Decision Variable</text>
+
+          <!-- the arrows, each carrying the name of the process it performs -->
+          <g stroke="#14171a" stroke-width="3.2" fill="none" marker-end="url(#ar)">
+            <path d="M108,46 L108,134"/>
+            <path d="M214,178 L326,206"/>
+            <path d="M214,258 L326,228"/>
           </g>
+          <text x="124" y="97">Learning Model</text>
+          <!-- knocked out of the arrows behind it, as on the original slide -->
+          <rect x="194" y="195" width="108" height="44" fill="#fff"/>
+          <text x="248" y="212" text-anchor="middle" font-weight="600">Combining</text>
+          <text x="248" y="230" text-anchor="middle" font-weight="600">Value Dims</text>
         </g>
       </svg>
     </div>
@@ -423,6 +432,8 @@
   import { initDeck } from '../assets/deck.js';
   initDeck({ title: 'Session 1 &middot; Computational modelling block practical' });
   await import('./figures.js');
+  const { playableTask } = await import('./task.js');
+  playableTask('task-demo');
 </script>
 </body>
 </html>

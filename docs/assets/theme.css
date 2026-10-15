@@ -158,6 +158,59 @@ figcaption {
   line-height: 1.4;
 }
 
+/* --- a point the original slide drew a box around --------------------- */
+
+.reveal li.marked {
+  border: 1.5px solid var(--faint);
+  border-radius: 6px;
+  padding: 0.22em 0.6em 0.22em 1.1em;
+  margin-left: -0.5em;
+}
+.reveal li.marked::before { left: 0.45em; background: var(--ink); }
+
+/* --- photo, arrow, consequence ----------------------------------------- */
+
+.measure {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0 1.1em;
+  align-items: center;
+  margin: 0.4em 0 0.8em;
+}
+.measure-photo img { max-height: 290px; }
+.measure-arrow { display: flex; justify-content: center; }
+.measure-what p { margin-bottom: 0.5em; font-size: 1.05em; }
+
+/* --- a few playable trials --------------------------------------------- */
+
+.task-board { text-align: center; }
+.task-cards { display: flex; justify-content: center; gap: 2.6em; margin-bottom: 0.6em; }
+.task-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  width: 270px;
+  padding: 0.9em 0.7em 0.6em;
+  background: #fff;
+  border: 1.5px solid var(--rule);
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.task-card:hover:not(:disabled) { border-color: var(--faint); box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+.task-card:disabled { cursor: default; }
+.task-card img { height: 190px; width: auto; }
+.task-points { font-size: 1.5em; font-family: var(--serif); }
+/* the outcome is shown with a word as well as a tint, never a tint alone */
+.task-card[data-result="rewarded"]     { border-color: var(--opt1); background: #f2f8f2; }
+.task-card[data-result="not-rewarded"] { border-color: var(--rule); opacity: 0.55; }
+.task-feedback { min-height: 1.5em; margin: 0; font-size: 0.95em; color: var(--muted); }
+.task-feedback[data-outcome="win"]  { color: var(--opt1-text); font-weight: 600; }
+.task-feedback[data-outcome="loss"] { color: var(--muted); }
+.task-status { font-size: 0.82em; color: var(--faint); margin: 0.2em 0 0; }
+
 /* --- discussion prompt ---------------------------------------------------
    A tinted panel, not a coloured bar. Carries a label so that it still reads
    as a prompt in a greyscale print-out. */
@@ -316,10 +369,10 @@ figcaption {
 
 .citation {
   position: absolute;
-  bottom: 34px;
+  bottom: 36px;
   left: 0;
-  font-size: 13px;
-  color: var(--faint);
+  font-size: 17px;
+  color: var(--muted);
   font-style: italic;
 }
 
