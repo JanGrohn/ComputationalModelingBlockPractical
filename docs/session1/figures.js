@@ -18,15 +18,42 @@ const trials = (n) => Array.from({ length: n }, (_, i) => i);
 
 /* --- 1. a fixed 80% schedule, and what the learner makes of it ------------ */
 
+/**
+ * Traces for a schedule plot. The series are labelled on the plot itself
+ * rather than in a legend or a caption: Tufte's rule for the data, and Mayer's
+ * spatial-contiguity principle, both say the name belongs next to the thing it
+ * names, not in a key the eye has to travel to and hold in memory.
+ *
+ * The two lines also differ in dash pattern, so nothing here is carried by
+ * colour alone.
+ */
 function scheduleTrace(opt1Rewarded, trueProbability, probOpt1) {
   const x = trials(opt1Rewarded.length);
   return [
     { x, y: opt1Rewarded, mode: 'markers', name: 'outcome',
-      marker: { size: 5, color: COL.faint } },
+      marker: { size: 5, color: COL.faint, symbol: 'line-ew-open', line: { width: 1.5, color: COL.faint } },
+      hovertemplate: 'trial %{x}<br>%{y}<extra></extra>' },
     { x, y: trueProbability, mode: 'lines', name: 'true probability',
-      line: { color: COL.ink, dash: 'dash', width: 1.5 } },
+      line: { color: COL.ink, dash: 'dash', width: 1.5 },
+      hovertemplate: 'true probability %{y:.2f}<extra></extra>' },
     { x, y: Array.from(probOpt1), mode: 'lines', name: 'model estimate',
-      line: { color: COL.opt1, width: 2.5 } },
+      line: { color: COL.opt1, width: 2.5 },
+      hovertemplate: 'trial %{x}<br>model estimate %{y:.2f}<extra></extra>' },
+  ];
+}
+
+/** Labels placed on the data, with the y taken from the series itself. */
+function scheduleLabels(n, trueProbability, probOpt1) {
+  const at = Math.round(n * 0.34);
+  const lift = probOpt1[at] < trueProbability[at] ? -0.11 : 0.11;
+  return [
+    { x: n * 0.97, y: trueProbability[n - 1] + 0.1, xanchor: 'right', showarrow: false,
+      text: 'true probability', font: { size: 12, color: COL.ink } },
+    { x: at, y: probOpt1[at] + lift, xanchor: 'left', showarrow: false,
+      text: "model's estimate", font: { size: 12, color: COL.opt1 } },
+    { x: 0, y: 1.0, xanchor: 'left', yanchor: 'bottom', showarrow: false,
+      text: 'ticks at 1 = option 1 rewarded, at 0 = option 2 rewarded',
+      font: { size: 11, color: COL.muted } },
   ];
 }
 
@@ -46,13 +73,14 @@ const fixedSchedule = {
       plotly().react(el, scheduleTrace(opt1Rewarded, trueProbability, probOpt1), layout({
         width: 1080, height: 330,
         xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0, n] }),
-        yaxis: Object.assign(layout().yaxis, { title: 'P(option 1 rewarded)', range: [-0.05, 1.05] }),
+        yaxis: Object.assign(layout().yaxis, { title: 'P(option 1 rewarded)', range: [-0.05, 1.18] }),
+        annotations: scheduleLabels(n, trueProbability, probOpt1),
       }), CONFIG);
     },
     note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}, a starting estimate of `
                  + `${v.startingProb.toFixed(2)} and a true reward probability of ${v.trueProb.toFixed(2)}. `
-                 + `Grey dots are the trial outcomes, the dashed line the true probability, `
-                 + `the green line the model's running estimate.`,
+                 + `Ticks along the top and bottom are the trial outcomes, the dashed line the `
+                 + `true probability, the green line the model's running estimate.`,
   },
 };
 
@@ -71,15 +99,15 @@ const reversal = {
       plotly().react(el, scheduleTrace(opt1Rewarded, trueProbability, probOpt1), layout({
         width: 1080, height: 330,
         xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0, trueProbability.length] }),
-        yaxis: Object.assign(layout().yaxis, { title: 'P(option 1 rewarded)', range: [-0.05, 1.05] }),
+        yaxis: Object.assign(layout().yaxis, { title: 'P(option 1 rewarded)', range: [-0.05, 1.18] }),
         shapes: [{ type: 'rect', xref: 'x', yref: 'paper', x0: 0, x1: 100, y0: 0, y1: 1,
                    fillcolor: '#000', opacity: 0.035, line: { width: 0 }, layer: 'below' }],
-        annotations: [
-          { x: 50,  y: 1.06, xref: 'x', yref: 'paper', text: 'reversals every 25 trials', showarrow: false,
+        annotations: scheduleLabels(trueProbability.length, trueProbability, probOpt1).concat([
+          { x: 50,  y: 1.04, xref: 'x', yref: 'paper', text: 'reversals every 25 trials', showarrow: false,
             font: { size: 12, color: COL.muted } },
-          { x: 150, y: 1.06, xref: 'x', yref: 'paper', text: 'stable', showarrow: false,
+          { x: 150, y: 1.04, xref: 'x', yref: 'paper', text: 'stable', showarrow: false,
             font: { size: 12, color: COL.muted } },
-        ],
+        ]),
       }), CONFIG);
     },
     note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}. The first 100 trials reverse `
@@ -156,7 +184,12 @@ const weights = {
       }], layout({
         width: 700, height: 250,
         bargap: 0.35,
-        xaxis: Object.assign(layout().xaxis, { title: 'trials into the past', dtick: 5 }),
+        annotations: [{
+          x: -1, y: w[0], ax: -40, ay: -30, text: 'the last trial carries weight \u03b1',
+          font: { size: 12, color: COL.ink }, arrowcolor: COL.muted,
+          arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'right',
+        }],
+        xaxis: Object.assign(layout().xaxis, { title: 'trials into the past', dtick: 5, range: [-20.6, -0.4] }),
         yaxis: Object.assign(layout().yaxis, { title: 'weight', range: [0, 1.02] }),
       }), CONFIG);
     },

@@ -11,7 +11,7 @@
 --------------------------------------------------------------------------- */
 
 const PLOT_FONT = { family: 'Inter, Helvetica, Arial, sans-serif', size: 13, color: '#14171a' };
-export const COL = { opt1: '#2e7d32', opt2: '#e8700a', ink: '#14171a', muted: '#5b6670', faint: '#b4bcc2' };
+export const COL = { opt1: '#2e7d32', opt2: '#e8700a', ink: '#14171a', muted: '#5b6670', faint: '#9aa3aa' };
 
 /** Plot styling shared by every figure, so the decks read as one system. */
 export function layout(extra = {}) {

@@ -11,14 +11,21 @@
 :root {
   --ink:    #14171a;
   --muted:  #5b6670;
-  --faint:  #8a949c;
+  --faint:  #6b747c;   /* 4.8:1 on white: legible at caption size */
   --rule:   #e2e6ea;
   --panel:  #f4f6f7;
   --paper:  #ffffff;
 
-  /* the two options, taken from the task itself */
-  --opt1:   #2e7d32;   /* green  - option 1 */
-  --opt2:   #e8700a;   /* orange - option 2 */
+  /* The two options, taken from the task itself, so the slides and the thing
+     students clicked on agree. Green against orange is not a strong pair for
+     red-green colour deficiency, and the stimulus fixes it, so colour is never
+     the only cue here: lines differ in dash pattern, series are labelled on the
+     plot, and every mention in prose names the option number as well as the
+     colour. The -text variants are darkened to stay legible at body size. */
+  --opt1:   #2e7d32;   /* green  - option 1, marks and lines  (5.1:1 on white) */
+  --opt2:   #e8700a;   /* orange - option 2, marks and lines  (3.1:1, marks only) */
+  --opt1-text: #2e7d32;
+  --opt2-text: #b35309;   /* 5.1:1 on white */
 
   --serif: "Source Serif 4", Charter, Cambria, Georgia, serif;
   --sans:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -206,8 +213,8 @@ figcaption {
 
 /* colour-coded inline terms, each also labelled in words so that the meaning
    survives a greyscale print */
-.term-opt1 { color: var(--opt1); font-weight: 600; }
-.term-opt2 { color: var(--opt2); font-weight: 600; }
+.term-opt1 { color: var(--opt1-text); font-weight: 600; }
+.term-opt2 { color: var(--opt2-text); font-weight: 600; }
 
 /* --- code ---------------------------------------------------------------- */
 
