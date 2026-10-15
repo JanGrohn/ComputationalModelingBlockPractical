@@ -1,4 +1,4 @@
-# numpy is a libarary used to do all kinds of mathematical operations
+# numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 
 # pandas allows us to organise data as tables (called "dataframes")
@@ -14,12 +14,12 @@ import optax.tree_utils as otu
 from functools import partial
 
 # import typing to define the types of the variables
-from typing import Tuple, Dict, Any, Callable, Optional, Union
+from typing import Tuple, Dict, Any, Callable, Optional
 import numpy.typing as npt
 from jax._src.prng import PRNGKeyArray
 
-# import the digamma and betainc functions from scipy
-from scipy.special import digamma, betainc
+# import the digamma function from scipy
+from scipy.special import digamma
 
 from session3 import loading
 
@@ -174,7 +174,7 @@ def fit_model_same_alpha(
   data:             Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray],
   rng:              Optional[PRNGKeyArray] = None,
   startingProb:     float = 0.5,
-  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1},
+  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1, 'omegaMin': 0, 'omegaMax': 1},
   utility_function: Callable = multiplicative_utility,
   opt:              optax.GradientTransformation = optax.lbfgs(),
   max_iter:         int = 100,
@@ -234,8 +234,8 @@ def fit_model_same_alpha(
         alpha = jax.random.uniform(alphaRng, shape=(1,), minval=paramsClip['alphaMin'], maxval=paramsClip['alphaMax'])
         beta  = jax.random.uniform(betaRng,  shape=(1,), minval=paramsClip['betaMin'],  maxval=paramsClip['betaMax'] )
 
-        # initialise the parameters
-        initParams = {'alpha': alpha, 'beta': beta}
+      # initialise the parameters
+      initParams = {'alpha': alpha, 'beta': beta}
     
     elif utility_function == additive_utility:
       if rng is None:
@@ -251,8 +251,8 @@ def fit_model_same_alpha(
         beta  = jax.random.uniform(betaRng,  shape=(1,), minval=paramsClip['betaMin'],  maxval=paramsClip['betaMax'] )
         omega = jax.random.uniform(omegaRng, shape=(1,), minval=paramsClip['omegaMin'], maxval=paramsClip['omegaMax'])
 
-        # initialise the parameters
-        initParams = {'alpha': alpha, 'beta': beta, 'omega': omega}
+      # initialise the parameters
+      initParams = {'alpha': alpha, 'beta': beta, 'omega': omega}
          
     # define the loss function
     def loss_fun(params):
@@ -269,7 +269,7 @@ def fit_model_alpha_difference(
   data:             Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray],
   rng:              Optional[PRNGKeyArray] = None,
   startingProb:     float = 0.5,
-  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1},
+  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1, 'omegaMin': 0, 'omegaMax': 1},
   utility_function: Callable = multiplicative_utility,
   opt:              optax.GradientTransformation = optax.lbfgs(),
   max_iter:         int = 100,
@@ -375,7 +375,7 @@ def fit_with_multiple_initial_values(
   nInits:           int = 10,
   utility_function: Callable = multiplicative_utility,
   fit_model:        Callable = fit_model_same_alpha,
-  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1},
+  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1, 'omegaMin': 0, 'omegaMax': 1},
   startingParams:   Optional[Dict[str, jnp.ndarray]] = None
   ) -> Dict[str, jnp.ndarray]:
     '''
@@ -604,7 +604,7 @@ def fit_participant_data(
     fit_model_vectorised_same_alpha = jax.vmap(partial(fit_with_multiple_initial_values, nInits = nInits, utility_function = utility_function, fit_model = fit_model_same_alpha, paramsClip = paramsClip))
     params_same_alpha, loss_same_alpha = fit_model_vectorised_same_alpha(data)
 
-    # fit the model assuming the alpha is different for the two conditions. Here we also start at one optimisation run from inital values based on the same alpha model
+    # fit the model assuming the alpha is different for the two conditions. Here we also start at one optimisation run from initial values based on the same alpha model
     if utility_function == multiplicative_utility:
       starting_params_alpha_difference = {'alphaStable': params_same_alpha['alpha'], 'alphaVolatile': params_same_alpha['alpha'], 'beta': params_same_alpha['beta']}
     elif utility_function == additive_utility:
@@ -680,14 +680,14 @@ def simulate_RL_model(
         probOpt1(float array): how likely option 1 is rewarded on each trial
           according to the RL model.
         choiceProb1(float array): the probability of choosing option 1 on each
-          trial when combining infrmation about magnitude and probability
+          trial when combining information about magnitude and probability
   '''
 
   # check that alpha has been set appropriately
   assert alpha > 0, 'Learning rate (alpha) must be greater than 0'
   assert alpha <= 1,'Learning rate (alpha) must be less than or equal to 1'
 
-  # check that inverse temperateure has been set appropriately
+  # check that inverse temperature has been set appropriately
   assert beta >= 0, 'beta must be greater or equal than 0'
 
   # check that startingProb has been set appropriately
@@ -747,9 +747,12 @@ def estimate_model_frequencies(BICs, alpha0=None):
     beta       = np.zeros(Nk)
     prev_alpha = np.zeros(Nk)
 
+    # the BIC approximates the log model evidence as -BIC/2
+    logEvidence = -BICs/2
+
     if alpha0 is None:
         alpha0 = np.ones(Nk)
-    alpha = np.array(alpha0)
+    alpha = np.array(alpha0, dtype = float)
 
     # iterative VB estimation
     while c > cc:
@@ -759,10 +762,12 @@ def estimate_model_frequencies(BICs, alpha0=None):
         for i in range(Ni):
             for k in range(Nk):
                 # integrate out prior probabilities of models (in log space)
-                log_u[i, k] = -BICs[i,k] + digamma(alpha[k]) - digamma(np.sum(alpha))
+                log_u[i, k] = logEvidence[i,k] + digamma(alpha[k]) - digamma(np.sum(alpha))
 
-            # exponentiate (to get back to non-log representation)
-            u[i,:] = np.exp(log_u[i,:])
+            # exponentiate (to get back to non-log representation). Subtracting
+            # the largest value first stops very small numbers from underflowing
+            # to zero; it cancels out in the normalisation below.
+            u[i,:] = np.exp(log_u[i,:] - np.max(log_u[i,:]))
 
             # normalisation: sum across all models for i-th subject
             u_i    = np.sum(u[i,:])
@@ -786,29 +791,22 @@ def estimate_model_frequencies(BICs, alpha0=None):
 
     return alpha, sd
 
-def estimate_exceedance_probabilities(alpha, Nsamp=int(1e6)):
+def estimate_exceedance_probabilities(alpha, Nsamp = int(1e6), rng = np.random.default_rng(12345)):
     # Based on https://github.com/spm/spm12/blob/main/spm_dirichlet_exceedance.m and
     # Stephan KE, Penny WD, Daunizeau J, Moran RJ, Friston KJ (2009)
     # Bayesian Model Selection for Group Studies. NeuroImage 46:1004-1017
 
     Nk = len(alpha)
-    xp = np.zeros(Nk)
 
-    for i in range(Nsamp):
-        # Sample from univariate gamma densities then normalise
-        # (see Dirichlet entry in Wikipedia or Ferguson (1973) Ann. Stat. 1,
-        # 209-230)
-        r = np.zeros(Nk)
-        for k in range(Nk):
-            r[k] = np.random.gamma(alpha[k], 1)
+    # Sample from univariate gamma densities then normalise
+    # (see Dirichlet entry in Wikipedia or Ferguson (1973) Ann. Stat. 1,
+    # 209-230)
+    r = rng.gamma(np.asarray(alpha, dtype = float), 1, size = (Nsamp, Nk))
+    r = r/np.sum(r, axis = 1, keepdims = True)
 
-        sr = np.sum(r)
-        for k in range(Nk):
-            r[k] = r[k]/sr
+    # Exceedance probabilities:
+    # For any given model k1, compute the probability that it is more
+    # likely than any other model k2~=k1
+    xp = np.bincount(np.argmax(r, axis = 1), minlength = Nk)
 
-        # Exceedance probabilities:
-        # For any given model k1, compute the probability that it is more
-        # likely than any other model k2~=k1
-        xp[np.argmax(r)] += 1
-
-    return xp/sum(xp)
+    return xp/Nsamp

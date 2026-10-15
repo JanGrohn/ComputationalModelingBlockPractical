@@ -1,4 +1,4 @@
-# numpy is a libarary used to do all kinds of mathematical operations
+# numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 
 # pandas allows us to organise data as tables (called "dataframes")
@@ -12,9 +12,6 @@ import plotly.express as px
 
 # set the style of the plotly figures
 pio.templates.default = "none"
-
-# this allows us to make interactive figures
-import ipywidgets as widgets
 
 # import some custom functions we wrote
 from session3 import fitting
@@ -63,20 +60,13 @@ def plot_schedule(ID, *df):
                 _, probOpt1[0:80],   choiceProb1[0:80],   utility1[0:80],   utility2[0:80]   = fitting.simulate_RL_model(opt1Rewarded[0:80],   magOpt1[0:80],   magOpt2[0:80],   df[0].alphaVolatile[ID], df[0].beta[ID])
                 _, probOpt1[80:160], choiceProb1[80:160], utility1[80:160], utility2[80:160] = fitting.simulate_RL_model(opt1Rewarded[80:160], magOpt1[80:160], magOpt2[80:160], df[0].alphaStable[ID],   df[0].beta[ID])
     else:
+        # with a single learning rate the block order does not matter
         if any(df[0].columns == 'omega'):
-            if ID < 37:
-                _, probOpt1[0:80],   choiceProb1[0:80],   utility1[0:80],   utility2[0:80]   = fitting.simulate_RL_model(opt1Rewarded[0:80],   magOpt1[0:80],   magOpt2[0:80],   df[0].alpha[ID], df[0].beta[ID], df[0].omega[ID], utility_function = fitting.additive_utility)
-                _, probOpt1[80:160], choiceProb1[80:160], utility1[80:160], utility2[80:160] = fitting.simulate_RL_model(opt1Rewarded[80:160], magOpt1[80:160], magOpt2[80:160], df[0].alpha[ID], df[0].beta[ID], df[0].omega[ID], utility_function = fitting.additive_utility)
-            else:
-                _, probOpt1[0:80],   choiceProb1[0:80],   utility1[0:80],   utility2[0:80]   = fitting.simulate_RL_model(opt1Rewarded[0:80],   magOpt1[0:80],   magOpt2[0:80],   df[0].alpha[ID], df[0].beta[ID], df[0].omega[ID], utility_function = fitting.additive_utility)
-                _, probOpt1[80:160], choiceProb1[80:160], utility1[80:160], utility2[80:160] = fitting.simulate_RL_model(opt1Rewarded[80:160], magOpt1[0:80],   magOpt2[0:80],   df[0].alpha[ID], df[0].beta[ID], df[0].omega[ID], utility_function = fitting.additive_utility)
+            _, probOpt1[0:80],   choiceProb1[0:80],   utility1[0:80],   utility2[0:80]   = fitting.simulate_RL_model(opt1Rewarded[0:80],   magOpt1[0:80],   magOpt2[0:80],   df[0].alpha[ID], df[0].beta[ID], df[0].omega[ID], utility_function = fitting.additive_utility)
+            _, probOpt1[80:160], choiceProb1[80:160], utility1[80:160], utility2[80:160] = fitting.simulate_RL_model(opt1Rewarded[80:160], magOpt1[80:160], magOpt2[80:160], df[0].alpha[ID], df[0].beta[ID], df[0].omega[ID], utility_function = fitting.additive_utility)
         else:
-            if ID < 37:
-                _, probOpt1[0:80],   choiceProb1[0:80],   utility1[0:80],   utility2[0:80]   = fitting.simulate_RL_model(opt1Rewarded[0:80],   magOpt1[0:80],   magOpt2[0:80],   df[0].alpha[ID], df[0].beta[ID])
-                _, probOpt1[80:160], choiceProb1[80:160], utility1[80:160], utility2[80:160] = fitting.simulate_RL_model(opt1Rewarded[80:160], magOpt1[80:160], magOpt2[80:160], df[0].alpha[ID], df[0].beta[ID])
-            else:
-                _, probOpt1[0:80],   choiceProb1[0:80],   utility1[0:80],   utility2[0:80]   = fitting.simulate_RL_model(opt1Rewarded[0:80],   magOpt1[0:80],   magOpt2[0:80],   df[0].alpha[ID], df[0].beta[ID])
-                _, probOpt1[80:160], choiceProb1[80:160], utility1[80:160], utility2[80:160] = fitting.simulate_RL_model(opt1Rewarded[80:160], magOpt1[80:160], magOpt2[80:160], df[0].alpha[ID], df[0].beta[ID])
+            _, probOpt1[0:80],   choiceProb1[0:80],   utility1[0:80],   utility2[0:80]   = fitting.simulate_RL_model(opt1Rewarded[0:80],   magOpt1[0:80],   magOpt2[0:80],   df[0].alpha[ID], df[0].beta[ID])
+            _, probOpt1[80:160], choiceProb1[80:160], utility1[80:160], utility2[80:160] = fitting.simulate_RL_model(opt1Rewarded[80:160], magOpt1[80:160], magOpt2[80:160], df[0].alpha[ID], df[0].beta[ID])
 
 
   # plot trueProbability as a line
@@ -286,7 +276,7 @@ def plot_parameter_corrs(df):
     else:
       fig = go.Figure(data=go.Splom(
                     dimensions=[dict(label='alpha',
-                                    values=df.alphaStable),
+                                    values=df.alpha),
                                 dict(label='beta',
                                     values=df.beta)],
                     showupperhalf=False,
@@ -315,7 +305,7 @@ def plot_model_frequencies(bestModels, sd=None, exceedance_probabilities=None, m
         ))
     if exceedance_probabilities is not None:
         text_labels = [f'P_exceedance = {val:.3f}' for val in exceedance_probabilities]
-        y_positions = frequencies + (sd + 0.05 if sd is not None else frequencies + 0.05)
+        y_positions = frequencies + (sd + 0.05 if sd is not None else 0.05)
         fig.add_trace(go.Scatter(
             x=modelNames,
             y=y_positions,

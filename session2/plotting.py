@@ -1,4 +1,4 @@
-# numpy is a libarary used to do all kinds of mathematical operations
+# numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 import jax.numpy as jnp
 
@@ -23,10 +23,9 @@ from IPython.display import display
 from session2 import fitting
 
 # Add type hint imports
-from typing import Optional, Callable, Union, Dict, Any
+from typing import Optional, Callable, Dict, Any
 import numpy.typing as npt
 from plotly.graph_objs._figure import Figure
-from ipywidgets import VBox
 
 def plot_schedule(
     opt1Rewarded:    npt.NDArray,
@@ -46,7 +45,7 @@ def plot_schedule(
         opt1rewarded(int array): 1 if option 1 is rewarded on a trial, 0 if
           option 2 is rewarded on a trial.
         trueProbability(float array): The probability with which option 1 is
-          rewareded on each trial.
+          rewarded on each trial.
         magOpt1(int array): The reward magnitude of option 1. Defaults to None,
           which excludes it from the plot.
         magOpt2(int array): The reward magnitude of option 1. Defaults to None,
@@ -128,7 +127,7 @@ def plot_schedule(
         ))
 
   # label the axes
-  fig.update_layout(xaxis_title="", yaxis_title="green rewarded?")
+  fig.update_layout(xaxis_title="", yaxis_title="option 1 (orange) rewarded?")
 
   # check if we should plot reward magnitudes, and if so plot them as lines
   if magOpt1 is not None:
@@ -349,13 +348,13 @@ def plot_interactive_RL_model(
 
     Parameters:
         simulate_RL_model(function): The RL model to use to simulate the data.
-        utiity_function(function): The utility function to use in the RL model.
+        utility_function(function): The utility function to use in the RL model.
         opt1rewarded(int array): 1 if option 1 is rewarded on a trial, 0 if
           option 2 is rewarded on a trial.
         magOpt1(int array): The reward magnitude of option 1.
         magOpt2(int array): The reward magnitude of option 1.
         trueProbability(float array): The probability with which option 1 is
-          rewareded on each trial.
+          rewarded on each trial.
   '''
 
   # make sliders for alpha and beta
@@ -393,7 +392,7 @@ def plot_interactive_RL_model(
     # run the RL model
     probOpt1, choiceProb1 = simulate_RL_model(opt1Rewarded, magOpt1, magOpt2, alphaSlider.value, betaSlider.value, omegaSlider.value, utility_function = utility_function)
     
-    # calcualte utility
+    # calculate utility
     utility1 = utility_function(magOpt1, probOpt1, omegaSlider.value)
     utility2 = utility_function(magOpt2, 1 - probOpt1, omegaSlider.value)
 
@@ -405,7 +404,7 @@ def plot_interactive_RL_model(
     # run the RL model
     probOpt1, choiceProb1 = simulate_RL_model(opt1Rewarded, magOpt1, magOpt2, alphaSlider.value, betaSlider.value, utility_function = utility_function)
 
-    # calcualte utility
+    # calculate utility
     utility1 = utility_function(magOpt1, probOpt1)
     utility2 = utility_function(magOpt2, 1 - probOpt1)
     
@@ -463,7 +462,7 @@ def plot_likelihood_landscapes(
         loglikelihood_RL_model(function): The loglikelihood function to use.
   '''
 
-  # ensure the inptus are jnp arrays
+  # ensure the inputs are jnp arrays
   opt1Rewarded = jnp.array(opt1Rewarded)
   magOpt1 = jnp.array(magOpt1)
   magOpt2 = jnp.array(magOpt2)
@@ -480,11 +479,14 @@ def plot_likelihood_landscapes(
   for a in tqdm(range(len(alphaRange))):
     for b in range(len(betaRange)):
       loss = fitting.loss_RL_model((opt1Rewarded, magOpt1, magOpt2, choice1), {'alpha': jnp.array([alphaRange[a]]), 'beta': jnp.array([betaRange[b]])})
-      # average cross entropy loss needs to be negated to get the log likelihood and multiplied by the number of trials
-      LLMatrix[a,b] = -loss*len(opt1Rewarded)
+      # the summed cross entropy loss needs to be negated to get the log likelihood
+      LLMatrix[a,b] = -loss
 
-  # also calculate the normalised likelihood
-  LMatrix = np.exp(LLMatrix)/sum(sum(np.exp(LLMatrix)))
+  # also calculate the normalised likelihood. We subtract the largest log
+  # likelihood before exponentiating so that the numbers stay representable;
+  # this cancels out in the normalisation.
+  LMatrix = np.exp(LLMatrix - LLMatrix.max())
+  LMatrix = LMatrix/LMatrix.sum()
 
   # visualise the likelihood for each parameter pair
   fig = make_subplots(rows=1, cols=2,
@@ -513,11 +515,11 @@ def plot_likelihood_landscapes(
 
 def plot_recovered_parameters(recoveryData: pd.DataFrame) -> None:
   '''
-  Plots the simulated against the recoverd parameters
+  Plots the simulated against the recovered parameters
 
     Parameters:
         recoveryData(DataFrame): DataFrame with columns simulatedAlpha,
-          simulatedBeta, recoverdAlpha, recoverdBeta
+          simulatedBeta, recoveredAlpha, recoveredBeta
   '''
 
   fig = make_subplots(rows=1, cols=2,
@@ -547,14 +549,17 @@ def plot_recovered_parameters(recoveryData: pd.DataFrame) -> None:
             row=1, col=2)
 
 
-  # Setting the ticks and range on x and y axes
-  fig.update_xaxes(tickvals=list(np.arange(0,1.2,0.2)), range=[0,0.7], row=1, col=1)
-  fig.update_yaxes(tickvals=list(np.arange(0,1.2,0.2)), range=[0,1.1], row=1, col=1)
-  fig.update_xaxes(tickvals=list(np.arange(0,0.8,0.1)), range=[0,0.4], row=1, col=2)
-  fig.update_yaxes(tickvals=list(np.arange(0,0.8,0.1)), range=[0,0.7], row=1, col=2)
+  # Setting the ticks and range on x and y axes. Both axes of a panel get the
+  # same range, and the y axis is tied to the x axis, so that the black identity
+  # line really is at 45 degrees and points can be read off against it.
+  fig.update_xaxes(tickvals=list(np.arange(0,1.2,0.2)), range=[0,1.1], row=1, col=1)
+  fig.update_yaxes(tickvals=list(np.arange(0,1.2,0.2)), range=[0,1.1], scaleanchor='x',  scaleratio=1, row=1, col=1)
+  fig.update_xaxes(tickvals=list(np.arange(0,0.8,0.1)), range=[0,0.7], row=1, col=2)
+  fig.update_yaxes(tickvals=list(np.arange(0,0.8,0.1)), range=[0,0.7], scaleanchor='x2', scaleratio=1, row=1, col=2)
 
   fig.update_layout(xaxis1_title="simulated", yaxis1_title="recovered", showlegend=False)
   fig.update_layout(xaxis2_title="simulated", yaxis2_title="recovered", showlegend=False)
+  fig.update_layout(height=450)
 
   # Show the figure
   fig.show()

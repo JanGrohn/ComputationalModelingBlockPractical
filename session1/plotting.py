@@ -1,23 +1,21 @@
-# numpy is a libarary used to do all kinds of mathematical operations
+# numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 
 # we use plotly to make our figures
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import plotly.io as pio
-import plotly.express as px
 
 # set the style of the plotly figures
 pio.templates.default = "none"
 
 # this allows us to make interactive figures
 import ipywidgets as widgets
+from IPython.display import display
 
 # Add type hint imports
-from typing import Optional, Callable, Union
+from typing import Optional, Callable
 import numpy.typing as npt
 from plotly.graph_objs._figure import Figure
-from ipywidgets import VBox
 
 def plot_schedule(
     opt1Rewarded:    npt.NDArray,
@@ -31,7 +29,7 @@ def plot_schedule(
         opt1rewarded(int array): 1 if option 1 is rewarded on a trial, 0 if
           option 2 is rewarded on a trial.
         trueProbability(float array): The probability with which option 1 is
-          rewareded on each trial.
+          rewarded on each trial.
         probOpt1(float array): how likely option 1 is rewarded on each trial
           according to the RL model. Defaults to None, which excludes it from
           the plot.
@@ -43,7 +41,7 @@ def plot_schedule(
   # compute number of trials
   nTrials = len(opt1Rewarded)
 
-  # initalise figure
+  # initialise figure
   fig = go.Figure()
 
   # plot opt1rewarded as a scatterplot
@@ -78,7 +76,7 @@ def plot_schedule(
         ))
 
   # label the axes
-  fig.update_layout(xaxis_title="trial number", yaxis_title="green rewarded?")
+  fig.update_layout(xaxis_title="trial number", yaxis_title="option 1 (orange) rewarded?")
 
   # set the range for the axes
   fig.update_xaxes(range=[0, nTrials])
@@ -101,7 +99,7 @@ def plot_interactive_RL_model(
         opt1rewarded(int array): 1 if option 1 is rewarded on a trial, 0 if
           option 2 is rewarded on a trial.
         trueProbability(float array): The probability with which option 1 is
-          rewareded on each trial.
+          rewarded on each trial.
         RL_model(function): the RL model function to use to generate probOpt1.
         generate_schedule(function): Function to generate new schedules
         change_trueProb(bool): whether to include a slider to change the true
@@ -150,9 +148,8 @@ def plot_interactive_RL_model(
   fig = go.FigureWidget(plot_schedule(opt1Rewarded,trueProbability,probOpt1))
 
   def change_model(change: dict) -> None:
-    # get current values
+    # get the outcomes currently plotted
     opt1Rewarded = fig.data[0].y
-    trueProbability = trueProbSlider.value
     # rerun the RL model
     probOpt1 = RL_model(opt1Rewarded,alphaSlider.value,startingProbSlider.value)
     # update the figure
@@ -294,8 +291,8 @@ def plot_RL_weights(T: int = 10) -> None:
     weight = np.empty(T, dtype = float)
     # calculate the weight on every trial back
     for t in range(T):
-        # EXERCISE: explain/derive the following equation:
-        weight[t] = alpha*(1-alpha)**(T-(t+1));
+        # equation 6 from the notebook, with t counted from the oldest trial
+        weight[t] = alpha*(1-alpha)**(T-(t+1))
     return weight
 
   # start a new figure

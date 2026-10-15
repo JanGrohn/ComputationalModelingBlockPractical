@@ -1,11 +1,8 @@
-# numpy is a libarary used to do all kinds of mathematical operations
+# numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 
 # pandas allows us to organise data as tables (called "dataframes")
 import pandas as pd
-
-# we use the minimize function from scipy to fit models
-from scipy.optimize import minimize
 
 # import the logistic function
 from scipy.stats import logistic
@@ -26,7 +23,7 @@ import optax.tree_utils as otu
 from functools import partial
 
 # import typing to define the types of the variables
-from typing import Tuple, Dict, Any, Callable, Optional, Union
+from typing import Tuple, Dict, Any, Callable, Optional
 import numpy.typing as npt
 from jax._src.prng import PRNGKeyArray
 
@@ -183,7 +180,7 @@ def fit_model_same_alpha(
   data:             Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray],
   rng:              Optional[PRNGKeyArray] = None,
   startingProb:     float = 0.5,
-  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1},
+  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1, 'omegaMin': 0, 'omegaMax': 1},
   utility_function: Callable = multiplicative_utility,
   opt:              optax.GradientTransformation = optax.lbfgs(),
   max_iter:         int = 100,
@@ -243,8 +240,8 @@ def fit_model_same_alpha(
         alpha = jax.random.uniform(alphaRng, shape=(1,), minval=paramsClip['alphaMin'], maxval=paramsClip['alphaMax'])
         beta  = jax.random.uniform(betaRng,  shape=(1,), minval=paramsClip['betaMin'],  maxval=paramsClip['betaMax'] )
 
-        # initialise the parameters
-        initParams = {'alpha': alpha, 'beta': beta}
+      # initialise the parameters
+      initParams = {'alpha': alpha, 'beta': beta}
     
     elif utility_function == additive_utility:
       if rng is None:
@@ -260,8 +257,8 @@ def fit_model_same_alpha(
         beta  = jax.random.uniform(betaRng,  shape=(1,), minval=paramsClip['betaMin'],  maxval=paramsClip['betaMax'] )
         omega = jax.random.uniform(omegaRng, shape=(1,), minval=paramsClip['omegaMin'], maxval=paramsClip['omegaMax'])
 
-        # initialise the parameters
-        initParams = {'alpha': alpha, 'beta': beta, 'omega': omega}
+      # initialise the parameters
+      initParams = {'alpha': alpha, 'beta': beta, 'omega': omega}
          
     # define the loss function
     def loss_fun(params):
@@ -278,7 +275,7 @@ def fit_model_alpha_difference(
   data:             Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray],
   rng:              Optional[PRNGKeyArray] = None,
   startingProb:     float = 0.5,
-  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1},
+  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1, 'omegaMin': 0, 'omegaMax': 1},
   utility_function: Callable = multiplicative_utility,
   opt:              optax.GradientTransformation = optax.lbfgs(),
   max_iter:         int = 100,
@@ -384,7 +381,7 @@ def fit_with_multiple_initial_values(
   nInits:           int = 10,
   utility_function: Callable = multiplicative_utility,
   fit_model:        Callable = fit_model_same_alpha,
-  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1},
+  paramsClip:       Dict[str, float] = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1, 'omegaMin': 0, 'omegaMax': 1},
   startingParams:   Optional[Dict[str, jnp.ndarray]] = None
   ) -> Dict[str, jnp.ndarray]:
     '''
@@ -513,42 +510,9 @@ def fit_participant_data(
     numSubjects = len(IDs)
     numTrials = 160
 
-    if utility_function == multiplicative_utility:
-  
-      fitData1Alpha = pd.DataFrame(np.zeros((numSubjects, 5)),
-                                  columns = ["ID",
-                                            "alpha",
-                                            "beta",
-                                            "LL",
-                                            "BIC"])
+    if simulate and utility_function is None:
+      raise ValueError("utility_function must be given when simulate is True")
 
-      fitData2Alpha = pd.DataFrame(np.zeros((numSubjects, 6)),
-                                  columns = ["ID",
-                                            "alphaStable",
-                                            "alphaVolatile",
-                                            "beta",
-                                            "LL",
-                                            "BIC"])
-          
-    elif utility_function == additive_utility:
-      
-      fitData1Alpha = pd.DataFrame(np.zeros((numSubjects, 6)),
-                                  columns = ["ID",
-                                            "alpha",
-                                            "beta",
-                                            "omega",
-                                            "LL",
-                                            "BIC"])
-
-      fitData2Alpha = pd.DataFrame(np.zeros((numSubjects, 7)),
-                                  columns = ["ID",
-                                            "alphaStable",
-                                            "alphaVolatile",
-                                            "beta",
-                                            "omega",
-                                            "LL",
-                                            "BIC"])
-      
     # create matrices to store the data
     opt1RewardedStableMat = np.zeros((numSubjects, numTrials//2))
     magOpt1StableMat      = np.zeros((numSubjects, numTrials//2))
@@ -607,17 +571,55 @@ def fit_participant_data(
     data = (opt1RewardedStableMat, magOpt1StableMat, magOpt2StableMat, choice1StableMat, opt1RewardedVolatileMat, magOpt1VolatileMat, magOpt2VolatileMat, choice1VolatileMat)
     
     def fitting_function(utility_fun):
-      
+
+      # each call needs its own tables, otherwise the second call would
+      # overwrite the results of the first one
       if utility_fun == multiplicative_utility:
         paramsClip = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1}
+
+        fitData1Alpha = pd.DataFrame(np.zeros((numSubjects, 5)),
+                                    columns = ["ID",
+                                              "alpha",
+                                              "beta",
+                                              "LL",
+                                              "BIC"])
+
+        fitData2Alpha = pd.DataFrame(np.zeros((numSubjects, 6)),
+                                    columns = ["ID",
+                                              "alphaStable",
+                                              "alphaVolatile",
+                                              "beta",
+                                              "LL",
+                                              "BIC"])
+
       elif utility_fun == additive_utility:
         paramsClip = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1, 'omegaMin': 0, 'omegaMax': 1}
+
+        fitData1Alpha = pd.DataFrame(np.zeros((numSubjects, 6)),
+                                    columns = ["ID",
+                                              "alpha",
+                                              "beta",
+                                              "omega",
+                                              "LL",
+                                              "BIC"])
+
+        fitData2Alpha = pd.DataFrame(np.zeros((numSubjects, 7)),
+                                    columns = ["ID",
+                                              "alphaStable",
+                                              "alphaVolatile",
+                                              "beta",
+                                              "omega",
+                                              "LL",
+                                              "BIC"])
+
+      else:
+        raise ValueError(f"Utility function {utility_fun} not supported")
 
       # fit the model assuming the same alpha for both conditions
       fit_model_vectorised_same_alpha = jax.vmap(partial(fit_with_multiple_initial_values, nInits = nInits, utility_function = utility_fun, fit_model = fit_model_same_alpha, paramsClip = paramsClip))
       params_same_alpha, loss_same_alpha = fit_model_vectorised_same_alpha(data)
 
-      # fit the model assuming the alpha is different for the two conditions. Here we also start at one optimisation run from inital values based on the same alpha model
+      # fit the model assuming the alpha is different for the two conditions. Here we also start at one optimisation run from initial values based on the same alpha model
       if utility_fun == multiplicative_utility:
         starting_params_alpha_difference = {'alphaStable': params_same_alpha['alpha'], 'alphaVolatile': params_same_alpha['alpha'], 'beta': params_same_alpha['beta']}
       elif utility_fun == additive_utility:
@@ -698,14 +700,14 @@ def simulate_RL_model(
         probOpt1(float array): how likely option 1 is rewarded on each trial
           according to the RL model.
         choiceProb1(float array): the probability of choosing option 1 on each
-          trial when combining infrmation about magnitude and probability
+          trial when combining information about magnitude and probability
   '''
 
   # check that alpha has been set appropriately
   assert alpha > 0, 'Learning rate (alpha) must be greater than 0'
   assert alpha <= 1,'Learning rate (alpha) must be less than or equal to 1'
 
-  # check that inverse temperateure has been set appropriately
+  # check that inverse temperature has been set appropriately
   assert beta >= 0, 'beta must be greater or equal than 0'
 
   # check that startingProb has been set appropriately

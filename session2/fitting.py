@@ -1,4 +1,4 @@
-# numpy is a libarary used to do all kinds of mathematical operations
+# numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 
 # pandas allows us to organise data as tables (called "dataframes")
@@ -81,7 +81,7 @@ def loss_RL_model(
     
     # Compute the loss of the model
     choice1Logits = beta * (utility1 - utility2)
-    loss = optax.sigmoid_binary_cross_entropy(choice1Logits, choice1).mean()
+    loss = optax.sigmoid_binary_cross_entropy(choice1Logits, choice1).sum()
     
     return loss
 
@@ -362,7 +362,7 @@ def fit_multiple_participants(
     params = fit_model_vectorised(data)
     return params
 
-def run_paramterer_recovery(
+def run_parameter_recovery(
     simulatedAlphaRange: npt.NDArray, 
     simulatedBetaRange:  npt.NDArray,
     simulate_RL_model:   Callable,
@@ -372,7 +372,7 @@ def run_paramterer_recovery(
     nInits:              int = 10,
     ):
     '''
-    This function simulates participants with different learning rates and then fits the data . This allows us to see if the model can recover the true learning rates.
+    This function simulates participants with different learning rates and then fits the data. This allows us to see if the model can recover the true learning rates.
     
     Parameters:
         simulatedAlphaRange(float array): alpha values to simulate
@@ -388,7 +388,7 @@ def run_paramterer_recovery(
 
     nSimulatedSubjects = len(simulatedAlphaRange) * len(simulatedBetaRange)
 
-    # initialise a table to store the simualted and recoverd parameters in
+    # initialise a table to store the simulated and recovered parameters in
     recoveryData = pd.DataFrame(np.zeros((nSimulatedSubjects, 4)),
                                 columns = ["simulatedAlpha",
                                            "simulatedBeta",
@@ -432,7 +432,7 @@ def run_paramterer_recovery(
     return recoveryData
 
 
-def run_paramterer_recovery_with_difference(
+def run_parameter_recovery_with_difference(
     stableAlphas:            npt.NDArray,           
     volatileAlphas:          npt.NDArray,         
     betas:                   npt.NDArray,                  
@@ -462,7 +462,7 @@ def run_paramterer_recovery_with_difference(
 
     nSimulatedSubjects = len(betas)
 
-    # initialise a table to store the simualted and recoverd parameters in
+    # initialise a table to store the simulated and recovered parameters in
     fittedParameters = pd.DataFrame(np.zeros((nSimulatedSubjects, 3)),
                                         columns = ["alpha stable",
                                                    "alpha volatile",
@@ -472,10 +472,10 @@ def run_paramterer_recovery_with_difference(
     magOpt1StableMat         = np.zeros((nSimulatedSubjects, len(trueProbabilityStable)))
     magOpt2StableMat         = np.zeros((nSimulatedSubjects, len(trueProbabilityStable)))
     choice1StableMat         = np.zeros((nSimulatedSubjects, len(trueProbabilityStable)))
-    opt1RewardedVolatileMat  = np.zeros((nSimulatedSubjects, len(trueProbabilityStable)))
-    magOpt1VolatileMat       = np.zeros((nSimulatedSubjects, len(trueProbabilityStable)))
-    magOpt2VolatileMat       = np.zeros((nSimulatedSubjects, len(trueProbabilityStable)))
-    choice1VolatileMat       = np.zeros((nSimulatedSubjects, len(trueProbabilityStable)))
+    opt1RewardedVolatileMat  = np.zeros((nSimulatedSubjects, len(trueProbabilityVolatile)))
+    magOpt1VolatileMat       = np.zeros((nSimulatedSubjects, len(trueProbabilityVolatile)))
+    magOpt2VolatileMat       = np.zeros((nSimulatedSubjects, len(trueProbabilityVolatile)))
+    choice1VolatileMat       = np.zeros((nSimulatedSubjects, len(trueProbabilityVolatile)))
 
     for p in range(nSimulatedSubjects):
         # generate a new schedule

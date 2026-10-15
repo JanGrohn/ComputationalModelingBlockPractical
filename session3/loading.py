@@ -1,11 +1,38 @@
-# numpy is a libarary used to do all kinds of mathematical operations
+# numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 
 # load in the dataset
 from scipy.io import loadmat
-blain_data = loadmat("Blain_MoodTracksLearning_data.mat")
+
+DATA_FILE = "Blain_MoodTracksLearning_data.mat"
+
+try:
+  blain_data = loadmat(DATA_FILE)
+except FileNotFoundError:
+  raise FileNotFoundError(
+    f"Could not find {DATA_FILE} in the current working directory. Run the "
+    f"cell at the top of the notebook that downloads it, or start the notebook "
+    f"from the folder that contains it."
+  ) from None
 
 def load_blain(ID, data = blain_data):
+  '''
+  Returns one participant's data from the Blain and Rutledge (2020) dataset.
+
+    Parameters:
+        ID(int): participant number, 0 to 74. Participants 0 to 36 did the
+          stable block first, participants 37 to 74 the volatile block first.
+        data(dict): the loaded .mat file, defaults to the dataset loaded above.
+
+    Returns:
+        trueProbability(float array): the probability with which option 1 is
+          rewarded on each trial
+        choice1(int array): 1 if option 1 was chosen on a trial, 0 otherwise
+        magOpt1(int array): reward points on offer for option 1 on each trial
+        magOpt2(int array): reward points on offer for option 2 on each trial
+        opt1Rewarded(int array): 1 if option 1 was rewarded on a trial, 0 if
+          option 2 was rewarded
+  '''
 
   if ID < 37:
     order = "stable2volatile_data"
