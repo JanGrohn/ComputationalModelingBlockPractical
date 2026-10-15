@@ -48,6 +48,24 @@ await page.type('input', 'test-user');
 await clickText('Confirm');                                    // username
 await clickText('Select condition 2');                         // the volatile schedule
 
+// the stimuli must actually render: a broken SVG still reports complete, so
+// check the decoded size rather than the load event, and wait for the card
+// slide-in to settle first
+await page.waitForFunction(() => {
+  const imgs = [...document.querySelectorAll('img')];
+  return imgs.length === 2 && imgs.every((i) => i.naturalWidth > 0
+    && i.getBoundingClientRect().height > 60);
+}, { timeout: 8000 }).catch(() => {});
+const stimuli = await page.evaluate(() => [...document.querySelectorAll('img')].map((i) => ({
+  src: i.currentSrc.split('/').pop(),
+  naturalW: i.naturalWidth,
+  renderedH: Math.round(i.getBoundingClientRect().height),
+})));
+const stimuliOk = stimuli.length === 2
+  && stimuli.every((s) => s.naturalW > 0 && s.renderedH > 60);
+console.log(`stimuli render: ${stimuliOk}`);
+stimuli.forEach((s) => console.log(`    ${s.src}  natural ${s.naturalW}px, rendered ${s.renderedH}px tall`));
+
 // play 40 trials, always choosing the left card
 const seen = [];
 for (let t = 0; t < 40; t++) {

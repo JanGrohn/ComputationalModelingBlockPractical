@@ -14,6 +14,14 @@ was recovered from `static/js/main.e52e1237.js.map`. What is in `src/` is that
 source, with the fixes below applied and the build moved from create-react-app
 to Vite.
 
+One thing the source map does **not** give you is the original assets. For the
+two stimuli it recorded the SVGR-generated JavaScript module rather than the
+SVG itself, so `src/components/img/*.svg` initially held JavaScript with an
+`.svg` extension; the browser fetched them happily, failed to parse them, and
+drew nothing. The real files came from the old build's `static/media/`
+instead. `e2e-test.mjs` now asserts that both stimuli decode and render at a
+sensible size, so this cannot come back silently.
+
 ## Layout
 
 ```
