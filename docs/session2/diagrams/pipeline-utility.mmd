@@ -1,8 +1,11 @@
 flowchart TD
-  OH["Outcome History"] -->|"Learning Model"| LP["Learned Probability"]
-  LP -->|"Combining Value Dims"| DV["Decision Variable"]
-  SM["Shown Magnitude"] -->|"Combining Value Dims"| DV
+  OH["Outcome History"] --> LM(["Learning Model"])
+  LM --> LP["Learned Probability"]
+  LP --> CV(["Combining Value Dims"])
+  SM["Shown Magnitude"] --> CV
+  CV --> DV["Decision Variable"]
 
   classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
   classDef op fill:#e8eef4,stroke:#5b7fa6,stroke-width:1.2px,color:#1f4b73;
   class OH,LP,SM,DV state;
+  class LM,CV op;

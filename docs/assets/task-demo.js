@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-   A few playable trials of the task, on the slide.
+   A few playable trials of the task, on a slide. Shared by every deck.
 
    The real experiment is served from this repository at /task/. This is a
    short stand-in so a slide can be played rather than described, and it
@@ -9,7 +9,7 @@
    becomes available a second later.
 --------------------------------------------------------------------------- */
 
-import { makeRng } from '../assets/models.js';
+import { makeRng } from './models.js';
 
 const P_OPTION1 = 0.75;    // option 1 pays out on three trials in four
 const REVERSE_EVERY = 4;   // ...until the contingency starts reversing
@@ -84,8 +84,8 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
 
       const img = el('img', null, card);
       img.src = option === 1
-        ? '../assets/img/s1/stim-opt1-green.png'
-        : '../assets/img/s1/stim-opt2-orange.png';
+        ? new URL('./img/s1/stim-opt1-green.png', import.meta.url).href
+        : new URL('./img/s1/stim-opt2-orange.png', import.meta.url).href;
       img.alt = option === 1 ? 'the green option' : 'the orange option';
 
       // before a choice both numbers show; afterwards the rewarded option

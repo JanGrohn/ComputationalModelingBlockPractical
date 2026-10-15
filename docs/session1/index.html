@@ -404,7 +404,7 @@
   import { initDeck } from '../assets/deck.js';
   initDeck({ title: 'Computational modelling of decision making and action selection &middot; Advanced Lab &middot; Session 1' });
   await import('./figures.js');
-  const { playableTask } = await import('./task.js');
+  const { playableTask } = await import('../assets/task-demo.js');
   playableTask('task-aim', { seed: 20251015 });
   playableTask('task-demo', { seed: 90210, showBlock: true });
 </script>

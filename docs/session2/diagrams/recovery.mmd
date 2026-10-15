@@ -1,12 +1,15 @@
 flowchart LR
-  P["Model parameters<br>you choose"] --> CM["Computational<br>model"]
-  T["Task"] --> CM
-  CM --> D["Simulated<br>data"]
-  D --> F["Fit the same<br>model back"]
-  F --> R["Recovered<br>parameters"]
-  R -. "do these match?" .-> P
+  P["Parameters<br>you choose"] --> SIM(["Simulate"])
+  T["Task schedule"] --> SIM
+  SIM --> D["Simulated<br>choices"]
+  D --> FIT(["Fit the same<br>model back"])
+  FIT --> R["Recovered<br>parameters"]
+  R --> Q{{"Do they<br>match?"}}
+  P --> Q
 
   classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
+  classDef op fill:#e8eef4,stroke:#5b7fa6,stroke-width:1.2px,color:#1f4b73;
   classDef out fill:#eaf1ea,stroke:#2e7d32,stroke-width:1.5px,color:#14171a;
-  class P,T,CM,F state;
-  class D,R out;
+  class P,T,D,R state;
+  class SIM,FIT op;
+  class Q out;
