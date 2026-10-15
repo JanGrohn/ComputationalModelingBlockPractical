@@ -11,7 +11,13 @@
 --------------------------------------------------------------------------- */
 
 const PLOT_FONT = { family: 'Inter, Helvetica, Arial, sans-serif', size: 16, color: '#14171a' };
-export const COL = { opt1: '#2e7d32', opt2: '#e8700a', ink: '#14171a', muted: '#5b6670', faint: '#9aa3aa' };
+// opt1/opt2 are the two options, green and orange, as in the task itself.
+// stable/opt2 are the two blocks: the volatile block borrows the orange, since
+// it is the one that keeps changing, and the stable block takes a quiet slate.
+export const COL = {
+  opt1: '#2e7d32', opt2: '#e8700a', stable: '#1f4b73',
+  ink: '#14171a', muted: '#5b6670', faint: '#9aa3aa',
+};
 
 /** Plot styling shared by every figure, so the decks read as one system. */
 export function layout(extra = {}) {

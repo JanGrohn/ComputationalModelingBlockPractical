@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 3 &middot; Advanced Lab</title>
+<meta name="description" content="Fitting the model to real participants, and comparing models.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 ==================================================================== -->
+<section class="title-slide">
+  <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
+  <p class="subtitle">Advanced Lab &middot; Session 3 of 4</p>
+  <p class="byline">Organisers: <strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
+     Department of Experimental Psychology, University of Oxford</p>
+</section>
+
+<!-- 2 ==================================================================== -->
+<section>
+  <h2>Plan for the next 4 weeks</h2>
+  <div class="weeks">
+    <div class="week">
+      <p class="week-n">Week 1</p>
+      <ul><li>Python and Colab basics</li><li>Experience the task</li>
+          <li>Build a learning model</li><li>Understand its parameters</li></ul>
+    </div>
+    <div class="week">
+      <p class="week-n">Week 2</p>
+      <ul><li>Utility and choice probability</li><li>Model simulations</li>
+          <li>Parameter recovery</li></ul>
+    </div>
+    <div class="week week-now">
+      <p class="week-n">Week 3 <span>today</span></p>
+      <ul><li>Fitting real data</li><li>Model comparison</li>
+          <li>Checking data quality</li></ul>
+    </div>
+    <div class="week">
+      <p class="week-n">Week 4</p>
+      <ul><li>Statistics</li><li>Write-up planning</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ==================================================================== -->
+<section>
+  <h2>Aims for today</h2>
+  <ul>
+    <li>Recap the key hypotheses, the learning model, utility and the softmax</li>
+    <li>Fit the model to <span class="key">real participants</span></li>
+    <li>Compare models, using the likelihood ratio test and the BIC</li>
+    <li>If there is time: data quality checks and participant exclusions</li>
+  </ul>
+</section>
+
+<!-- 4 ==================================================================== -->
+<section>
+  <h2>Task recap</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-condition-1">
+      <p class="cond-title"><span class="cond-tag cond-stable">Condition 1</span> stable</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-condition-2">
+      <p class="cond-title"><span class="cond-tag cond-volatile">Condition 2</span> volatile</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <figure class="fig" id="fig-magnitudes" style="margin-top:0.2em">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="citation">Behrens et al., <em>Nature Neuroscience</em>, 2007</p>
+</section>
+
+<!-- 5 ==================================================================== -->
+<section>
+  <h2>The data we will fit today</h2>
+  <div class="cols narrow-right">
+    <div>
+      <p>The dataset is not ours. Blain and Rutledge ran the same idea with a different design:
+        <span class="key">separate blocks with separate stimuli</span>, participants told that the
+        blocks differ, and happiness ratings in between.</p>
+      <ul>
+        <li>75 participants, 160 trials each</li>
+        <li>Reward magnitudes in tens rather than fully random</li>
+        <li>The same question: is learning faster when the world is volatile?</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="../assets/img/s3/task-update.png" alt="The Blain and Rutledge task: stable and volatile blocks with different stimuli, and a happiness rating." style="max-height:420px">
+    </figure>
+  </div>
+  <p class="citation">Blain &amp; Rutledge, <em>eLife</em>, 2020</p>
+  <aside class="notes">Ask what they noticed that differs from the task they played.</aside>
+</section>
+
+<!-- 6 ==================================================================== -->
+<section>
+  <h2>Recap of the key equations</h2>
+  <div class="cols">
+  <div class="panel">
+    <p class="panel-label">Week 1</p>
+    <p>Prediction error &mdash; how unexpected was the outcome?</p>
+    <div class="eq">$$\delta_t = o_t - p_t$$<span class="eq-tag">(1)</span></div>
+    <p>Update the estimate using the prediction error and the learning rate:</p>
+    <div class="eq">$$p_{t+1} = p_t + \alpha\,\delta_t$$<span class="eq-tag">(2)</span></div>
+  </div>
+  <div class="panel fragment">
+    <p class="panel-label">Week 2</p>
+    <p>Combine the learnt probability with the magnitude $M$ on offer:</p>
+    <div class="eq">$$\begin{aligned} V &= p \cdot M \\ V &= \omega M + (1-\omega)\,p \end{aligned}$$<span class="eq-tag">(3)</span></div>
+    <p>Turn the difference in value into a choice probability:</p>
+    <div class="eq">$$P(\textrm{option 1}) = \frac{1}{1 + e^{-\beta (V_1 - V_2)}}$$<span class="eq-tag">(4)</span></div>
+  </div>
+  </div>
+  <p class="takeaway fragment">Free parameters: <span class="key">&alpha;</span>,
+    <span class="key">&beta;</span>, and <span class="key">&omega;</span> if utility is additive.</p>
+</section>
+
+<!-- 7 ==================================================================== -->
+<section>
+  <h2>Recap of the key concepts</h2>
+  <div class="cols narrow-right">
+    <div class="mermaid-figure tall" data-diagram="pipeline"><svg id="dy1or60pujy" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 461.828125px;" viewBox="0 0 461.828125 657" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#dy1or60pujy{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;fill:#14171a;}#dy1or60pujy .error-icon{fill:#ffffff;}#dy1or60pujy .error-text{fill:#000000;stroke:#000000;}#dy1or60pujy .edge-thickness-normal{stroke-width:1px;}#dy1or60pujy .edge-thickness-thick{stroke-width:3.5px;}#dy1or60pujy .edge-pattern-solid{stroke-dasharray:0;}#dy1or60pujy .edge-thickness-invisible{stroke-width:0;fill:none;}#dy1or60pujy .edge-pattern-dashed{stroke-dasharray:3;}#dy1or60pujy .edge-pattern-dotted{stroke-dasharray:2;}#dy1or60pujy .marker{fill:#14171a;stroke:#14171a;}#dy1or60pujy .marker.cross{stroke:#14171a;}#dy1or60pujy svg{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;}#dy1or60pujy p{margin:0;}#dy1or60pujy .label{font-family:Inter,Helvetica,Arial,sans-serif;color:#14171a;}#dy1or60pujy .cluster-label text{fill:#000000;}#dy1or60pujy .cluster-label span{color:#000000;}#dy1or60pujy .cluster-label span p{background-color:transparent;}#dy1or60pujy .label text,#dy1or60pujy span{fill:#14171a;color:#14171a;}#dy1or60pujy .node rect,#dy1or60pujy .node circle,#dy1or60pujy .node ellipse,#dy1or60pujy .node polygon,#dy1or60pujy .node path{fill:#f4f6f7;stroke:#14171a;stroke-width:1px;}#dy1or60pujy .rough-node .label text,#dy1or60pujy .node .label text,#dy1or60pujy .image-shape .label,#dy1or60pujy .icon-shape .label{text-anchor:middle;}#dy1or60pujy .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#dy1or60pujy .rough-node .label,#dy1or60pujy .node .label,#dy1or60pujy .image-shape .label,#dy1or60pujy .icon-shape .label{text-align:center;}#dy1or60pujy .node.clickable{cursor:pointer;}#dy1or60pujy .root .anchor path{fill:#14171a!important;stroke-width:0;stroke:#14171a;}#dy1or60pujy .arrowheadPath{fill:#0b0b0b;}#dy1or60pujy .edgePath .path{stroke:#14171a;stroke-width:2.0px;}#dy1or60pujy .flowchart-link{stroke:#14171a;fill:none;}#dy1or60pujy .edgeLabel{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dy1or60pujy .edgeLabel p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);}#dy1or60pujy .edgeLabel rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dy1or60pujy .labelBkg{background-color:rgba(245.9999999999, 247, 243.9999999999, 0.5);}#dy1or60pujy .cluster rect{fill:#ffffff;stroke:hsl(0, 0%, 90%);stroke-width:1px;}#dy1or60pujy .cluster text{fill:#000000;}#dy1or60pujy .cluster span{color:#000000;}#dy1or60pujy div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;background:#ffffff;border:1px solid hsl(0, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#dy1or60pujy .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#14171a;}#dy1or60pujy rect.text{fill:none;stroke-width:0;}#dy1or60pujy .icon-shape,#dy1or60pujy .image-shape{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dy1or60pujy .icon-shape p,#dy1or60pujy .image-shape p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);padding:2px;}#dy1or60pujy .icon-shape rect,#dy1or60pujy .image-shape rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dy1or60pujy :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#dy1or60pujy .state rect{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .state polygon{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .state ellipse{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .state circle{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .state path{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .state tspan{fill:#14171a!important;}#dy1or60pujy .op rect{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dy1or60pujy .op polygon{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dy1or60pujy .op ellipse{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dy1or60pujy .op circle{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dy1or60pujy .op path{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dy1or60pujy .op tspan{fill:#1f4b73!important;}#dy1or60pujy .out rect{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .out polygon{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .out ellipse{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .out circle{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .out path{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#dy1or60pujy .out tspan{fill:#14171a!important;}</style><g><marker id="dy1or60pujy_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dy1or60pujy_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dy1or60pujy_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dy1or60pujy_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dy1or60pujy_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="dy1or60pujy_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M111.672,58L111.672,62.667C111.672,67.333,111.672,76.667,111.672,83.667C111.672,90.667,111.672,95.333,111.672,99.333C111.672,103.333,111.672,106.667,111.672,108.333L111.672,110" id="L_OH_LM_0" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dy1or60pujy_flowchart-v2-pointEnd)"></path><path d="M111.672,149L111.672,153.667C111.672,158.333,111.672,167.667,111.672,174.667C111.672,181.667,111.672,186.333,111.672,190.333C111.672,194.333,111.672,197.667,111.672,199.333L111.672,201" id="L_LM_LP_1" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dy1or60pujy_flowchart-v2-pointEnd)"></path><path d="M111.672,255L111.672,259.667C111.672,264.333,111.672,273.667,117.926,280.667C124.18,287.667,136.689,292.333,148.573,296.767C160.456,301.201,171.715,305.401,177.345,307.502L182.975,309.602" id="L_LP_CV_2" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dy1or60pujy_flowchart-v2-pointEnd)"></path><path d="M355.586,255L355.586,259.667C355.586,264.333,355.586,273.667,349.332,280.667C343.078,287.667,330.569,292.333,318.685,296.767C306.802,301.201,295.542,305.401,289.913,307.502L284.283,309.602" id="L_SM_CV_3" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dy1or60pujy_flowchart-v2-pointEnd)"></path><path d="M233.629,346L233.629,350.667C233.629,355.333,233.629,364.667,233.629,371.667C233.629,378.667,233.629,383.333,233.629,387.333C233.629,391.333,233.629,394.667,233.629,396.333L233.629,398" id="L_CV_DV_4" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dy1or60pujy_flowchart-v2-pointEnd)"></path><path d="M233.629,452L233.629,456.667C233.629,461.333,233.629,470.667,233.629,477.667C233.629,484.667,233.629,489.333,233.629,493.333C233.629,497.333,233.629,500.667,233.629,502.333L233.629,504" id="L_DV_SX_5" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dy1or60pujy_flowchart-v2-pointEnd)"></path><path d="M233.629,543L233.629,547.667C233.629,552.333,233.629,561.667,233.629,568.667C233.629,575.667,233.629,580.333,233.629,584.333C233.629,588.333,233.629,591.667,233.629,593.333L233.629,595" id="L_SX_CP_6" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dy1or60pujy_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g></g><g class="nodes"><g class="node default state " id="flowchart-OH-0" transform="translate(111.671875, 33)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-93.7578125" y="-25" width="187.515625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Outcome</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> History</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-LM-1" transform="translate(111.671875, 131.5)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-70.84375" y="-17.5" width="141.6875" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learning</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Model</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-LP-3" transform="translate(111.671875, 230)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-103.671875" y="-25" width="207.34375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learned</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-CV-5" transform="translate(233.62890625, 328.5)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-97.0390625" y="-17.5" width="194.078125" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-SM-6" transform="translate(355.5859375, 230)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-98.2421875" y="-25" width="196.484375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Shown</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Magnitude</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-DV-9" transform="translate(233.62890625, 427)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-95.5078125" y="-25" width="191.015625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Variable</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-SX-11" transform="translate(233.62890625, 525.5)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-96.59375" y="-17.5" width="193.1875" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Softmax</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Rule</tspan></tspan></text></g></g></g><g class="node default out " id="flowchart-CP-13" transform="translate(233.62890625, 624)"><rect class="basic label-container" style="fill:#eaf1ea !important;stroke:#2e7d32 !important;stroke-width:1.5px !important" x="-99.03125" y="-25" width="198.0625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Choice</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g></g></g></g></svg></div>
+    <div class="stack-tight">
+      <div class="eq">$$\delta_t = o_t - p_t$$<span class="eq-tag">(1)</span></div>
+      <div class="eq">$$p_{t+1} = p_t + \alpha\,\delta_t$$<span class="eq-tag">(2)</span></div>
+      <div class="eq fragment">$$V = p \cdot M$$<span class="eq-tag">(3)</span></div>
+      <div class="eq fragment">$$P(\textrm{option 1}) = \frac{1}{1 + e^{-\beta (V_1 - V_2)}}$$<span class="eq-tag">(4)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 ==================================================================== -->
+<section>
+  <h2>But how do we know &alpha; and &beta;?</h2>
+<div class="mermaid-figure wide" data-diagram="simulate-vs-fit"><svg id="d3jp18c6prpp" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 1095.296875px;" viewBox="0 0 1095.296875 423.199951171875" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#d3jp18c6prpp{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;fill:#14171a;}#d3jp18c6prpp .error-icon{fill:#ffffff;}#d3jp18c6prpp .error-text{fill:#000000;stroke:#000000;}#d3jp18c6prpp .edge-thickness-normal{stroke-width:1px;}#d3jp18c6prpp .edge-thickness-thick{stroke-width:3.5px;}#d3jp18c6prpp .edge-pattern-solid{stroke-dasharray:0;}#d3jp18c6prpp .edge-thickness-invisible{stroke-width:0;fill:none;}#d3jp18c6prpp .edge-pattern-dashed{stroke-dasharray:3;}#d3jp18c6prpp .edge-pattern-dotted{stroke-dasharray:2;}#d3jp18c6prpp .marker{fill:#14171a;stroke:#14171a;}#d3jp18c6prpp .marker.cross{stroke:#14171a;}#d3jp18c6prpp svg{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;}#d3jp18c6prpp p{margin:0;}#d3jp18c6prpp .label{font-family:Inter,Helvetica,Arial,sans-serif;color:#14171a;}#d3jp18c6prpp .cluster-label text{fill:#000000;}#d3jp18c6prpp .cluster-label span{color:#000000;}#d3jp18c6prpp .cluster-label span p{background-color:transparent;}#d3jp18c6prpp .label text,#d3jp18c6prpp span{fill:#14171a;color:#14171a;}#d3jp18c6prpp .node rect,#d3jp18c6prpp .node circle,#d3jp18c6prpp .node ellipse,#d3jp18c6prpp .node polygon,#d3jp18c6prpp .node path{fill:#f4f6f7;stroke:#14171a;stroke-width:1px;}#d3jp18c6prpp .rough-node .label text,#d3jp18c6prpp .node .label text,#d3jp18c6prpp .image-shape .label,#d3jp18c6prpp .icon-shape .label{text-anchor:middle;}#d3jp18c6prpp .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#d3jp18c6prpp .rough-node .label,#d3jp18c6prpp .node .label,#d3jp18c6prpp .image-shape .label,#d3jp18c6prpp .icon-shape .label{text-align:center;}#d3jp18c6prpp .node.clickable{cursor:pointer;}#d3jp18c6prpp .root .anchor path{fill:#14171a!important;stroke-width:0;stroke:#14171a;}#d3jp18c6prpp .arrowheadPath{fill:#0b0b0b;}#d3jp18c6prpp .edgePath .path{stroke:#14171a;stroke-width:2.0px;}#d3jp18c6prpp .flowchart-link{stroke:#14171a;fill:none;}#d3jp18c6prpp .edgeLabel{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#d3jp18c6prpp .edgeLabel p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);}#d3jp18c6prpp .edgeLabel rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#d3jp18c6prpp .labelBkg{background-color:rgba(245.9999999999, 247, 243.9999999999, 0.5);}#d3jp18c6prpp .cluster rect{fill:#ffffff;stroke:hsl(0, 0%, 90%);stroke-width:1px;}#d3jp18c6prpp .cluster text{fill:#000000;}#d3jp18c6prpp .cluster span{color:#000000;}#d3jp18c6prpp div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;background:#ffffff;border:1px solid hsl(0, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#d3jp18c6prpp .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#14171a;}#d3jp18c6prpp rect.text{fill:none;stroke-width:0;}#d3jp18c6prpp .icon-shape,#d3jp18c6prpp .image-shape{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#d3jp18c6prpp .icon-shape p,#d3jp18c6prpp .image-shape p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);padding:2px;}#d3jp18c6prpp .icon-shape rect,#d3jp18c6prpp .image-shape rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#d3jp18c6prpp :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#d3jp18c6prpp .state rect{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .state polygon{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .state ellipse{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .state circle{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .state path{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .state tspan{fill:#14171a!important;}#d3jp18c6prpp .op rect{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#d3jp18c6prpp .op polygon{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#d3jp18c6prpp .op ellipse{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#d3jp18c6prpp .op circle{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#d3jp18c6prpp .op path{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#d3jp18c6prpp .op tspan{fill:#1f4b73!important;}#d3jp18c6prpp .out rect{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .out polygon{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .out ellipse{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .out circle{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .out path{fill:#eaf1ea!important;stroke:#2e7d32!important;stroke-width:1.5px!important;color:#14171a!important;}#d3jp18c6prpp .out tspan{fill:#14171a!important;}</style><g><marker id="d3jp18c6prpp_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d3jp18c6prpp_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d3jp18c6prpp_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d3jp18c6prpp_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d3jp18c6prpp_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="d3jp18c6prpp_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M547.648,229.6L547.648,234.267C547.648,238.933,547.648,248.267,547.648,255.267C547.648,262.267,547.648,266.933,547.648,271.6C547.648,276.267,547.648,280.933,547.648,283.267L547.648,285.6" id="L_S_R_7" class=" edge-thickness-invisible edge-pattern-solid" style=""></path></g><g class="edgeLabels"><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g></g><g class="nodes"><g class="root" transform="translate(0, 277.59999084472656)"><g class="clusters"><g class="cluster " id="R" data-look="classic"><rect style="" x="8" y="8" width="1079.296875" height="129.5999984741211"></rect><g class="cluster-label " transform="translate(524.1796875, 8)"><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Fitting</tspan></tspan></text></g></g></g></g><g class="edgePaths"><path d="M143.875,72.8L150.625,72.8C157.375,72.8,170.875,72.8,181,72.8C191.125,72.8,197.875,72.8,203.958,72.8C210.042,72.8,215.458,72.8,218.167,72.8L220.875,72.8" id="L_RT_RP_3" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#d3jp18c6prpp_flowchart-v2-pointEnd)"></path><path d="M338.141,72.8L344.891,72.8C351.641,72.8,365.141,72.8,375.266,72.8C385.391,72.8,392.141,72.8,398.224,72.8C404.307,72.8,409.724,72.8,412.432,72.8L415.141,72.8" id="L_RP_RD_4" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#d3jp18c6prpp_flowchart-v2-pointEnd)"></path><path d="M549.125,72.8L555.875,72.8C562.625,72.8,576.125,72.8,586.25,72.8C596.375,72.8,603.125,72.8,609.208,72.8C615.292,72.8,620.708,72.8,623.417,72.8L626.125,72.8" id="L_RD_RF_5" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#d3jp18c6prpp_flowchart-v2-pointEnd)"></path><path d="M814.859,72.8L821.609,72.8C828.359,72.8,841.859,72.8,851.984,72.8C862.109,72.8,868.859,72.8,874.943,72.8C881.026,72.8,886.443,72.8,889.151,72.8L891.859,72.8" id="L_RF_RR_6" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#d3jp18c6prpp_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g></g><g class="nodes"><g class="node default state " id="flowchart-RT-20" transform="translate(96.1875, 72.79999923706055)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-47.6875" y="-25" width="95.375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Task</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-RP-21" transform="translate(281.5078125, 72.79999923706055)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-56.6328125" y="-17.5" width="113.265625" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Participants</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-RD-23" transform="translate(484.1328125, 72.79999923706055)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-64.9921875" y="-25" width="129.984375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Real</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> data</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-RF-25" transform="translate(722.4921875, 72.79999923706055)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-92.3671875" y="-17.5" width="184.734375" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Computational</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> model</tspan></tspan></text></g></g></g><g class="node default out " id="flowchart-RR-27" transform="translate(971.328125, 72.79999923706055)"><rect class="basic label-container" style="fill:#eaf1ea !important;stroke:#2e7d32 !important;stroke-width:1.5px !important" x="-75.46875" y="-33.79999923706055" width="150.9375" height="67.5999984741211"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -18.799999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Parameters</tspan></tspan><tspan class="text-outer-tspan" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">we</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> estimate</tspan></tspan></text></g></g></g></g></g><g class="root" transform="translate(166.4296875, 0)"><g class="clusters"><g class="cluster " id="S" data-look="classic"><rect style="" x="8" y="8" width="746.4375" height="221.5999984741211"></rect><g class="cluster-label " transform="translate(341.7890625, 8)"><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Simulating</tspan></tspan></text></g></g></g></g><g class="edgePaths"><path d="M194.938,72.8L201.688,72.8C208.438,72.8,221.938,72.8,235.915,75.542C249.893,78.283,264.348,83.767,278.181,89.014C292.013,94.26,305.221,99.271,311.826,101.776L318.43,104.281" id="L_SP_SM_0" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#d3jp18c6prpp_flowchart-v2-pointEnd)"></path><path d="M169.406,173.6L180.411,173.6C191.417,173.6,213.427,173.6,231.66,170.858C249.893,168.117,264.348,162.633,278.181,157.386C292.013,152.14,305.221,147.129,311.826,144.624L318.43,142.119" id="L_ST_SM_1" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#d3jp18c6prpp_flowchart-v2-pointEnd)"></path><path d="M460.672,123.2L467.422,123.2C474.172,123.2,487.672,123.2,497.797,123.2C507.922,123.2,514.672,123.2,520.755,123.2C526.839,123.2,532.255,123.2,534.964,123.2L537.672,123.2" id="L_SM_SD_2" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#d3jp18c6prpp_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g></g><g class="nodes"><g class="node default state " id="flowchart-SP-14" transform="translate(121.71875, 72.79999923706055)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-73.21875" y="-33.79999923706055" width="146.4375" height="67.5999984741211"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -18.799999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Parameters</tspan></tspan><tspan class="text-outer-tspan" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">we</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> choose</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-SM-15" transform="translate(368.3046875, 123.19999885559082)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-92.3671875" y="-17.5" width="184.734375" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Computational</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> model</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-ST-16" transform="translate(121.71875, 173.5999984741211)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-47.6875" y="-25" width="95.375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Task</tspan></tspan></text></g></g></g><g class="node default out " id="flowchart-SD-19" transform="translate(627.8046875, 123.19999885559082)"><rect class="basic label-container" style="fill:#eaf1ea !important;stroke:#2e7d32 !important;stroke-width:1.5px !important" x="-86.1328125" y="-25" width="172.265625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Simulated</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> data</tspan></tspan></text></g></g></g></g></g></g></g></g></svg></div>
+  <div class="cols" style="margin-top:0.6em">
+    <p class="fragment"><span class="key">Simulating.</span> Choose &alpha; and &beta;, then set
+      each choice to option 1 or option 2 depending on whether a random number falls below the
+      choice probability.</p>
+    <p class="fragment"><span class="key">Fitting.</span> Vary &alpha; and &beta; until the model
+      comes as close as it can to the choices that were actually made.</p>
+  </div>
+</section>
+
+<!-- 9 ==================================================================== -->
+<section>
+  <h2>Why simulate at all, when we have real data?</h2>
+  <div class="cols">
+    <p>With simulated data we <span class="key">know the ground truth</span>. We set &alpha;
+      ourselves, so we can check whether fitting gets it back.</p>
+    <p class="fragment">With real data we never know it. All we have is an estimate, and no way to
+      check it against the truth &mdash; which is exactly why the simulations come first.</p>
+  </div>
+  <p class="takeaway fragment">If the recovery fails, the experiment needs changing before anyone
+    is recruited &mdash; not after.</p>
+</section>
+
+<!-- 10 =================================================================== -->
+<section>
+  <h2>Why do some simulated learning rates recover badly?</h2>
+  <div class="cols narrow-right">
+    <figure class="fig" id="fig-recovery-alpha">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <div class="discuss">
+      <span class="discuss-label">Discuss</span>
+      <ul>
+        <li>Which points sit furthest from the line?</li>
+        <li>What would a participant with a very low &beta; look like &mdash; and could any
+          learning rate be recovered from them?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 11 =================================================================== -->
+<section>
+  <h2>A different way to fit the same idea: regression</h2>
+  <figure class="fig" id="fig-weights">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">The learning model weights the last outcome by &alpha; and discounts each earlier
+    one by a further factor of $(1-\alpha)$. A regression estimates one weight per lag
+    <span class="key">freely</span>, instead of forcing them onto this curve.</p>
+  <div class="discuss">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>What do we gain by letting the weights go free, and what do we pay for it?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 12 =================================================================== -->
+<section>
+  <h2>Recap: why are simulations important?</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-falsify-diff">
+      <p class="cond-title">Simulated with two learning rates</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-falsify-same">
+      <p class="cond-title">Simulated with one</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <p class="takeaway fragment">The task finds the effect when it is there, and does not invent one
+    when it is not. Without both halves, a result on the real data means very little.</p>
+</section>
+
+<!-- 13 =================================================================== -->
+<section>
+  <h2>Recap: what we are <em>not</em> using simulations for</h2>
+  <ul>
+    <li>Not to judge how similar the simulated data look to the participants'</li>
+    <li>Not to be merged with the participants' data, or reported as data</li>
+    <li>Only to validate the paradigm, before and alongside the real analysis</li>
+  </ul>
+  <p class="takeaway fragment">It is circular, but in a useful direction: nothing here is used to
+    support a cognitive claim. If the circle fails to close &mdash; if we cannot recover what we
+    put in &mdash; the paradigm or the analysis needs work.</p>
+</section>
+
+<!-- 14 =================================================================== -->
+<section>
+  <h2>For what reasons could recovery or falsification fail?</h2>
+  <ul class="reasons">
+    <li class="fragment">Too few trials &mdash; say 20 stable and 20 volatile</li>
+    <li class="fragment">Too little or too much variance in what matters &mdash; only stable
+      blocks, or a volatile block that switches every 5 trials</li>
+  </ul>
+  <p class="citation">Palminteri et al., <em>TICS</em>, 2017 &middot; Scholl &amp; Klein-Fl&uuml;gge,
+    <em>Behavioural Brain Research</em>, 2018 &middot; Lockwood &amp; Klein-Fl&uuml;gge,
+    <em>SCAN</em>, 2020</p>
+</section>
+
+<!-- 15 =================================================================== -->
+<section>
+  <h2>Do we understand everything plotted here now?</h2>
+  <figure class="fig" id="fig-choices">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <figure class="fig" id="fig-magnitudes-2">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+</section>
+
+<!-- 16 =================================================================== -->
+<section>
+  <h2>How do we evaluate a fit? The log likelihood</h2>
+  <div class="cols narrow-left">
+    <div>
+      <p>Sum the log of the choice probability the model gave to each choice that was actually
+        made:</p>
+      <div class="eq">$$\textrm{LL} = \sum_t \log P(\textrm{observed choice}_t)$$<span class="eq-tag">(5)</span></div>
+      <p class="note">Maximise this, or multiply by $-1$ and minimise the
+        <span class="key">negative log likelihood</span> instead &mdash; the same thing.</p>
+    </div>
+    <figure class="fig" id="fig-likelihood">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>Which trials dominate that sum &mdash; and why is that a good thing?</li></ul>
+  </div>
+</section>
+
+<!-- 17 =================================================================== -->
+<section>
+  <h2>Why not always use grid search?</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-grid">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <ul>
+      <li>Most of the work goes into parts of the parameter space that are obviously wrong</li>
+      <li>It becomes intractable quickly: 100 combinations for two parameters is 10,000 for four</li>
+      <li>There are ways to find the maximum without measuring every point</li>
+      <li>Those ways can get stuck in a local maximum, so they are run from several starting
+        points</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 18 =================================================================== -->
+<section>
+  <h2>One intuitive trick: gradient ascent</h2>
+  <figure class="fig" id="fig-ascent">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">Start somewhere, work out which way is uphill, take a step, repeat. This is what
+    the notebook's fitting routine does &mdash; from ten starting points, keeping whichever run
+    ends highest.</p>
+</section>
+
+<!-- 19 =================================================================== -->
+<section>
+  <h2>Your turn</h2>
+  <p class="lead">Complete Section 1 of the Session 3 notebook.</p>
+  <p class="note">There is a paper to read alongside it &mdash; give it 10 to 15 minutes here and
+    finish it at home.</p>
+</section>
+
+<!-- 20 =================================================================== -->
+<section>
+  <h2>Did you notice any important differences?</h2>
+  <div class="cols narrow-right">
+    <div class="discuss">
+      <span class="discuss-label">Discuss with each other</span>
+      <ul>
+        <li>Separate blocks, with separate stimuli, and participants told the blocks differ</li>
+        <li>Magnitudes in tens rather than fully random</li>
+        <li>Happiness ratings breaking up the task</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="../assets/img/s3/task-update.png" alt="The Blain and Rutledge task design." style="max-height:380px">
+    </figure>
+  </div>
+  <p class="citation">Blain &amp; Rutledge, <em>eLife</em>, 2020</p>
+</section>
+
+<!-- 21 =================================================================== -->
+<section>
+  <h2>Learning rates of real participants</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-alpha-dist">
+      <p class="cond-title">Each block's learning rates</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-alpha-diff">
+      <p class="cond-title">Each participant's own difference</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>Why is the plot on the left less useful than the one on the right for the question we
+        are asking? How does that map onto paired against unpaired t tests?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 22 =================================================================== -->
+<section>
+  <h2>What is model comparison?</h2>
+  <ul class="reasons">
+    <li class="fragment">Deciding which model <span class="key">best describes</span> the data
+      &mdash; did participants use one learning rate, or two?</li>
+    <li class="fragment">What happens to the fit when a model gains parameters? Is it fair to
+      compare their errors directly?</li>
+  </ul>
+  <div class="eq fragment">$$\textrm{more parameters} \;\Longrightarrow\; \textrm{fit never gets worse}$$</div>
+  <ul class="reasons">
+    <li class="fragment">So how do we account for the number of parameters?</li>
+    <li class="fragment">And why is a smaller error not always a better model?</li>
+  </ul>
+</section>
+
+<!-- 23 =================================================================== -->
+<section>
+  <h2>Nested models: the likelihood ratio test</h2>
+  <div class="eq">$$\lambda_{\textrm{LR}} = 2 \log \left( \frac{\textrm{likelihood, alternative model}}{\textrm{likelihood, null model}} \right)$$<span class="eq-tag">(6)</span></div>
+  <div class="eq">$$\lambda_{\textrm{LR}} = 2 \left( \log \textrm{lik}_{\textrm{alt}} - \log \textrm{lik}_{\textrm{null}} \right)$$<span class="eq-tag">(7)</span></div>
+  <figure class="fig" id="fig-chi2">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>Why is this test statistic always positive?</li>
+      <li>What do we conclude from the $\chi^2$ test?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 24 =================================================================== -->
+<section>
+  <h2>Two simulations, both with one true learning rate</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-sim-same">
+      <p class="cond-title">Unshuffled</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-sim-shuffled">
+      <p class="cond-title">Shuffled, in the volatile block</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss with each other</span>
+    <ul>
+      <li>Why was the test significant in the second case but not the first?</li>
+      <li>Is a significant $\chi^2$ enough to say learning rates are <em>higher</em> when
+        volatile?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 25 =================================================================== -->
+<section>
+  <h2>Models that are not nested: the BIC</h2>
+  <div class="eq">$$\textrm{BIC} = k \log(n) - 2 \log(\textrm{likelihood})$$<span class="eq-tag">(8)</span></div>
+  <div class="cols narrow-right">
+    <figure class="fig" id="fig-bic">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <ul>
+      <li>A trade-off between goodness of fit and the number of parameters $k$</li>
+      <li>Smaller is better</li>
+      <li>No p-value: a heuristic, not a test</li>
+    </ul>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>What did the BIC suggest?</li></ul>
+  </div>
+</section>
+
+<!-- 26 =================================================================== -->
+<section>
+  <h2>Model comparison: pros and cons</h2>
+  <ul class="reasons">
+    <li class="fragment"><span class="key">AIC</span> $= -2\log\textrm{LL} + 2k$ can overfit, and
+      prefer models more complex than they need to be</li>
+    <li class="fragment"><span class="key">BIC</span> $= -2\log\textrm{LL} + k\log n$ penalises
+      complexity more as the sample grows &mdash; already more than AIC once $n \geq 8$ &mdash; so
+      it usually prefers simpler models, and sometimes underfits</li>
+    <li class="fragment">Both are crude but a reasonable start. Try both; they often agree. When
+      they do not, it is a judgement call &mdash; plot the parameters and the fits</li>
+    <li class="fragment">If two models have the same number of parameters, compare log likelihoods
+      directly, or use a likelihood ratio test if they are nested</li>
+    <li class="fragment">Cross-validation is another option, not covered here</li>
+  </ul>
+  <p class="citation">Akaike, 1973 &middot; Schwarz, 1978 &middot; O'Hagan &amp; Forster, 2004
+    &middot; Burnham &amp; Anderson, 2002 &middot; Vrieze, 2012</p>
+</section>
+
+<!-- 27 =================================================================== -->
+<section>
+  <h2>Over to you</h2>
+  <p class="lead">Complete Section 2 of the Session 3 notebook.</p>
+  <p class="note">That takes you to the end of the notebook.</p>
+</section>
+
+<!-- 28 =================================================================== -->
+<section>
+  <h2>Inspecting the parameters: multiplicative utility</h2>
+  <figure class="fig" id="fig-params-mul">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <div class="discuss">
+    <span class="discuss-label">Discuss</span>
+    <ul class="reasons">
+      <li class="fragment">What do you notice? Does anyone stand out?</li>
+      <li class="fragment">What does a learning rate of exactly 0 or 1 say about what that
+        participant was doing?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 29 =================================================================== -->
+<section>
+  <h2>Inspecting the parameters: additive utility</h2>
+  <figure class="fig" id="fig-params-add">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">Additive utility adds $\omega$, the weight on magnitude. An $\omega$ pinned at 0
+    or 1 says the participant used only one of the two dimensions &mdash; only the probabilities,
+    or only the points on offer.</p>
+</section>
+
+<!-- 30 =================================================================== -->
+<section>
+  <h2>Model frequency: can the BIC tell these models apart?</h2>
+  <div class="cols narrow-left">
+    <figure class="fig" id="fig-model-recovery">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <p class="note">Simulate from each of the four models in turn, fit all four back, and count how
+      often the BIC picks the right one. A comparison we cannot trust on simulated data is not one
+      to trust on real data either.</p>
+  </div>
+  <aside class="notes">The notebook does this as model recovery rather than the exceedance
+    probability from Bayesian model selection (Stephan et al., 2009), which it does not
+    compute.</aside>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script type="module">
+  import { initDeck } from '../assets/deck.js';
+  initDeck({ title: 'Computational modelling of decision making and action selection &middot; Advanced Lab &middot; Session 3' });
+  await import('./figures.js');
+</script>
+</body>
+</html>

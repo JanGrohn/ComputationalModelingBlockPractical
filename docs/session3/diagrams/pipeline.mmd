@@ -1,0 +1,15 @@
+flowchart TD
+  OH["Outcome History"] --> LM(["Learning Model"])
+  LM --> LP["Learned Probability"]
+  LP --> CV(["Combining Value Dims"])
+  SM["Shown Magnitude"] --> CV
+  CV --> DV["Decision Variable"]
+  DV --> SX(["Softmax Decision Rule"])
+  SX --> CP["Choice Probability"]
+
+  classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
+  classDef op fill:#e8eef4,stroke:#5b7fa6,stroke-width:1.2px,color:#1f4b73;
+  classDef out fill:#eaf1ea,stroke:#2e7d32,stroke-width:1.5px,color:#14171a;
+  class OH,LP,SM,DV state;
+  class LM,CV,SX op;
+  class CP out;

@@ -1,0 +1,23 @@
+flowchart TB
+  subgraph S["Simulating"]
+    direction LR
+    SP["Parameters<br>we choose"] --> SM(["Computational model"])
+    ST["Task"] --> SM
+    SM --> SD["Simulated data"]
+  end
+  subgraph R["Fitting"]
+    direction LR
+    RT["Task"] --> RP(["Participants"])
+    RP --> RD["Real data"]
+    RD --> RF(["Computational model"])
+    RF --> RR["Parameters<br>we estimate"]
+  end
+
+  S ~~~ R
+
+  classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
+  classDef op fill:#e8eef4,stroke:#5b7fa6,stroke-width:1.2px,color:#1f4b73;
+  classDef out fill:#eaf1ea,stroke:#2e7d32,stroke-width:1.5px,color:#14171a;
+  class SP,ST,RT,RD state;
+  class SM,RP,RF op;
+  class SD,RR out;

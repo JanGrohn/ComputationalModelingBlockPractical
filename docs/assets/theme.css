@@ -278,6 +278,8 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 .mermaid-figure svg { max-width: 100%; height: auto; }
 /* a wide diagram given the whole slide rather than a column */
 .mermaid-figure.wide svg { max-height: 300px; }
+/* a tall diagram sharing a slide with something else */
+.mermaid-figure.tall svg { max-height: 500px; }
 
 /* --- a box that appears on click, with its text there from the start ----- */
 

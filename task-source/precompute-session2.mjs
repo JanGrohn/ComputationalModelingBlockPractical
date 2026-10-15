@@ -1,6 +1,6 @@
 /**
  * Computes the fitted results that session 2's slides plot, once, and writes
- * them to docs/session2/precomputed.js.
+ * them to docs/assets/simulated-fits.js.
  *
  *   node precompute-session2.mjs
  *
@@ -112,8 +112,8 @@ export const ASCENT = ${JSON.stringify({
 })};
 `;
 
-await writeFile('../docs/session2/precomputed.js', out);
-console.log('wrote docs/session2/precomputed.js');
+await writeFile('../docs/assets/simulated-fits.js', out);
+console.log('wrote docs/assets/simulated-fits.js');
 console.log(`  recovery: ${RECOVERY.length} participants`);
 console.log(`  falsification: ${FALSIFICATION.same.stable.length} per scenario`);
 console.log(`  ascent: ${ASCENT.paths.map((p) => p.length).join(' and ')} steps`);
