@@ -38,21 +38,45 @@ PDF readable once the sliders are dead — see `.fig-print-note` in
 
 ```
 docs/
-  index.html          landing page listing the four sessions
+  index.html             landing page listing the four sessions
   assets/
-    theme.css         the whole design system; edit colours here
-    models.js         the RL model, utilities and softmax, in JavaScript
-    deck.js           reveal setup, KaTeX, and the interactive-figure helper
-    img/              figures taken from the original decks
+    theme.css            the whole design system; edit colours here
+    models.js            the RL model, utilities and softmax, in JavaScript
+    fitting.js           grid search and gradient ascent, enough to run in a browser
+    deck.js              reveal setup, KaTeX, and the interactive-figure helper
+    figures-shared.js    the plots more than one session shows
+    figures-fits.js      the plots drawn from the fits to real participants
+    simulated-fits.js    generated: sessions 2-4's simulated results
+    participant-fits.js  generated: the Blain and Rutledge fits, and the tests on them
+    task-demo.js         the playable task, shared by the decks
+    img/                 figures taken from the original decks
   sessionN/
-    index.html        the slides
-    figures.js        that session's live figures
+    index.html           the slides
+    figures.js           which figure goes on which slide, at what size
+    diagrams/*.mmd       mermaid sources, pre-rendered into the HTML
   export-pdf.sh
 ```
 
 `assets/models.js` is a deliberate line-for-line port of the Python in
 `sessionN/fitting.py`. If you change a model in the notebooks, change it there
 too, or a slide and the practical will quietly disagree.
+
+### The generated data files
+
+Two files under `assets/` are written by scripts and should not be edited:
+
+```bash
+cd task-source
+node precompute-session2.mjs   # -> assets/simulated-fits.js
+python3 precompute-fits.py     # -> assets/participant-fits.js
+```
+
+The first simulates and refits participants for the recovery, falsification and
+gradient-ascent figures. The second runs the practical's own
+`session3.fitting` and `session4.fitting` over the Blain and Rutledge data, so
+every number sessions 3 and 4 put on a slide — the likelihood ratio tests, the
+BIC totals, the model recovery — is the number students will get from the
+notebook. Re-run them if a model or a saved fit changes.
 
 ### Writing a slide
 

@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 4 &middot; Advanced Lab</title>
+<meta name="description" content="Validating the model fits, and planning the write-up.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 ==================================================================== -->
+<section class="title-slide">
+  <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
+  <p class="subtitle">Advanced Lab &middot; Session 4 of 4</p>
+  <p class="byline">Organisers: <strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
+     Department of Experimental Psychology, University of Oxford</p>
+</section>
+
+<!-- 2 ==================================================================== -->
+<section>
+  <h2>Plan for the next 4 weeks</h2>
+  <div class="weeks">
+    <div class="week">
+      <p class="week-n">Week 1</p>
+      <ul><li>Python and Colab basics</li><li>Experience the task</li>
+          <li>Build a learning model</li><li>Understand its parameters</li></ul>
+    </div>
+    <div class="week">
+      <p class="week-n">Week 2</p>
+      <ul><li>Utility and choice probability</li><li>Model simulations</li>
+          <li>Parameter recovery</li></ul>
+    </div>
+    <div class="week">
+      <p class="week-n">Week 3</p>
+      <ul><li>Fitting real data</li><li>Model comparison</li>
+          <li>Checking data quality</li></ul>
+    </div>
+    <div class="week week-now">
+      <p class="week-n">Week 4 <span>today</span></p>
+      <ul><li>Validating the fits</li><li>Statistics</li><li>Write-up planning</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ==================================================================== -->
+<section>
+  <h2>Aims for today</h2>
+  <ul>
+    <li>Recap the key concepts from last week</li>
+    <li>Validate the model fits &mdash; parameter recovery and model recovery</li>
+    <li>Prepare for <span class="key">report writing</span></li>
+    <li>Talk through the structure of your write-up</li>
+  </ul>
+</section>
+
+<!-- 4 ==================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part one</p>
+  <h2>Recap</h2>
+</section>
+
+<!-- 5 ==================================================================== -->
+<section>
+  <h2>Recap: the log likelihood</h2>
+  <div class="eq">$$\textrm{LL} = \sum_t \log P(\textrm{the choice that was made on trial } t)$$<span class="eq-tag">(5)</span></div>
+  <div class="cols narrow-right">
+    <figure class="fig" id="fig-likelihood">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <p class="note">Maximise this, or multiply by $-1$ and minimise the
+      <span class="key">negative log likelihood</span> instead &mdash; the same thing.</p>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>Which trials dominate that sum &mdash; and why is that a good thing?</li></ul>
+  </div>
+</section>
+
+<!-- 6 ==================================================================== -->
+<section>
+  <h2>Recap: how do we fit? Why not grid search?</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-grid">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <ul>
+      <li>Most of the work goes into parts of the parameter space that are obviously wrong</li>
+      <li>It becomes intractable quickly: 100 combinations for two parameters is 10,000 for four</li>
+      <li>There are ways to find the maximum without measuring every point</li>
+      <li>Those ways can get stuck in a local maximum, so they are run from several starting
+        points</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 7 ==================================================================== -->
+<section>
+  <h2>One intuitive trick: gradient ascent</h2>
+  <figure class="fig" id="fig-ascent">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">Start somewhere, work out which way is uphill, take a step, repeat &mdash; from
+    ten starting points, keeping whichever run ends highest.</p>
+</section>
+
+<!-- 8 ==================================================================== -->
+<section>
+  <h2>Learning rates of real participants</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-alpha-dist">
+      <p class="cond-title">Each block's learning rates</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-alpha-diff">
+      <p class="cond-title">Each participant's own difference</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>Why is the plot on the left less insightful than the one on the right? How does that
+        relate to the statistical test &mdash; and is ours significant?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 9 ==================================================================== -->
+<section>
+  <h2>What is model comparison?</h2>
+  <ul class="reasons">
+    <li class="fragment">Deciding which model <span class="key">best describes</span> the data
+      &mdash; did participants use one learning rate, or two?</li>
+    <li class="fragment">What happens to the fit when a model gains parameters? Is it fair to
+      compare their errors directly?</li>
+  </ul>
+  <div class="eq fragment">$$\textrm{more parameters} \;\Longrightarrow\; \textrm{fit never gets worse}$$</div>
+  <ul class="reasons">
+    <li class="fragment">So how do we account for the number of parameters?</li>
+    <li class="fragment">And why is a smaller error not always a better model?</li>
+  </ul>
+</section>
+
+<!-- 10 =================================================================== -->
+<section>
+  <h2>Nested models: the likelihood ratio test</h2>
+  <div class="eq">$$\lambda_{\textrm{LR}} = 2 \left( \log \textrm{lik}_{\textrm{alt}} - \log \textrm{lik}_{\textrm{null}} \right)$$<span class="eq-tag">(7)</span></div>
+  <figure class="fig" id="fig-chi2">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>Why is this test statistic always positive?</li>
+      <li>What do we conclude from the $\chi^2$ test?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 11 =================================================================== -->
+<section>
+  <h2>Two simulations, both with one true learning rate</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-sim-same">
+      <p class="cond-title">Unshuffled</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-sim-shuffled">
+      <p class="cond-title">Shuffled, in the volatile block</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>Why was the test significant in the second case but not the first?</li>
+      <li>Is a significant $\chi^2$ enough to say learning rates are <em>higher</em> when
+        volatile?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 12 =================================================================== -->
+<section>
+  <h2>Models that are not nested: the BIC</h2>
+  <div class="eq">$$\textrm{BIC} = k \log(n) - 2 \log(\textrm{likelihood})$$<span class="eq-tag">(8)</span></div>
+  <div class="cols narrow-right">
+    <figure class="fig" id="fig-bic">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <ul>
+      <li>A trade-off between goodness of fit and the number of parameters $k$</li>
+      <li>Smaller is better</li>
+      <li>No p-value: a heuristic, not a test</li>
+    </ul>
+  </div>
+  <div class="discuss fragment">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>What did the BIC suggest?</li></ul>
+  </div>
+</section>
+
+<!-- 13 =================================================================== -->
+<section>
+  <h2>Model comparison: pros and cons</h2>
+  <ul class="reasons">
+    <li class="fragment"><span class="key">AIC</span> $= -2\log\textrm{LL} + 2k$ can overfit, and
+      prefer models more complex than they need to be</li>
+    <li class="fragment"><span class="key">BIC</span> $= -2\log\textrm{LL} + k\log n$ penalises
+      complexity more as the sample grows &mdash; already more than AIC once $n \geq 8$ &mdash; so
+      it usually prefers simpler models, and sometimes underfits</li>
+    <li class="fragment">Both are crude but a reasonable start. Try both; they often agree. When
+      they do not, it is a judgement call &mdash; plot the parameters and the fits</li>
+    <li class="fragment">If two models have the same number of parameters, compare log likelihoods
+      directly, or use a likelihood ratio test if they are nested</li>
+    <li class="fragment">Cross-validation is another option, not covered here</li>
+  </ul>
+  <p class="citation">Akaike, 1973 &middot; Schwarz, 1978 &middot; O'Hagan &amp; Forster, 2004
+    &middot; Burnham &amp; Anderson, 2002 &middot; Vrieze, 2012</p>
+</section>
+
+<!-- 14 =================================================================== -->
+<section>
+  <h2>Model frequency: can the BIC tell these models apart?</h2>
+  <div class="cols narrow-left">
+    <figure class="fig" id="fig-model-recovery">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <p class="note">Simulate from each of the four models in turn, fit all four back, and count how
+      often the BIC picks the right one. A comparison we cannot trust on simulated data is not one
+      to trust on real data either.</p>
+  </div>
+</section>
+
+<!-- 15 =================================================================== -->
+<section>
+  <h2>Inspecting the parameters: multiplicative utility</h2>
+  <figure class="fig" id="fig-params-mul">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <div class="discuss">
+    <span class="discuss-label">Discuss</span>
+    <ul class="reasons">
+      <li class="fragment">What do you notice? Does anyone stand out?</li>
+      <li class="fragment">What values would we judge normal?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 16 =================================================================== -->
+<section>
+  <h2>Inspecting the parameters: additive utility</h2>
+  <figure class="fig" id="fig-params-add">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">Additive utility adds $\omega$, the weight on magnitude. An $\omega$ pinned at 0
+    or 1 says the participant used only one of the two dimensions.</p>
+</section>
+
+<!-- 17 =================================================================== -->
+<section>
+  <h2>Your turn</h2>
+  <p class="lead">Complete today's Colab notebook.</p>
+  <p class="note">It covers parameter recovery and model recovery on the real fits &mdash; the two
+    checks that say whether the analysis in your report can be believed.</p>
+</section>
+
+<!-- 18 =================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part two</p>
+  <h2>Report writing</h2>
+</section>
+
+<!-- 19 =================================================================== -->
+<section>
+  <h2>Before you write anything</h2>
+  <div class="discuss">
+    <span class="discuss-label">Turn to your neighbour and discuss</span>
+    <ul>
+      <li>What were the main experimental hypotheses?</li>
+      <li>Did we find evidence for them?</li>
+      <li>Did anything unexpected happen?</li>
+    </ul>
+  </div>
+  <p class="takeaway">If you cannot answer these three in a sentence each, the report has no spine
+    yet. Start here, not at the abstract.</p>
+</section>
+
+<!-- 20 =================================================================== -->
+<section>
+  <h2>Abstract</h2>
+  <ul>
+    <li>Very short &mdash; under <span class="key">300 words</span></li>
+    <li>No more than two sentences on each of: hypothesis, methods, results, implications</li>
+  </ul>
+</section>
+
+<!-- 21 =================================================================== -->
+<section>
+  <h2>Introduction</h2>
+  <ul>
+    <li>Keep it short &mdash; <span class="key">200 to 400 words</span></li>
+    <li>What each experimental question is, and why it matters</li>
+    <li>How you will test it, and what you predict the outcome will be</li>
+    <li>At most four citations</li>
+  </ul>
+</section>
+
+<!-- 22 =================================================================== -->
+<section>
+  <h2>Methods</h2>
+  <p class="lead">This is a key section.</p>
+  <ul>
+    <li>Participants, exclusions, numbers</li>
+    <li>Task design, including a figure</li>
+    <li>The computational model, including its equations</li>
+    <li>Which parameters you derived, and how they test your hypotheses</li>
+    <li>Statistical tests and model comparison</li>
+  </ul>
+  <p class="takeaway">At every point, do not just list what you did &mdash; explain
+    <span class="key">why</span> and <span class="key">how</span>.</p>
+</section>
+
+<!-- 23 =================================================================== -->
+<section>
+  <h2>Results</h2>
+  <ul>
+    <li>Follow the same structure you introduced in the methods</li>
+    <li>For each result, briefly recap what the analysis was for</li>
+    <li>You can make most of the figures you need from today's notebook &mdash; but add figure
+      numbers, titles, legends and descriptions</li>
+    <li>Report tests in full: for a t test, the degrees of freedom, the t value, the p value and an
+      effect size</li>
+  </ul>
+</section>
+
+<!-- 24 =================================================================== -->
+<section>
+  <h2>Discussion</h2>
+  <ul>
+    <li><span class="key">1000 to 1500 words</span></li>
+    <li>Start with a short summary of your findings</li>
+    <li>What do the results mean? Were they what you expected?</li>
+    <li>How do they relate to the previous literature &mdash; how does Blain and Rutledge differ
+      from Behrens?</li>
+    <li>Limitations, and what you would have analysed with more time</li>
+  </ul>
+</section>
+
+<!-- 25 =================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part three</p>
+  <h2>Potential plots</h2>
+</section>
+
+<!-- 26 =================================================================== -->
+<section>
+  <h2>The task schedule</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-condition-1">
+      <p class="cond-title"><span class="cond-tag cond-stable">Condition 1</span> stable</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-condition-2">
+      <p class="cond-title"><span class="cond-tag cond-volatile">Condition 2</span> volatile</p>
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+  <figure class="fig" id="fig-magnitudes">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+</section>
+
+<!-- 27 =================================================================== -->
+<section>
+  <h2>What the model thinks happened</h2>
+  <figure class="fig" id="fig-choices">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">The model's trial-by-trial estimate, its choice probability, and the choices
+    themselves &mdash; a good way to show one participant, or to show what the model does.</p>
+</section>
+
+<!-- 28 =================================================================== -->
+<section>
+  <h2>Fitted learning rates, block by block</h2>
+  <figure class="fig" id="fig-alpha-dist-2">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+</section>
+
+<!-- 29 =================================================================== -->
+<section>
+  <h2>The difference, participant by participant</h2>
+  <figure class="fig" id="fig-alpha-diff-2">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">This is the plot that matches the test: a paired comparison needs a plot of the
+    pairs.</p>
+</section>
+
+<!-- 30 =================================================================== -->
+<section>
+  <h2>Parameters against each other</h2>
+  <figure class="fig" id="fig-params-mul-2">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+</section>
+
+<!-- 31 =================================================================== -->
+<section>
+  <h2>Parameter recovery</h2>
+  <div class="cols">
+    <figure class="fig" id="fig-recovery-alpha">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+    <figure class="fig" id="fig-recovery-beta">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+</section>
+
+<!-- 32 =================================================================== -->
+<section>
+  <h2>For your write-up</h2>
+  <ul>
+    <li>Adapt these figures to the participants and models <em>you</em> want to show, and say why
+      each one is the right plot for the point it makes</li>
+    <li>Report the statistics that go with them: t tests, likelihood ratio tests, BIC comparisons</li>
+  </ul>
+  <div class="discuss">
+    <span class="discuss-label">Any questions</span>
+    <ul><li>About when to use which test?</li></ul>
+  </div>
+  <p class="takeaway">Well done &mdash; that is the Advanced Lab. Good luck with the report.</p>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script type="module">
+  import { initDeck } from '../assets/deck.js';
+  initDeck({ title: 'Computational modelling of decision making and action selection &middot; Advanced Lab &middot; Session 4' });
+  await import('./figures.js');
+</script>
+</body>
+</html>

@@ -276,19 +276,15 @@
 <!-- 16 =================================================================== -->
 <section>
   <h2>How do we evaluate a fit? The log likelihood</h2>
-  <div class="cols narrow-left">
-    <div>
-      <p>Sum the log of the choice probability the model gave to each choice that was actually
-        made:</p>
-      <div class="eq">$$\textrm{LL} = \sum_t \log P(\textrm{observed choice}_t)$$<span class="eq-tag">(5)</span></div>
-      <p class="note">Maximise this, or multiply by $-1$ and minimise the
-        <span class="key">negative log likelihood</span> instead &mdash; the same thing.</p>
-    </div>
+  <div class="eq">$$\textrm{LL} = \sum_t \log P(\textrm{the choice that was made on trial } t)$$<span class="eq-tag">(5)</span></div>
+  <div class="cols narrow-right">
     <figure class="fig" id="fig-likelihood">
       <div class="fig-plot"></div>
       <div class="fig-controls"></div>
       <p class="fig-print-note"></p>
     </figure>
+    <p class="note">Maximise this, or multiply by $-1$ and minimise the
+      <span class="key">negative log likelihood</span> instead &mdash; the same thing.</p>
   </div>
   <div class="discuss fragment">
     <span class="discuss-label">Discuss</span>
