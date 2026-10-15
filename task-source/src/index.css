@@ -12,17 +12,19 @@ code {
     monospace;
 }
 
-/* The reward number changes in place with a short fade. Anything that slides
-   or springs draws the eye away from the two stimuli, which is where it
-   should be. */
+/* The reward number changes in place. A plain 160ms opacity fade turned out to
+   be too quick and too subtle to read as anything, so it also settles up from
+   slightly small. The easing is ease-out with no overshoot, so it arrives and
+   stops: the spring it replaced bounced, which drew the eye away from the two
+   stimuli. */
 .reward-value {
   display: inline-block;
-  animation: reward-fade 160ms ease-out;
+  animation: reward-in 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-@keyframes reward-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+@keyframes reward-in {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
