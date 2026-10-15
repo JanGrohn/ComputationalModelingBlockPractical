@@ -8,7 +8,7 @@
    practical's own fitting code, so a slide and the notebook cannot disagree.
 --------------------------------------------------------------------------- */
 
-import { layout, CONFIG, COL } from './deck.js';
+import { layout, CONFIG, COL, CONTINUOUS } from './deck.js';
 import { plotly, axis, blockKey } from './figures-shared.js';
 import {
   SIMULATIONS, STATS, CHI2, MODEL_RECOVERY, MODEL_FREQUENCIES,
@@ -30,7 +30,7 @@ export function alphaDistributions(el, fits, { width = 560, height = 300 } = {})
       marker: { color: COL.stable, opacity: 0.55 },
       hovertemplate: 'stable block<br>%{y} participants<extra></extra>' },
     { x: fits.alphaVolatile, type: 'histogram', xbins,
-      marker: { color: COL.opt2, opacity: 0.55 },
+      marker: { color: COL.volatile, opacity: 0.55 },
       hovertemplate: 'volatile block<br>%{y} participants<extra></extra>' },
   ], layout({
     width, height, barmode: 'overlay',
@@ -46,7 +46,7 @@ export function alphaDifference(el, fits, { width = 560, height = 300 } = {}) {
   const mean = difference.reduce((a, b) => a + b, 0) / difference.length;
   plotly().react(el, [
     { x: difference, type: 'histogram', xbins: { start: -1, end: 1, size: 0.1 },
-      marker: { color: COL.opt1, opacity: 0.7 },
+      marker: { color: COL.neutral, opacity: 0.7 },
       hovertemplate: 'difference %{x}<br>%{y} participants<extra></extra>' },
   ], layout({
     width, height,
@@ -54,7 +54,7 @@ export function alphaDifference(el, fits, { width = 560, height = 300 } = {}) {
     yaxis: axis('participants'),
     shapes: [
       { type: 'line', x0: 0, x1: 0, yref: 'paper', y0: 0, y1: 1,
-        line: { color: COL.muted, width: 1.5, dash: 'dash' } },
+        line: { color: COL.faint, width: 1.5, dash: 'dot' } },
       { type: 'line', x0: mean, x1: mean, yref: 'paper', y0: 0, y1: 0.86,
         line: { color: COL.ink, width: 2 } },
     ],
@@ -70,16 +70,16 @@ export function alphaDifference(el, fits, { width = 560, height = 300 } = {}) {
 export function drawChiSquare(el, { width = 1020, height = 215 } = {}) {
   const marks = [
     { value: SIMULATIONS.same.test.lambda, label: 'simulated with one learning rate',
-      color: COL.stable },
+      color: COL.neutral },
     { value: SIMULATIONS.shuffled.test.lambda, label: 'simulated, volatile shuffled',
-      color: COL.muted },
-    { value: STATS.likelihoodRatio.mul.lambda, label: 'the real participants', color: COL.opt2 },
+      color: COL.neutral },
+    { value: STATS.likelihoodRatio.mul.lambda, label: 'the real participants', color: COL.ink },
   ];
   const peak = Math.max(...CHI2.density);
 
   plotly().react(el, [
     { x: CHI2.x, y: CHI2.density, mode: 'lines', fill: 'tozeroy',
-      line: { color: COL.opt1, width: 2 }, fillcolor: 'rgba(46,125,50,0.16)',
+      line: { color: COL.neutral, width: 2 }, fillcolor: 'rgba(125,134,141,0.18)',
       hovertemplate: 'λ %{x}<extra></extra>' },
   ], layout({
     width, height,
@@ -88,7 +88,7 @@ export function drawChiSquare(el, { width = 1020, height = 215 } = {}) {
     yaxis: Object.assign(axis('density'), { range: [0, peak * 1.75], showticklabels: false }),
     shapes: [
       { type: 'line', x0: CHI2.critical, x1: CHI2.critical, y0: 0, y1: peak * 1.1,
-        line: { color: COL.faint, width: 1.5, dash: 'dash' } },
+        line: { color: COL.faint, width: 1.5, dash: 'dot' } },
       ...marks.map((m) => ({ type: 'line', x0: m.value, x1: m.value, y0: 0, y1: peak * 1.22,
         line: { color: m.color, width: 2.5 } })),
     ],
@@ -114,10 +114,11 @@ export const chiSquareNote = () =>
 
 /* --- BIC, and what it says about the four models -------------------------- */
 
-const MODEL_LABELS = {
-  mul1: '1 α<br>multiplicative', mul2: '2 α<br>multiplicative',
-  add1: '1 α<br>additive', add2: '2 α<br>additive',
-};
+// The models as the notebooks name them ("1 α, multiplicative utility"),
+// broken over three lines so four of them fit side by side without slanting.
+const stacked = (name) => name.replace(', ', ',<br>').replace(' utility', '<br>utility');
+const MODEL_LABELS = Object.fromEntries(
+  ['mul1', 'mul2', 'add1', 'add2'].map((k, i) => [k, stacked(MODEL_RECOVERY.labels[i])]));
 
 export function drawBic(el, { width = 600, height = 320 } = {}) {
   const keys = Object.keys(MODEL_LABELS);
@@ -125,15 +126,16 @@ export function drawBic(el, { width = 600, height = 320 } = {}) {
   const best = Math.min(...values);
   plotly().react(el, [{
     x: keys.map((k) => MODEL_LABELS[k]), y: values, type: 'bar',
-    marker: { color: values.map((v) => (v === best ? COL.opt1 : COL.faint)) },
-    text: values.map((v) => v.toFixed(0)), textposition: 'outside', textfont: { size: 16 },
+    marker: { color: COL.neutral },
+    text: values.map((v) => (v === best ? `<b>${v.toFixed(0)}, lowest</b>` : v.toFixed(0))),
+    textposition: 'outside', textfont: { size: 16, color: COL.ink },
     hovertemplate: '%{x}<br>BIC %{y:.0f}<extra></extra>',
   }], layout({
     width, height, bargap: 0.45,
-    xaxis: axis(''),
+    xaxis: axis('', { tickangle: 0 }),
     // the differences matter, not the absolute values, so start the axis where
     // the bars differ rather than at zero
-    yaxis: axis('summed BIC, lower is better', { range: [9500, 11000] }),
+    yaxis: axis('summed BIC', { range: [9500, 11000] }),
   }), CONFIG);
 }
 
@@ -170,7 +172,7 @@ export function parameterMatrix(el, fits, labels, { width = 1060, height = 400 }
       traces.push({
         x: fits[xKey], y: fits[yKey], mode: 'markers', type: 'scatter',
         xaxis: `x${suffix}`, yaxis: `y${suffix}`,
-        marker: { size: 6, color: COL.opt1, opacity: 0.7 },
+        marker: { size: 6, color: COL.neutral, opacity: 0.7 },
         text: fits[xKey].map((_, i) => `participant ${i}`),
         hovertemplate: `%{text}<br>${labels[xKey]} %{x:.2f}<br>${labels[yKey]} %{y:.2f}`
                        + '<extra></extra>',
@@ -191,17 +193,17 @@ export function parameterMatrix(el, fits, labels, { width = 1060, height = 400 }
 /* --- model recovery ------------------------------------------------------- */
 
 export function drawModelRecovery(el, { width = 700, height = 420 } = {}) {
-  const short = MODEL_RECOVERY.labels.map((l) => l.replace(', ', '<br>'));
+  const short = MODEL_RECOVERY.labels.map(stacked);
   plotly().react(el, [{
     type: 'heatmap', z: MODEL_RECOVERY.matrix, x: short, y: short,
     xgap: 2, ygap: 2, zmin: 0, zmax: 1,
-    colorscale: [[0, '#ffffff'], [1, COL.opt1]],
+    colorscale: CONTINUOUS,
     colorbar: { title: { text: 'proportion', side: 'right' }, thickness: 11, len: 0.9,
                 outlinewidth: 0, tickfont: { size: 13 }, titlefont: { size: 14 } },
-    hovertemplate: 'simulated with %{y}<br>picked %{x}<br>%{z:.0%} of datasets<extra></extra>',
+    hovertemplate: 'simulated with %{y}<br>recovered with %{x}<br>%{z:.0%} of datasets<extra></extra>',
   }], layout({
     width, height,
-    xaxis: Object.assign(axis('picked by the BIC'), { showgrid: false }),
+    xaxis: Object.assign(axis('recovered with'), { showgrid: false }),
     yaxis: Object.assign(axis('simulated with'), { showgrid: false, autorange: 'reversed' }),
   }), CONFIG);
 }
@@ -226,22 +228,27 @@ export const modelRecoveryNote = () =>
  */
 export function drawModelFrequencies(el, { width = 940, height = 400 } = {}) {
   const { labels, estimated, sd, exceedance } = MODEL_FREQUENCIES;
-  const names = labels.map((l) => l.replace(', ', '<br>'));
+  const names = labels.map(stacked);
   const best = Math.max(...exceedance);
   plotly().react(el, [{
     x: names, y: estimated, type: 'bar',
     error_y: { type: 'data', array: sd, color: COL.ink, thickness: 1.5, width: 6 },
-    marker: { color: exceedance.map((x) => (x === best ? COL.opt1 : COL.faint)) },
+    marker: { color: COL.neutral },
     hovertemplate: '%{x}<br>frequency %{y:.2f}<extra></extra>',
   }], layout({
     width, height, bargap: 0.45,
-    xaxis: axis(''),
+    xaxis: axis('', { tickangle: 0 }),
     yaxis: axis('frequency', { range: [0, 0.72], dtick: 0.2 }),
     annotations: estimated.map((f, i) => ({
       x: names[i], y: f + sd[i] + 0.04, xanchor: 'center', yanchor: 'bottom', showarrow: false,
-      text: `exceedance ${exceedance[i].toFixed(3)}`,
-      font: { size: 14, color: exceedance[i] === best ? COL.opt1 : COL.muted },
-    })),
+      text: exceedance[i] === best ? `<b>${exceedance[i].toFixed(3)}</b>` : exceedance[i].toFixed(3),
+      font: { size: 15, color: COL.ink },
+    })).concat([{
+      // says what the numbers over the bars are, which are not frequencies
+      x: 0.02, y: 0.7, xref: 'paper', yref: 'y', xanchor: 'left', yanchor: 'top',
+      showarrow: false, text: 'above each bar: exceedance probability',
+      font: { size: 14, color: COL.muted },
+    }]),
   }), CONFIG);
 }
 

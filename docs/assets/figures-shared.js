@@ -11,7 +11,7 @@ import {
   makeRng, generateSchedule, generateMagnitudes, rlWeights,
   simulateRlModel, stableThenVolatile,
 } from './models.js';
-import { interactiveFigure, layout, CONFIG, COL } from './deck.js';
+import { interactiveFigure, layout, CONFIG, COL, CONTINUOUS } from './deck.js';
 import { logLikelihood } from './fitting.js';
 import { RECOVERY, FALSIFICATION, ASCENT } from './simulated-fits.js';
 
@@ -68,30 +68,30 @@ export function drawChoices(el, v, { width = 1120, height = 345 } = {}) {
 
   plotly().react(el, [
     { x, y: trueProbability, mode: 'lines', name: 'true probability',
-      line: { color: COL.ink, dash: 'dash', width: 1.8 },
+      line: { color: COL.truth, dash: 'dash', width: 1.8 },
       hovertemplate: 'true probability %{y:.2f}<extra></extra>' },
-    { x, y: Array.from(probOpt1), mode: 'lines', name: 'learnt probability',
-      line: { color: COL.opt1, width: 3 },
-      hovertemplate: 'trial %{x}<br>learnt probability %{y:.2f}<extra></extra>' },
+    { x, y: Array.from(probOpt1), mode: 'lines', name: 'RL model probability',
+      line: { color: COL.option1, width: 3 },
+      hovertemplate: 'trial %{x}<br>RL model probability %{y:.2f}<extra></extra>' },
     { x, y: Array.from(choiceProb1), mode: 'lines', name: 'choice probability',
-      line: { color: COL.opt1, width: 1.6, dash: 'dot' },
+      line: { color: COL.option1, width: 1.6, dash: 'dot' },
       hovertemplate: 'trial %{x}<br>P(choose option 1) %{y:.2f}<extra></extra>' },
-    { ...where(x, Array.from(choice1), 1), mode: 'markers', name: 'chose option 1',
-      marker: { size: 6, color: COL.opt1 },
-      hovertemplate: 'trial %{x}<br>chose option 1<extra></extra>' },
-    { ...where(x, Array.from(choice1), 0), mode: 'markers', name: 'chose option 2',
-      marker: { size: 6, color: COL.opt2 },
-      hovertemplate: 'trial %{x}<br>chose option 2<extra></extra>' },
+    { ...where(x, Array.from(choice1), 1), mode: 'markers', name: 'simulated choice, option 1',
+      marker: { size: 6, color: COL.option1 },
+      hovertemplate: 'trial %{x}<br>simulated choice: option 1<extra></extra>' },
+    { ...where(x, Array.from(choice1), 0), mode: 'markers', name: 'simulated choice, option 2',
+      marker: { size: 6, color: COL.option2 },
+      hovertemplate: 'trial %{x}<br>simulated choice: option 2<extra></extra>' },
   ], layout({
     width, height,
-    xaxis: axis('trial', { range: [0.5, x.length + 0.5] }),
-    yaxis: axis('probability', { tickvals: [0, 0.2, 0.4, 0.6, 0.8, 1], range: [-0.06, 1.46] }),
+    xaxis: axis('trial number', { range: [0.5, x.length + 0.5] }),
+    yaxis: axis('option 1 rewarded?', { tickvals: [0, 0.2, 0.4, 0.6, 0.8, 1], range: [-0.06, 1.46] }),
     annotations: [
-      { x: 1, y: 1.33, text: '– – true probability', color: COL.ink },
-      { x: 42, y: 1.33, text: '— learnt probability', color: COL.opt1 },
-      { x: 92, y: 1.33, text: '·· choice probability', color: COL.opt1 },
-      { x: 1, y: 1.13, text: '● chose option 1', color: COL.opt1 },
-      { x: 42, y: 1.13, text: '● chose option 2', color: COL.opt2 },
+      { x: 1, y: 1.33, text: '– – true probability', color: COL.truth },
+      { x: 42, y: 1.33, text: '— RL model probability', color: COL.option1 },
+      { x: 92, y: 1.33, text: '·· choice probability', color: COL.option1 },
+      { x: 1, y: 1.13, text: '● simulated choice, option 1', color: COL.option1 },
+      { x: 70, y: 1.13, text: '● simulated choice, option 2', color: COL.option2 },
     ].map(({ x: ax, y, text, color }) =>
       ({ x: ax, y, xanchor: 'left', showarrow: false, text, font: { size: 16, color } })),
   }), CONFIG);
@@ -99,11 +99,11 @@ export function drawChoices(el, v, { width = 1120, height = 345 } = {}) {
 
 export const choicesNote = (v) =>
   `Shown with a learning rate of ${v.alpha.toFixed(2)} and an inverse temperature of `
-  + `${v.beta.toFixed(2)}. The learnt probability tracks the true one; the dotted choice `
-  + `probability also reflects the points on offer, which is why it reaches further. Dots at `
+  + `${v.beta.toFixed(2)}. The RL model probability tracks the true one; the dotted choice `
+  + `probability also reflects the magnitudes on offer, which is why it reaches further. Dots at `
   + `1 and 0 are the simulated choices.`;
 
-/* --- the two conditions, and the points on offer -------------------------- */
+/* --- the two conditions, and the magnitudes on offer ---------------------- */
 
 function conditionSchedule(condition) {
   const n = 102;
@@ -118,19 +118,19 @@ export function drawCondition(el, condition, { width = 530, height = 215 } = {})
   const { pOption1, opt1Rewarded } = conditionSchedule(condition);
   const x = trials(pOption1.length);
   plotly().react(el, [
-    { ...where(x, Array.from(opt1Rewarded), 1), mode: 'markers', name: 'option 1 rewarded',
-      marker: { size: 5, color: COL.opt1 },
+    { ...where(x, Array.from(opt1Rewarded), 1), mode: 'markers', name: 'trial outcomes, option 1 rewarded',
+      marker: { size: 5, color: COL.option1 },
       hovertemplate: 'trial %{x}<br>option 1 rewarded<extra></extra>' },
-    { ...where(x, Array.from(opt1Rewarded), 0), mode: 'markers', name: 'option 2 rewarded',
-      marker: { size: 5, color: COL.opt2 },
+    { ...where(x, Array.from(opt1Rewarded), 0), mode: 'markers', name: 'trial outcomes, option 2 rewarded',
+      marker: { size: 5, color: COL.option2 },
       hovertemplate: 'trial %{x}<br>option 2 rewarded<extra></extra>' },
     { x, y: pOption1, mode: 'lines', name: 'true probability',
-      line: { color: COL.ink, dash: 'dash', width: 2 },
+      line: { color: COL.truth, dash: 'dash', width: 2 },
       hovertemplate: 'P(option 1 rewarded) %{y:.2f}<extra></extra>' },
   ], layout({
     width, height,
-    xaxis: axis('trial', { range: [0.5, pOption1.length + 0.5] }),
-    yaxis: axis('P(option 1 rewarded)', { range: [-0.08, 1.08], dtick: 0.25 }),
+    xaxis: axis('trial number', { range: [0.5, pOption1.length + 0.5] }),
+    yaxis: axis('option 1 rewarded?', { range: [-0.08, 1.08], dtick: 0.25 }),
   }), CONFIG);
 }
 
@@ -144,19 +144,19 @@ export function drawMagnitudes(el, { width = 1120, height = 165 } = {}) {
   const x = trials(n);
   const mag = () => Array.from({ length: n }, () => 1 + Math.floor(rng() * 99));
   plotly().react(el, [
-    { x, y: mag(), mode: 'lines+markers', name: 'option 1',
-      line: { color: COL.opt1, width: 1.6 }, marker: { size: 4, color: COL.opt1 },
-      hovertemplate: 'trial %{x}<br>option 1: %{y} points<extra></extra>' },
-    { x, y: mag(), mode: 'lines+markers', name: 'option 2',
-      line: { color: COL.opt2, width: 1.6, dash: 'dot' }, marker: { size: 4, color: COL.opt2 },
-      hovertemplate: 'trial %{x}<br>option 2: %{y} points<extra></extra>' },
+    { x, y: mag(), mode: 'lines+markers', name: 'magnitude option 1',
+      line: { color: COL.option1, width: 1.6 }, marker: { size: 4, color: COL.option1 },
+      hovertemplate: 'trial %{x}<br>magnitude option 1: %{y}<extra></extra>' },
+    { x, y: mag(), mode: 'lines+markers', name: 'magnitude option 2',
+      line: { color: COL.option2, width: 1.6, dash: 'dot' }, marker: { size: 4, color: COL.option2 },
+      hovertemplate: 'trial %{x}<br>magnitude option 2: %{y}<extra></extra>' },
   ], layout({
     width, height,
-    xaxis: axis('trial', { range: [0.5, n + 0.5] }),
-    yaxis: axis('points on offer', { range: [0, 104], dtick: 50 }),
+    xaxis: axis('trial number', { range: [0.5, n + 0.5] }),
+    yaxis: axis('magnitude', { range: [0, 104], dtick: 50 }),
     annotations: [
-      { x: 1, text: '— option 1', color: COL.opt1 },
-      { x: 18, text: '··· option 2', color: COL.opt2 },
+      { x: 1, text: '— magnitude option 1', color: COL.option1 },
+      { x: 30, text: '··· magnitude option 2', color: COL.option2 },
     ].map(({ x: ax, text, color }) => ({ x: ax, y: 1.24, xref: 'x', yref: 'paper',
       xanchor: 'left', showarrow: false, text, font: { size: 16, color } })),
   }), CONFIG);
@@ -195,7 +195,7 @@ export function drawLikelihood(el, { width = 980, height = 430 } = {}) {
   const { alphas, betas, z, best } = landscapeGrid();
   plotly().react(el, [
     { type: 'contour', z, x: betas, y: alphas,
-      colorscale: [[0, '#f4f7f4'], [0.55, '#9cc49e'], [1, COL.opt1]],
+      colorscale: CONTINUOUS,
       showscale: true,
       colorbar: { title: { text: 'log likelihood', side: 'right' }, thickness: 11,
                   len: 0.92, outlinewidth: 0, tickfont: { size: 13 }, titlefont: { size: 14 } },
@@ -203,10 +203,10 @@ export function drawLikelihood(el, { width = 980, height = 430 } = {}) {
       line: { color: 'rgba(255,255,255,0.6)', width: 1 },
       hovertemplate: 'α %{y:.2f}<br>β %{x:.2f}<br>log likelihood %{z:.1f}<extra></extra>' },
     { x: [TRUE_BETA], y: [TRUE_ALPHA], mode: 'markers', name: 'simulated',
-      marker: { size: 13, color: '#fff', symbol: 'circle', line: { color: COL.ink, width: 2 } },
+      marker: { size: 13, color: '#fff', symbol: 'circle', line: { color: COL.truth, width: 2 } },
       hovertemplate: 'simulated with α 0.30, β 0.20<extra></extra>' },
     { x: [best.b], y: [best.a], mode: 'markers', name: 'peak',
-      marker: { size: 13, color: COL.opt2, symbol: 'x', line: { width: 3 } },
+      marker: { size: 13, color: COL.estimate, symbol: 'x', line: { width: 3 } },
       hovertemplate: `peak at α ${best.a.toFixed(2)}, β ${best.b.toFixed(2)}<extra></extra>` },
   ], layout({
     width, height,
@@ -214,10 +214,10 @@ export function drawLikelihood(el, { width = 980, height = 430 } = {}) {
     yaxis: axis('learning rate α', { showgrid: false }),
     annotations: [
       { x: TRUE_BETA, y: TRUE_ALPHA, ax: 36, ay: -30, text: 'simulated with',
-        font: { size: 14, color: COL.ink }, arrowcolor: COL.ink, arrowhead: 2,
+        font: { size: 14, color: COL.truth }, arrowcolor: COL.truth, arrowhead: 2,
         arrowsize: 0.8, arrowwidth: 1, xanchor: 'left' },
       { x: best.b, y: best.a, ax: 30, ay: 34, text: 'best fit',
-        font: { size: 14, color: COL.opt2 }, arrowcolor: COL.opt2, arrowhead: 2,
+        font: { size: 14, color: COL.estimate }, arrowcolor: COL.estimate, arrowhead: 2,
         arrowsize: 0.8, arrowwidth: 1, xanchor: 'left' },
     ],
   }), CONFIG);
@@ -242,14 +242,14 @@ export function drawGridSearch(el, v, { width = 920, height = 400 } = {}) {
 
   plotly().react(el, [
     { type: 'contour', z, x: betas, y: alphas,
-      colorscale: [[0, '#f7faf7'], [0.55, '#cfe3d0'], [1, '#8fbb91']],
+      colorscale: CONTINUOUS,
       showscale: false, contours: { coloring: 'heatmap' },
       line: { color: 'rgba(255,255,255,0.6)', width: 1 }, hoverinfo: 'skip' },
     { ...points, mode: 'markers', name: 'evaluated',
-      marker: { size: 4, color: COL.ink, opacity: 0.55 },
+      marker: { size: 4, color: COL.neutral, opacity: 0.55 },
       hovertemplate: 'α %{y:.2f}, β %{x:.2f}<extra></extra>' },
     { x: [best.b], y: [best.a], mode: 'markers', name: 'peak',
-      marker: { size: 13, color: COL.opt2, symbol: 'x', line: { width: 3 } },
+      marker: { size: 13, color: COL.estimate, symbol: 'x', line: { width: 3 } },
       hovertemplate: 'the peak we are looking for<extra></extra>' },
   ], layout({
     width, height,
@@ -269,10 +269,10 @@ export const gridSearchNote = (v) => {
 
 export function drawRecovery(el, key, fitKey, label, hi, { width = 500, height = 340 } = {}) {
   plotly().react(el, [
-    { x: [0, hi], y: [0, hi], mode: 'lines', line: { color: COL.ink, width: 1.2, dash: 'dash' },
+    { x: [0, hi], y: [0, hi], mode: 'lines', line: { color: COL.truth, width: 1.2, dash: 'dash' },
       hoverinfo: 'skip' },
     { x: RECOVERY.map((r) => r[key]), y: RECOVERY.map((r) => r[fitKey]), mode: 'markers',
-      marker: { size: 9, color: COL.opt1, opacity: 0.75 },
+      marker: { size: 9, color: COL.neutral, opacity: 0.75 },
       hovertemplate: 'simulated %{x:.3f}<br>recovered %{y:.3f}<extra></extra>' },
   ], layout({
     width, height,
@@ -292,7 +292,7 @@ export function drawFalsification(el, which, { width = 520, height = 300 } = {})
   plotly().react(el, [
     { x: stable, type: 'histogram', xbins, marker: { color: COL.stable, opacity: 0.55 },
       hovertemplate: 'stable block<br>%{y} participants<extra></extra>' },
-    { x: volatile, type: 'histogram', xbins, marker: { color: COL.opt2, opacity: 0.55 },
+    { x: volatile, type: 'histogram', xbins, marker: { color: COL.volatile, opacity: 0.55 },
       hovertemplate: 'volatile block<br>%{y} participants<extra></extra>' },
   ], layout({
     width, height, barmode: 'overlay',
@@ -306,7 +306,7 @@ export function drawFalsification(el, which, { width = 520, height = 300 } = {})
 export function blockKey(stableAt = 0, volatileAt = 0.42) {
   return [
     { x: stableAt, text: '■ stable block', color: COL.stable },
-    { x: volatileAt, text: '■ volatile block', color: COL.opt2 },
+    { x: volatileAt, text: '■ volatile block', color: COL.volatile },
   ].map(({ x, text, color }) => ({ x, y: 1.18, xref: 'paper', yref: 'paper', xanchor: 'left',
     showarrow: false, text, font: { size: 16, color } }));
 }
@@ -334,8 +334,10 @@ export function drawAscent(el, v = {}, { width = 900, height = 390 } = {}) {
   const walked = paths.map((path) => path.slice(0, Math.max(1, Math.min(step, path.length))));
 
   plotly().react(el, [
-    { type: 'contour', z, x: betas, y: alphas, zmin: top - 70, zmax: top,
-      colorscale: [[0, '#ffffff'], [0.45, '#dcebdc'], [0.8, '#a8cbaa'], [1, COL.opt1]],
+    // lightened, so the climb stays visible where it starts, over the dark
+    // low end of the scale
+    { type: 'contour', z, x: betas, y: alphas, zmin: top - 70, zmax: top, opacity: 0.6,
+      colorscale: CONTINUOUS,
       showscale: false, contours: { coloring: 'heatmap', start: top - 70, end: top, size: 7 },
       line: { color: 'rgba(255,255,255,0.7)', width: 1 },
       hovertemplate: 'α %{y:.2f}<br>β %{x:.2f}<br>log likelihood %{z:.0f}<extra></extra>' },
@@ -346,10 +348,10 @@ export function drawAscent(el, v = {}, { width = 900, height = 390 } = {}) {
     })),
     // where each run has got to, so the eye can follow the two climbs
     { x: walked.map((p) => p[p.length - 1].beta), y: walked.map((p) => p[p.length - 1].alpha),
-      mode: 'markers', marker: { size: 11, color: COL.opt2, line: { color: '#fff', width: 1.5 } },
+      mode: 'markers', marker: { size: 11, color: COL.estimate, line: { color: '#fff', width: 1.5 } },
       hovertemplate: 'step %{pointNumber}<extra></extra>' },
     { x: [truth.beta], y: [truth.alpha], mode: 'markers',
-      marker: { size: 14, color: '#fff', symbol: 'circle', line: { color: COL.ink, width: 2 } },
+      marker: { size: 14, color: '#fff', symbol: 'circle', line: { color: COL.truth, width: 2 } },
       hovertemplate: 'simulated with these values<extra></extra>' },
   ], layout({
     width, height,
@@ -360,7 +362,7 @@ export function drawAscent(el, v = {}, { width = 900, height = 390 } = {}) {
       text: `start ${i + 1}`, font: { size: 15, color: COL.ink }, arrowcolor: COL.ink,
       arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'left',
     })).concat([{ x: truth.beta, y: truth.alpha, ax: 40, ay: -34, text: 'simulated with',
-      font: { size: 15, color: COL.ink }, arrowcolor: COL.ink, arrowhead: 2,
+      font: { size: 15, color: COL.truth }, arrowcolor: COL.truth, arrowhead: 2,
       arrowsize: 0.8, arrowwidth: 1, xanchor: 'left' }]),
   }), CONFIG);
 }
@@ -372,7 +374,7 @@ export const ascentNote = (v = {}) => {
     + 'points. Every step goes uphill; the steps are long where the surface is steep and shorten '
     + 'as it flattens. '
     + (done ? 'Both end near the values the data were simulated with.'
-            : `Shown after ${step} steps; the orange dots are where each run has got to.`);
+            : `Shown after ${step} steps; the purple dots are where each run has got to.`);
 };
 
 /* --- the learning rate as a weighting of past outcomes -------------------- */
@@ -382,7 +384,7 @@ export function drawWeights(el, v, { width = 1000, height = 340 } = {}) {
   const w = rlWeights(v.alpha, nBack);
   plotly().react(el, [{
     x: Array.from({ length: nBack }, (_, k) => -(k + 1)), y: w, type: 'bar',
-    marker: { color: COL.opt1 },
+    marker: { color: COL.neutral },
     hovertemplate: '%{x} trials back<br>weight %{y:.3f}<extra></extra>',
   }], layout({
     width, height, bargap: 0.35,
@@ -394,7 +396,7 @@ export function drawWeights(el, v, { width = 1000, height = 340 } = {}) {
       font: { size: 12, color: COL.ink }, arrowcolor: COL.muted,
       arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'right',
     }],
-    xaxis: axis('trials into the past', { dtick: 5, range: [-20.6, -0.4] }),
+    xaxis: axis('delay (trials)', { dtick: 5, range: [-20.6, -0.4] }),
     yaxis: axis('weight', { range: [0, 1.08] }),
   }), CONFIG);
 }

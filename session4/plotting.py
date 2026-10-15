@@ -17,6 +17,8 @@ from sklearn.linear_model import LinearRegression
 pio.templates.default = "none"
 
 # import some custom functions we wrote
+# the colours every notebook, the slides and the task share
+from session4 import palette
 from session4 import fitting, loading
 
 
@@ -77,7 +79,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = trueProbability,
           mode = 'lines',
-          line = dict(color='black', dash='dash'),
+          line = dict(color=palette.TRUTH, dash='dash'),
           name = "true probability"
       ))
 
@@ -88,7 +90,7 @@ def plot_schedule(ID, *df):
             x = list(range(nTrials)),
             y = probOpt1,
             mode = 'lines',
-            line = dict(color='red'),
+            line = dict(color=palette.OPTION1),
             name = "RL model probability"
         ))
 
@@ -99,7 +101,7 @@ def plot_schedule(ID, *df):
             x = list(range(nTrials)),
             y = choiceProb1,
             mode = 'markers',
-            marker = dict(size = 5, symbol='x', color='blue'),
+            marker = dict(size = 5, symbol='x', color=palette.OPTION1),
             name = "choice probability"
         ))
 
@@ -113,7 +115,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = correct_choices,
           mode = 'markers',
-          marker = dict(size = 5, opacity=0.8, color="black"),
+          marker = dict(size = 6, opacity=0.8, color=palette.by_option(choice1)),
           name = "correct choice"
       ))
 
@@ -122,7 +124,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = incorrect_choices,
           mode = 'markers',
-          marker = dict(size = 5, opacity=0.8, color="crimson", symbol='x'),
+          marker = dict(size = 6, opacity=0.8, color=palette.by_option(choice1), symbol='x'),
           name = "incorrect choice"
       ))
 
@@ -135,7 +137,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = magOpt1,
           mode = 'lines',
-          line = dict(color='green'),
+          line = dict(color=palette.OPTION1),
           name = "magnitude option 1",
           xaxis = 'x2',
           yaxis = 'y2',
@@ -145,7 +147,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = magOpt2,
           mode = 'lines',
-          line = dict(color='orange'),
+          line = dict(color=palette.OPTION2),
           name = "magnitude option 2",
           xaxis = 'x2',
           yaxis = 'y2',
@@ -159,7 +161,7 @@ def plot_schedule(ID, *df):
               x = list(range(nTrials)),
               y = utility1,
               mode = 'lines',
-              line = dict(color='green'),
+              line = dict(color=palette.OPTION1),
               name = "utility option 1",
               xaxis = 'x3',
               yaxis = 'y3',
@@ -169,7 +171,7 @@ def plot_schedule(ID, *df):
               x = list(range(nTrials)),
               y = utility2,
               mode = 'lines',
-              line = dict(color='orange'),
+              line = dict(color=palette.OPTION2),
               name = "utility option 2",
               xaxis = 'x3',
               yaxis = 'y3',
@@ -198,7 +200,9 @@ def plot_schedule(ID, *df):
 def visualise_alpha_distributions(stableAlphas, volatileAlphas, title):
   fig = px.histogram(pd.DataFrame({"stable block": stableAlphas,
                                   "volatile block": volatileAlphas}).melt(),
-                                  color="variable", x="value", marginal="box", barmode="overlay")
+                                  color="variable", x="value", marginal="box", barmode="overlay",
+                                  color_discrete_map={"stable block": palette.STABLE,
+                                                      "volatile block": palette.VOLATILE})
 
   fig.update_layout(title= title, xaxis_title="learning rate", legend_title_text="")
   fig.update_xaxes(range=[0, 1])
@@ -215,10 +219,11 @@ def visualise_alpha_distributions(stableAlphas, volatileAlphas, title):
   
   
 def visualise_alpha_difference(stableAlphas, volatileAlphas, title):
-  fig = px.histogram(pd.DataFrame({"volatile alpha - stable alpha": volatileAlphas - stableAlphas}).melt(),
-                                  color="variable", x="value", marginal="box", barmode="overlay")
+  fig = px.histogram(pd.DataFrame({"volatile α − stable α": volatileAlphas - stableAlphas}).melt(),
+                                  color="variable", x="value", marginal="box", barmode="overlay",
+                                  color_discrete_sequence=[palette.NEUTRAL])
 
-  fig.update_layout(title= title, xaxis_title="volatile alpha - stable alpha", legend_title_text="", showlegend=False)
+  fig.update_layout(title= title, xaxis_title="volatile α − stable α", legend_title_text="", showlegend=False)
   fig.update_xaxes(range=[-1, 1])
   
   fig.update_traces(xbins=dict(
@@ -235,54 +240,58 @@ def plot_parameter_corrs(df):
   if any(df.columns == 'alphaStable'):
     if any(df.columns == 'omega'):
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha stable',
+                    dimensions=[dict(label='α stable',
                                     values=df.alphaStable),
-                                dict(label='alpha volatile',
+                                dict(label='α volatile',
                                     values=df.alphaVolatile),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta),
-                                dict(label='omega',
+                                dict(label='ω',
                                     values=df['omega'])],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
     else:
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha stable',
+                    dimensions=[dict(label='α stable',
                                     values=df.alphaStable),
-                                dict(label='alpha volatile',
+                                dict(label='α volatile',
                                     values=df.alphaVolatile),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta)],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
   else:
     if any(df.columns == 'omega'):
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha',
+                    dimensions=[dict(label='α',
                                     values=df.alpha),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta),
-                                dict(label='omega',
+                                dict(label='ω',
                                     values=df['omega'])],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
     else:
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha',
+                    dimensions=[dict(label='α',
                                     values=df.alpha),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta)],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
@@ -301,44 +310,44 @@ def plot_recovered_parameters(recoveryData):
   if any(recoveryData.columns == 'alphaStable'):
       if any(recoveryData.columns == 'omega'):
           fig = make_subplots(rows=1, cols=4,
-                      subplot_titles=("alpha stable","alpha volatile","omega","beta"))
+                      subplot_titles=("α stable","α volatile","ω","β"))
           # Add line traces
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=1)      
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=2)
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=3)
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=4)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=1)      
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=2)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=3)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=4)
 
           # Add trendlines
           model = LinearRegression()
           model.fit(recoveryData[["alphaStable"]].values.reshape(-1,1), recoveryData[["recovered2AddAlphaS"]]) 
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=1)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=1)
           
           model = LinearRegression()
           model.fit(recoveryData[["alphaVolatile"]].values.reshape(-1,1), recoveryData[["recovered2AddAlphaV"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=2)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=2)
           
           model = LinearRegression()
           model.fit(recoveryData[["omega"]].values.reshape(-1,1), recoveryData[["recovered2AddOmega"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=3)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=3)
           
           model = LinearRegression()
           model.fit(recoveryData[["beta"]].values.reshape(-1,1), recoveryData[["recovered2AddBeta"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=4)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=4)
           
           # Add scatter traces
           fig.add_trace(go.Scatter(
                             x=recoveryData["alphaStable"],
                             y=recoveryData["recovered2AddAlphaS"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<br>Simulated alpha volatile: %{customdata[2]}<br>Recovered alpha volatile: %{customdata[3]}<br>Simulated omega: %{customdata[4]}<br>Recovered omega: %{customdata[5]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered2AddBeta"],3), round(recoveryData["alphaVolatile"],3), round(recoveryData["recovered2AddAlphaV"],3), round(recoveryData["omega"],3), round(recoveryData["recovered2AddOmega"],3)), axis=-1),
                             ),
@@ -348,7 +357,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["alphaVolatile"],
                             y=recoveryData["recovered2AddAlphaV"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<br>Simulated alpha stable: %{customdata[2]}<br>Recovered alpha stable: %{customdata[3]}<br>Simulated omega: %{customdata[4]}<br>Recovered omega: %{customdata[5]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered2AddBeta"],3), round(recoveryData["alphaStable"],3), round(recoveryData["recovered2AddAlphaS"],3), round(recoveryData["omega"],3), round(recoveryData["recovered2AddOmega"],3)), axis=-1),
                             ),
@@ -358,7 +367,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["omega"],
                             y=recoveryData["recovered2AddOmega"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<br>Simulated alpha stable: %{customdata[2]}<br>Recovered alpha stable: %{customdata[3]}<br>Simulated alpha volatile: %{customdata[4]}<br>Recovered alpha volatile: %{customdata[5]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered2AddBeta"],3), round(recoveryData["alphaStable"],3), round(recoveryData["recovered2AddAlphaS"],3), round(recoveryData["alphaVolatile"],3), round(recoveryData["recovered2AddAlphaV"],3)), axis=-1),
                             ),
@@ -368,7 +377,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["beta"],
                             y=recoveryData["recovered2AddBeta"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated alpha stable: %{customdata[0]}<br>Recovered alpha stable: %{customdata[1]}<br>Simulated alpha volatile: %{customdata[2]}<br>Recovered alpha volatile: %{customdata[3]}<br>Simulated omega: %{customdata[4]}<br>Recovered omega: %{customdata[5]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["alphaStable"],3), round(recoveryData["recovered2AddAlphaS"],3), round(recoveryData["alphaVolatile"],3), round(recoveryData["recovered2AddAlphaV"],3), round(recoveryData["omega"],3), round(recoveryData["recovered2AddOmega"],3)), axis=-1),
                             ),
@@ -380,38 +389,38 @@ def plot_recovered_parameters(recoveryData):
           fig.update_layout(xaxis4_title="simulated", yaxis4_title="recovered", showlegend=False)
       else:
           fig = make_subplots(rows=1, cols=3,
-                      subplot_titles=("alpha stable","alpha volatile","beta"))
+                      subplot_titles=("α stable","α volatile","β"))
           
           # Add line traces
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=1)
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=2)
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=3)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=1)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=2)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=3)
           
            # Add trendlines
           model = LinearRegression()
           model.fit(recoveryData[["alphaStable"]].values.reshape(-1,1), recoveryData[["recovered2MulAlphaS"]]) 
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=1)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=1)
           
           model = LinearRegression()
           model.fit(recoveryData[["alphaVolatile"]].values.reshape(-1,1), recoveryData[["recovered2MulAlphaV"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=2)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=2)
           
           model = LinearRegression()
           model.fit(recoveryData[["beta"]].values.reshape(-1,1), recoveryData[["recovered2MulBeta"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=3)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=3)
             
           # Add scatter traces
           fig.add_trace(go.Scatter(
                             x=recoveryData["alphaStable"],
                             y=recoveryData["recovered2MulAlphaS"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate='Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<br>Simulated alpha volatile: %{customdata[2]}<br>Recovered alpha volatile: %{customdata[3]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered2MulBeta"],3), round(recoveryData["alphaVolatile"],3), round(recoveryData["recovered2MulAlphaV"],3)), axis=-1),
                             ),
@@ -421,7 +430,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["alphaVolatile"],
                             y=recoveryData["recovered2MulAlphaV"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<br>Simulated alpha stable: %{customdata[2]}<br>Recovered alpha stable: %{customdata[3]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered2MulBeta"],3), round(recoveryData["alphaStable"],3), round(recoveryData["recovered2MulAlphaS"],3)), axis=-1),
                             ),
@@ -431,7 +440,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["beta"],
                             y=recoveryData["recovered2MulBeta"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated alpha stable: %{customdata[0]}<br>Recovered alpha stable: %{customdata[1]}<br>Simulated alpha volatile: %{customdata[2]}<br>Recovered alpha volatile: %{customdata[3]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["alphaStable"],3), round(recoveryData["recovered2MulAlphaS"],3), round(recoveryData["alphaVolatile"],3), round(recoveryData["recovered2MulAlphaV"],3)), axis=-1),
                             ),
@@ -444,38 +453,38 @@ def plot_recovered_parameters(recoveryData):
   else:
       if any(recoveryData.columns == 'omega'):
           fig = make_subplots(rows=1, cols=3,
-                      subplot_titles=("alpha","omega","beta"))
+                      subplot_titles=("α","ω","β"))
           
           # Add line traces
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=1)
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=2)
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=3)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=1)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=2)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=3)
           
           # Add trendlines
           model = LinearRegression()
           model.fit(recoveryData[["alpha"]].values.reshape(-1,1), recoveryData[["recovered1AddAlpha"]]) 
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=1)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=1)
           
           model = LinearRegression()
           model.fit(recoveryData[["omega"]].values.reshape(-1,1), recoveryData[["recovered1AddOmega"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=2)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=2)
           
           model = LinearRegression()
           model.fit(recoveryData[["beta"]].values.reshape(-1,1), recoveryData[["recovered1AddBeta"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=3)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=3)
             
           # Add scatter traces
           fig.add_trace(go.Scatter(
                             x=recoveryData["alpha"],
                             y=recoveryData["recovered1AddAlpha"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<br>Simulated omega: %{customdata[2]}<br>Recovered omega: %{customdata[3]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered1AddBeta"],3), round(recoveryData["omega"],3), round(recoveryData["recovered1AddOmega"],3)), axis=-1),
                             ),
@@ -485,7 +494,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["omega"],
                             y=recoveryData["recovered1AddOmega"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<br>Simulated alpha: %{customdata[2]}<br>Recovered alpha: %{customdata[3]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered1AddBeta"],3), round(recoveryData["alpha"],3), round(recoveryData["recovered1AddAlpha"],3)), axis=-1),
                             ),
@@ -495,7 +504,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["beta"],
                             y=recoveryData["recovered1AddBeta"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated alpha: %{customdata[0]}<br>Recovered alpha: %{customdata[1]}<br>Simulated omega: %{customdata[2]}<br>Recovered omega: %{customdata[3]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["alpha"],3), round(recoveryData["recovered1AddAlpha"],3), round(recoveryData["omega"],3), round(recoveryData["recovered1AddOmega"],3)), axis=-1),
                             ),
@@ -506,31 +515,31 @@ def plot_recovered_parameters(recoveryData):
           fig.update_layout(xaxis3_title="simulated", yaxis3_title="recovered", showlegend=False)
       else:
           fig = make_subplots(rows=1, cols=2,
-                      subplot_titles=("alpha","beta"))
+                      subplot_titles=("α","β"))
           
           # Add line traces
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=1)
-          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color='black', width=1)), row=1, col=2)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=1)
+          fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=2)
 
           # Add trendlines
           model = LinearRegression()
           model.fit(recoveryData[["alpha"]].values.reshape(-1,1), recoveryData[["recovered1MulAlpha"]]) 
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=1)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=1)
           
           model = LinearRegression()
           model.fit(recoveryData[["beta"]].values.reshape(-1,1), recoveryData[["recovered1MulBeta"]])
           x_range = np.linspace(0, 1, 100)
           y_range = model.predict(x_range.reshape(-1, 1))
-          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color='red', width=2)), row=1, col=2)
+          fig.add_trace(go.Scatter(x=x_range, y=y_range[:,0], mode='lines', line=dict(color=palette.ESTIMATE, width=2)), row=1, col=2)
           
           # Add scatter traces
           fig.add_trace(go.Scatter(
                             x=recoveryData["alpha"],
                             y=recoveryData["recovered1MulAlpha"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["beta"],3), round(recoveryData["recovered1MulBeta"],3)), axis=-1),
                             ),
@@ -540,7 +549,7 @@ def plot_recovered_parameters(recoveryData):
                             x=recoveryData["beta"],
                             y=recoveryData["recovered1MulBeta"],
                             mode='markers',
-                            marker=dict(color='rgba(0, 0, 255, 0.1)'),
+                            marker=dict(color=palette.NEUTRAL, opacity=0.15),
                             hovertemplate = 'Simulated alpha: %{customdata[0]}<br>Recovered alpha: %{customdata[1]}<extra></extra>',
                             customdata = np.stack((round(recoveryData["alpha"],3), round(recoveryData["recovered1MulAlpha"],3)), axis=-1),
                             ),
@@ -562,8 +571,8 @@ def visualise_LR_recovery(recov1AlphaMul, recov2AlphaMul, recov1AlphaAdd, recov2
   
 
   fig = go.Figure(data=[
-      go.Bar(name='1 alpha', x=models, y=[sum(p_recov1AlphaMul<p)/nReps, sum(p_recov1AlphaAdd<p)/nReps]),
-      go.Bar(name='2 alphas', x=models, y=[sum(p_recov2AlphaMul<p)/nReps, sum(p_recov2AlphaAdd<p)/nReps])
+      go.Bar(name='1 α', marker_color=palette.NEUTRAL, x=models, y=[sum(p_recov1AlphaMul<p)/nReps, sum(p_recov1AlphaAdd<p)/nReps]),
+      go.Bar(name='2 α', marker_color=palette.NEUTRAL, marker_pattern_shape='/', x=models, y=[sum(p_recov2AlphaMul<p)/nReps, sum(p_recov2AlphaAdd<p)/nReps])
   ])
 
   fig.update_layout(barmode='group', title = 'significant LR tests at p < ' + str(p), xaxis_title = 'simulated with', yaxis_title = 'proportion significant LR tests')
@@ -577,11 +586,12 @@ def visualise_BIC_recovery(recov1AlphaMul, recov2AlphaMul, recov1AlphaAdd, recov
       fitting.recov_BICs(recov1AlphaAdd, num_simulated_participants = num_simulated_participants, nReps = nReps),
       fitting.recov_BICs(recov2AlphaAdd, num_simulated_participants = num_simulated_participants, nReps = nReps)))/nReps
 
-  labels = ['1 alpha, multiplicative utility','2 alphas, multiplicative utility', '1 alpha, additive utility', '2 alphas, additive utility']
+  labels = ['1 α, multiplicative utility', '2 α, multiplicative utility', '1 α, additive utility', '2 α, additive utility']
   heat = go.Heatmap(z=BICs,
                     x=labels,
                     y=labels,
                     xgap=1, ygap=1,
+                    colorscale=palette.CONTINUOUS, zmin=0, zmax=1,
                     colorbar_thickness=20,
                     colorbar_ticklen=3)
 
@@ -610,8 +620,8 @@ def visualise_t_test_recovery(recov1AlphaMul, recov2AlphaMul, recov1AlphaAdd, re
   
 
   fig = go.Figure(data=[
-      go.Bar(name='1 alpha', x=models, y=[sum(p_recov1AlphaMul<p)/nReps, sum(p_recov1AlphaAdd<p)/nReps]),
-      go.Bar(name='2 alphas', x=models, y=[sum(p_recov2AlphaMul<p)/nReps, sum(p_recov2AlphaAdd<p)/nReps])
+      go.Bar(name='1 α', marker_color=palette.NEUTRAL, x=models, y=[sum(p_recov1AlphaMul<p)/nReps, sum(p_recov1AlphaAdd<p)/nReps]),
+      go.Bar(name='2 α', marker_color=palette.NEUTRAL, marker_pattern_shape='/', x=models, y=[sum(p_recov2AlphaMul<p)/nReps, sum(p_recov2AlphaAdd<p)/nReps])
   ])
 
   fig.update_layout(barmode='group', title = 'significant t tests at p < ' + str(p), xaxis_title = 'simulated with', yaxis_title = 'proportion significant t tests')

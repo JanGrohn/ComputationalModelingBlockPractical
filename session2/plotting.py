@@ -22,6 +22,9 @@ from IPython.display import display
 # import some custom fitting functions we wrote
 from session2 import fitting
 
+# the colours every notebook, the slides and the task share
+from session2 import palette
+
 # Add type hint imports
 from typing import Optional, Callable, Dict, Any
 import numpy.typing as npt
@@ -79,7 +82,7 @@ def plot_schedule(
           x = list(range(nTrials)),
           y = opt1Rewarded,
           mode = 'markers',
-          marker = dict(size = 5),
+          marker = dict(size = 5, color = palette.by_option(opt1Rewarded)),
           name = "trial outcomes"
       ))
 
@@ -89,7 +92,7 @@ def plot_schedule(
           x = list(range(nTrials)),
           y = trueProbability,
           mode = 'lines',
-          line = dict(color='black', dash='dash'),
+          line = dict(color=palette.TRUTH, dash='dash'),
           name = "true probability"
       ))
 
@@ -100,7 +103,7 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = probOpt1,
             mode = 'lines',
-            line = dict(color='red'),
+            line = dict(color=palette.OPTION1),
             name = "RL model probability"
         ))
 
@@ -111,7 +114,7 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = choiceProb1,
             mode = 'markers',
-            marker = dict(size = 5, symbol='x'),
+            marker = dict(size = 5, symbol='x', color=palette.OPTION1),
             name = "choice probability"
         ))
 
@@ -122,12 +125,12 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = choice1,
             mode = 'markers',
-            marker = dict(size = 5, symbol='cross', opacity=0.8),
+            marker = dict(size = 5, symbol='cross', opacity=0.8, color=palette.by_option(choice1)),
             name = "simulated choice"
         ))
 
   # label the axes
-  fig.update_layout(xaxis_title="", yaxis_title="option 1 (green) rewarded?")
+  fig.update_layout(xaxis_title="", yaxis_title="option 1 rewarded?")
 
   # check if we should plot reward magnitudes, and if so plot them as lines
   if magOpt1 is not None:
@@ -136,7 +139,7 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = magOpt1,
             mode = 'lines',
-            line = dict(color='green'),
+            line = dict(color=palette.OPTION1),
             name = "magnitude option 1",
             xaxis = 'x2',
             yaxis = 'y2',
@@ -146,7 +149,7 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = magOpt2,
             mode = 'lines',
-            line = dict(color='orange'),
+            line = dict(color=palette.OPTION2),
             name = "magnitude option 2",
             xaxis = 'x2',
             yaxis = 'y2',
@@ -160,7 +163,7 @@ def plot_schedule(
               x = list(range(nTrials)),
               y = utility1,
               mode = 'lines',
-              line = dict(color='magenta'),
+              line = dict(color=palette.OPTION1, dash='dot'),
               name = "utility option 1",
               xaxis = 'x2',
               yaxis = 'y2',
@@ -170,7 +173,7 @@ def plot_schedule(
               x = list(range(nTrials)),
               y = utility2,
               mode = 'lines',
-              line = dict(color='purple'),
+              line = dict(color=palette.OPTION2, dash='dot'),
               name = "utility option 2",
               xaxis = 'x2',
               yaxis = 'y2',
@@ -241,10 +244,11 @@ def visualise_utility_function(
   # make a 3d plot of the utility function
   fig = go.Figure(go.Surface(z = utilityMatrix,
                             y = magRange,
-                            x = probRange))
+                            x = probRange,
+                            colorscale = palette.CONTINUOUS))
 
-  fig.update_scenes(yaxis_title='magnitude',
-                    xaxis_title='probability',
+  fig.update_scenes(yaxis_title='reward magnitude',
+                    xaxis_title='reward probability',
                     zaxis_title='utility')
 
   fig.update_layout(scene_camera=dict(eye=dict(x=-2, y=-2, z=2)),
@@ -308,7 +312,7 @@ def visualise_softmax(softmax: Callable) -> None:
             x = utilityRange,
             y = softmax(utilityRange, 0, beta),
             mode = 'lines',
-            line = dict(color='black')
+            line = dict(color=palette.OPTION1)
         ))
 
 
@@ -498,15 +502,17 @@ def plot_likelihood_landscapes(
   fig.add_trace(go.Surface(z = LMatrix,
                            y = alphaRange,
                            x = betaRange,
+                           colorscale = palette.CONTINUOUS,
                            colorbar_x = -0.07), 1, 1)
 
   # this plots the log likelihood
   fig.add_trace(go.Surface(z = LLMatrix,
                            y = alphaRange,
-                           x = betaRange), 1, 2)
+                           x = betaRange,
+                           colorscale = palette.CONTINUOUS), 1, 2)
 
-  fig.update_scenes(yaxis_title='alpha',
-                    xaxis_title='beta',
+  fig.update_scenes(yaxis_title='learning rate α',
+                    xaxis_title='inverse temperature β',
                     zaxis_title='')
 
   fig.show()
@@ -523,18 +529,18 @@ def plot_recovered_parameters(recoveryData: pd.DataFrame) -> None:
   '''
 
   fig = make_subplots(rows=1, cols=2,
-                    subplot_titles=("alpha","inverse temperature"))
+                    subplot_titles=("learning rate α","inverse temperature β"))
 
   # Add line traces
-  fig.add_trace(go.Scatter(x=[0, 1.1], y=[0, 1.1], mode='lines', line=dict(color='black', width=1)), row=1, col=1)
-  fig.add_trace(go.Scatter(x=[0, 0.7], y=[0, 0.7], mode='lines', line=dict(color='black', width=1)), row=1, col=2)
+  fig.add_trace(go.Scatter(x=[0, 1.1], y=[0, 1.1], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=1)
+  fig.add_trace(go.Scatter(x=[0, 0.7], y=[0, 0.7], mode='lines', line=dict(color=palette.TRUTH, width=1, dash='dash')), row=1, col=2)
 
   # Add scatter traces
   fig.add_trace(go.Scatter(
                       x=recoveryData["simulatedAlpha"],
                       y=recoveryData["recoveredAlpha"],
                       mode='markers',
-                      marker=dict(color="blue"),
+                      marker=dict(color=palette.NEUTRAL),
                       hovertemplate = 'Simulated beta: %{customdata[0]}<br>Recovered beta: %{customdata[1]}<extra></extra>',
                       customdata = np.stack((round(recoveryData["simulatedBeta"],3), round(recoveryData["recoveredBeta"],3)), axis=-1)),
             row=1, col=1)
@@ -543,14 +549,14 @@ def plot_recovered_parameters(recoveryData: pd.DataFrame) -> None:
                       x=recoveryData["simulatedBeta"],
                       y=recoveryData["recoveredBeta"],
                       mode='markers',
-                      marker=dict(color='blue'),
+                      marker=dict(color=palette.NEUTRAL),
                       hovertemplate = '<br>Simulated Alpha: %{customdata[0]}<br>Recovered Alpha: %{customdata[1]}<extra></extra>',
                       customdata = np.stack((round(recoveryData["simulatedAlpha"],3), round(recoveryData["recoveredAlpha"],3)), axis=-1)),
             row=1, col=2)
 
 
   # Setting the ticks and range on x and y axes. Both axes of a panel get the
-  # same range, and the y axis is tied to the x axis, so that the black identity
+  # same range, and the y axis is tied to the x axis, so that the dashed identity
   # line really is at 45 degrees and points can be read off against it.
   fig.update_xaxes(tickvals=list(np.arange(0,1.2,0.2)), range=[0,1.1], row=1, col=1)
   fig.update_yaxes(tickvals=list(np.arange(0,1.2,0.2)), range=[0,1.1], scaleanchor='x',  scaleratio=1, row=1, col=1)
@@ -571,7 +577,9 @@ def visualise_alpha_difference(
     ) -> None:
   fig = px.histogram(pd.DataFrame({"stable block": stableAlphas,
                                   "volatile block": volatileAlphas}).melt(),
-                                  color="variable", x="value", marginal="box", barmode="overlay")
+                                  color="variable", x="value", marginal="box", barmode="overlay",
+                                  color_discrete_map={"stable block": palette.STABLE,
+                                                      "volatile block": palette.VOLATILE})
 
   fig.update_layout(title= title, xaxis_title="learning rate", legend_title_text="")
   fig.update_xaxes(range=[0, .7])
@@ -591,7 +599,8 @@ def plot_regression_weights(model) -> None:
   param_names  = list(model.params.keys())
   param_values = list(model.params.values)
 
-  fig = go.FigureWidget(go.Bar(x=param_names, y=param_values, offsetgroup=0))
+  fig = go.FigureWidget(go.Bar(x=param_names, y=param_values, offsetgroup=0,
+                                marker_color=palette.NEUTRAL))
   fig.update_layout(title='regression results', showlegend=False)
 
   # when the checkbox is toggled, we want to divide the weights by the sum of the weights. 
@@ -602,16 +611,19 @@ def plot_regression_weights(model) -> None:
           normalized_values = param_values[0:-1]/np.sum(param_values[0:-1])
           fig.data[0].y = np.concatenate((normalized_values, [param_values[-1]]))
           fig.data[0].x = [name + "/sum(weights)" for name in param_names[0:-1]] + ["magDiff"]
-          fig.add_trace(go.Bar(x=["beta"], y=[param_values[-1] + np.sum(param_values[0:-1])/100], offsetgroup=0))
-          fig.add_trace(go.Bar(x=["omega"], y=[(1 - (np.sum(param_values[0:-1])/100) / (param_values[-1] + np.sum(param_values[0:-1])/100))], offsetgroup=0))
+          fig.add_trace(go.Bar(x=["beta"], y=[param_values[-1] + np.sum(param_values[0:-1])/100], offsetgroup=0, marker_color=palette.ESTIMATE))
+          fig.add_trace(go.Bar(x=["omega"], y=[(1 - (np.sum(param_values[0:-1])/100) / (param_values[-1] + np.sum(param_values[0:-1])/100))], offsetgroup=0,
+                               marker_color=palette.ESTIMATE))
         elif "v1" in param_names:
           fig.data[0].y = param_values/np.sum(param_values)
           fig.data[0].x = [name + "/sum(weights)" for name in param_names]
-          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(param_values)], offsetgroup=0))
+          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(param_values)], offsetgroup=0,
+                               marker_color=palette.ESTIMATE))
         else:
           fig.data[0].y = param_values/np.sum(param_values)
           fig.data[0].x = [name + "/sum(weights)" for name in param_names]
-          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(param_values)/100], offsetgroup=0))
+          fig.add_trace(go.Bar(x=["beta"], y=[np.sum(param_values)/100], offsetgroup=0,
+                               marker_color=palette.ESTIMATE))
       else:
         if "magDiff" in param_names:
           fig.data[0].y = param_values

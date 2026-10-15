@@ -1,4 +1,4 @@
-flowchart TD
+flowchart LR
   OH["Outcome History"] --> LM(["Learning Model"])
   LM --> LP["Learned Probability"]
   LP --> CV(["Combining Value Dims"])
@@ -8,6 +8,6 @@ flowchart TD
   DR --> CP["Choice Probability"]
 
   classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
-  classDef op fill:#e8eef4,stroke:#5b7fa6,stroke-width:1.2px,color:#1f4b73;
+  classDef op fill:#f4f6f7,stroke:#7d868d,stroke-width:1.2px,color:#14171a;
   class OH,LP,SM,DV,CP state;
   class LM,CV,DR op;

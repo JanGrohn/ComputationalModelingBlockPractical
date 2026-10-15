@@ -35,8 +35,9 @@ N_PARTICIPANTS = 75
 N_TRIALS = 160
 SEED = 2025
 
-MODELS = ['1 alpha, multiplicative', '2 alphas, multiplicative',
-          '1 alpha, additive', '2 alphas, additive']
+# named as the notebooks name them
+MODELS = ['1 α, multiplicative utility', '2 α, multiplicative utility',
+          '1 α, additive utility', '2 α, additive utility']
 
 
 def rounded(values, dp=4):

@@ -21,19 +21,19 @@ const softmaxFigure = {
           name: 'deterministic', line: { color: COL.muted, dash: 'dot', width: 2 },
           hovertemplate: 'deterministic<extra></extra>' },
         { x: d, y: d.map((u) => softmax(u, 0, v.beta)), mode: 'lines',
-          name: 'softmax', line: { color: COL.opt1, width: 3 },
-          hovertemplate: 'utility difference %{x}<br>P(choose option 1) %{y:.2f}<extra></extra>' },
+          name: 'softmax', line: { color: COL.option1, width: 3 },
+          hovertemplate: 'u<sub>1</sub> − u<sub>2</sub> = %{x}<br>P(c<sub>1</sub>) = %{y:.2f}<extra></extra>' },
       ], layout({
         width: 1080, height: 390,
-        xaxis: Object.assign(axis('utility of option 1 − utility of option 2'),
+        xaxis: Object.assign(axis('utility 1 − utility 2  (u<sub>1</sub> − u<sub>2</sub>)'),
                              { zeroline: true, zerolinecolor: '#e2e6ea' }),
-        yaxis: axis('P(choose option 1)',
+        yaxis: axis('probability of choosing option 1',
                     { range: [-0.04, 1.2], tickvals: [0, 0.25, 0.5, 0.75, 1] }),
         annotations: [
           { x: -98, y: 1.13, xanchor: 'left', showarrow: false, text: '··· deterministic rule',
             font: { size: 16, color: COL.muted } },
           { x: -30, y: 1.13, xanchor: 'left', showarrow: false, text: '— softmax',
-            font: { size: 16, color: COL.opt1 } },
+            font: { size: 16, color: COL.option1 } },
         ],
       }), CONFIG);
     },
@@ -55,31 +55,31 @@ const deterministic = {
       plotly().react(el, [
         // drawn as two separate segments, because the rule really does jump:
         // joining them would draw a vertical line that is not part of it
-        { x: [-100, 0], y: [0, 0], mode: 'lines', line: { color: COL.ink, width: 3 },
-          hovertemplate: 'always choose B<extra></extra>' },
-        { x: [0, 100], y: [1, 1], mode: 'lines', line: { color: COL.ink, width: 3 },
-          hovertemplate: 'always choose A<extra></extra>' },
+        { x: [-100, 0], y: [0, 0], mode: 'lines', line: { color: COL.option1, width: 3 },
+          hovertemplate: 'always choose option 2<extra></extra>' },
+        { x: [0, 100], y: [1, 1], mode: 'lines', line: { color: COL.option1, width: 3 },
+          hovertemplate: 'always choose option 1<extra></extra>' },
         { x: [0], y: [0.5], mode: 'markers',
           marker: { size: 11, color: '#fff', line: { color: COL.ink, width: 2 } },
           hovertemplate: 'indifference: the two are worth the same<extra></extra>' },
       ], layout({
         width: 620, height: 340,
         shapes: [
-          Object.assign(tint('rgba(232,112,10,0.07)'), { x0: -100, x1: 0 }),
-          Object.assign(tint('rgba(46,125,50,0.07)'), { x0: 0, x1: 100 }),
+          Object.assign(tint('rgba(237,108,2,0.08)'), { x0: -100, x1: 0 }),
+          Object.assign(tint('rgba(46,125,50,0.08)'), { x0: 0, x1: 100 }),
           { type: 'line', x0: 0, x1: 0, yref: 'paper', y0: 0, y1: 0.78,
-            line: { color: COL.faint, width: 1.5, dash: 'dash' } },
+            line: { color: COL.faint, width: 1.5, dash: 'dot' } },
         ],
-        xaxis: Object.assign(axis('u<sub>A</sub> \u2212 u<sub>B</sub>'),
+        xaxis: Object.assign(axis('utility 1 \u2212 utility 2  (u<sub>1</sub> \u2212 u<sub>2</sub>)'),
                              { range: [-100, 100], tickvals: [-100, -50, 0, 50, 100] }),
-        yaxis: axis('P(choose A)', { range: [-0.12, 1.42], tickvals: [0, 0.5, 1] }),
+        yaxis: axis('probability of choosing option 1', { range: [-0.12, 1.42], tickvals: [0, 0.5, 1] }),
         annotations: [
           { x: -52, y: 1.22, xanchor: 'center', showarrow: false,
-            text: 'u<sub>B</sub> &gt; u<sub>A</sub><br>always choose B',
-            font: { size: 16, color: COL.opt2Text } },
+            text: 'u<sub>2</sub> &gt; u<sub>1</sub><br>always choose option 2',
+            font: { size: 16, color: COL.option2Text } },
           { x: 52, y: 1.22, xanchor: 'center', showarrow: false,
-            text: 'u<sub>A</sub> &gt; u<sub>B</sub><br>always choose A',
-            font: { size: 16, color: COL.opt1 } },
+            text: 'u<sub>1</sub> &gt; u<sub>2</sub><br>always choose option 1',
+            font: { size: 16, color: COL.option1 } },
           { x: 0, y: 0.5, ax: 46, ay: -26, text: 'indifference point',
             font: { size: 15, color: COL.ink }, arrowcolor: COL.ink, arrowhead: 2,
             arrowsize: 0.8, arrowwidth: 1, xanchor: 'left' },
@@ -87,7 +87,7 @@ const deterministic = {
       }), CONFIG);
     },
     note: () => 'The deterministic rule: whichever option is worth more is taken every time, so '
-                + 'the probability of choosing A jumps straight from 0 to 1. The jump sits at the '
+                + 'the probability of choosing option 1 jumps straight from 0 to 1. The jump sits at the '
                 + 'indifference point, where the two options are worth the same.',
   },
 };
@@ -149,12 +149,12 @@ const falsification = {
     note: () => 'Simulated with a higher learning rate in the volatile block.',
   },
   'fig-falsify-same': {
-    params: {}, draw: (el) => drawFalsification(el, 'same'),
+    params: {}, draw: (el) => drawFalsification(el, 'same', { width: 520, height: 285 }),
     note: () => 'Simulated with one learning rate for both blocks: the two recovered distributions '
                 + 'sit on top of each other, as they should.',
   },
   'fig-falsify-diff': {
-    params: {}, draw: (el) => drawFalsification(el, 'different'),
+    params: {}, draw: (el) => drawFalsification(el, 'different', { width: 520, height: 285 }),
     note: () => 'Simulated with a higher learning rate in the volatile block: the difference comes '
                 + 'back out, so the task can find it when it is really there.',
   },

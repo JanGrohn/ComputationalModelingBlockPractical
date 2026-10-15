@@ -71,7 +71,7 @@
 <!-- 5 =================================================================== -->
 <section>
   <h2>Recap: the log likelihood</h2>
-  <div class="eq">$$\textrm{LL} = \sum_t \log P(\textrm{the choice that was made on trial } t)$$<span class="eq-tag">(5)</span></div>
+  <div class="eq">$$\underbrace{\log L}_\textrm{log likelihood} = \sum_{t} \log \underbrace{P(c_t \mid \alpha, \beta)}_\textrm{probability the model gave the observed choice}$$</div>
   <div class="cols narrow-right">
     <figure class="fig" id="fig-likelihood">
       <div class="fig-plot"></div>
@@ -163,7 +163,7 @@
 <!-- 10 =================================================================== -->
 <section>
   <h2>Nested models: the likelihood ratio test</h2>
-  <div class="eq">$$\lambda_{\textrm{LR}} = 2 \left( \log \textrm{lik}_{\textrm{alt}} - \log \textrm{lik}_{\textrm{null}} \right)$$<span class="eq-tag">(7)</span></div>
+  <div class="eq eq-compact">$$\lambda_{\textrm{LR}} = 2 \left(\log(\textrm{likelihood for the alternative model}) - \log (\textrm{likelihood for the null model})\right) \tag{Equation 7}$$</div>
   <figure class="fig" id="fig-chi2">
     <div class="fig-plot"></div>
     <div class="fig-controls"></div>
@@ -208,7 +208,7 @@
 <!-- 12 =================================================================== -->
 <section>
   <h2>Models that are not nested: the BIC</h2>
-  <div class="eq">$$\textrm{BIC} = k \log(n) - 2 \log(\textrm{likelihood})$$<span class="eq-tag">(8)</span></div>
+  <div class="eq">$$\textrm{BIC} = k \log (n)- 2 \log (\textrm{likelihood}) \tag{Equation 8}$$</div>
   <div class="cols narrow-right">
     <figure class="fig" id="fig-bic">
       <div class="fig-plot"></div>
@@ -231,9 +231,9 @@
 <section>
   <h2>Model comparison: pros and cons</h2>
   <ul class="reasons">
-    <li class="fragment"><span class="key">AIC</span> $= -2\log\textrm{LL} + 2k$ can overfit, and
+    <li class="fragment"><span class="key">AIC</span> $= 2k - 2 \log (\textrm{likelihood})$ can overfit, and
       prefer models more complex than they need to be</li>
-    <li class="fragment"><span class="key">BIC</span> $= -2\log\textrm{LL} + k\log n$ penalises
+    <li class="fragment"><span class="key">BIC</span> $= k \log (n) - 2 \log (\textrm{likelihood})$ penalises
       complexity more as the sample grows &mdash; already more than AIC once $n \geq 8$ &mdash; so
       it usually prefers simpler models, and sometimes underfits</li>
     <li class="fragment">Both are crude but a reasonable start. Try both; they often agree. When

@@ -1,19 +1,13 @@
 /* The live figures for session 1. Each one mirrors a cell of session1.ipynb. */
 
 import {
-  makeRng, generateSchedule, rlModel, rlWeights,
-  multiplicativeUtility, additiveUtility, reversalSchedule,
+  makeRng, generateSchedule, rlModel, multiplicativeUtility, additiveUtility, reversalSchedule,
 } from '../assets/models.js';
-import { interactiveFigure, layout, CONFIG, COL } from '../assets/deck.js';
-
-/** Resolved per call: a module-level capture would run before Plotly loads. */
-function plotly() {
-  if (!window.Plotly) {
-    throw new Error('Plotly failed to load, so the live figures cannot be drawn. '
-                    + 'Check the connection to cdn.plot.ly.');
-  }
-  return window.Plotly;
-}
+import { layout, CONFIG, COL, CONTINUOUS } from '../assets/deck.js';
+import {
+  plotly, registerAll, drawCondition, conditionNote, drawMagnitudes, magnitudesNote,
+  drawWeights, weightsNote,
+} from '../assets/figures-shared.js';
 const trials = (n) => Array.from({ length: n }, (_, i) => i);
 
 /* --- 1. a fixed 80% schedule, and what the learner makes of it ------------ */
@@ -37,18 +31,18 @@ function scheduleTrace(opt1Rewarded, trueProbability, probOpt1) {
   const one = pick(1);
   const two = pick(0);
   return [
-    { ...one, mode: 'markers', name: 'option 1 rewarded',
-      marker: { size: 6, color: COL.opt1 },
+    { ...one, mode: 'markers', name: 'trial outcomes, option 1 rewarded',
+      marker: { size: 6, color: COL.option1 },
       hovertemplate: 'trial %{x}<br>option 1 rewarded<extra></extra>' },
-    { ...two, mode: 'markers', name: 'option 2 rewarded',
-      marker: { size: 6, color: COL.opt2 },
+    { ...two, mode: 'markers', name: 'trial outcomes, option 2 rewarded',
+      marker: { size: 6, color: COL.option2 },
       hovertemplate: 'trial %{x}<br>option 2 rewarded<extra></extra>' },
     { x, y: trueProbability, mode: 'lines', name: 'true probability',
-      line: { color: COL.ink, dash: 'dash', width: 2 },
+      line: { color: COL.truth, dash: 'dash', width: 2 },
       hovertemplate: 'true probability %{y:.2f}<extra></extra>' },
-    { x, y: Array.from(probOpt1), mode: 'lines', name: 'model estimate',
-      line: { color: COL.opt1, width: 3 },
-      hovertemplate: 'trial %{x}<br>model estimate %{y:.2f}<extra></extra>' },
+    { x, y: Array.from(probOpt1), mode: 'lines', name: 'RL model probability',
+      line: { color: COL.option1, width: 3 },
+      hovertemplate: 'trial %{x}<br>RL model probability %{y:.2f}<extra></extra>' },
   ];
 }
 
@@ -59,10 +53,10 @@ function scheduleLabels(n) {
     font: { size: 17, color },
   });
   return [
-    label(1, '\u25cf\u2009option 1 rewarded', COL.opt1),
-    label(n * 0.24, '\u25cf\u2009option 2 rewarded', COL.opt2),
-    label(n * 0.51, '\u2013\u2009\u2013\u2009true probability', COL.ink),
-    label(n * 0.77, '\u2014\u2009model\u2019s estimate', COL.opt1),
+    label(1, '\u25cf\u2009option 1 rewarded', COL.option1),
+    label(n * 0.24, '\u25cf\u2009option 2 rewarded', COL.option2),
+    label(n * 0.51, '\u2013\u2009\u2013\u2009true probability', COL.truth),
+    label(n * 0.72, '\u2014\u2009RL model probability', COL.option1),
   ];
 }
 
@@ -81,9 +75,9 @@ const fixedSchedule = {
       const probOpt1 = rlModel(opt1Rewarded, v.alpha, v.startingProb);
       plotly().react(el, scheduleTrace(opt1Rewarded, trueProbability, probOpt1), layout({
         width: 1120, height: 430,
-        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, n + 0.5] }),
+        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial number', standoff: 14 }, range: [0.5, n + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
-          title: { text: 'P(option 1 rewarded)', standoff: 12 }, automargin: true,
+          title: { text: 'option 1 rewarded?', standoff: 12 }, automargin: true,
           // the range runs past 1 only to make room for the labels above the
           // plot, so the ticks stop where the probability does
           tickvals: [0, 0.2, 0.4, 0.6, 0.8, 1],
@@ -94,7 +88,7 @@ const fixedSchedule = {
     note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}, a starting estimate of `
                  + `${v.startingProb.toFixed(2)} and a true reward probability of ${v.trueProb.toFixed(2)}. `
                  + `Dots along the top and bottom are the trial outcomes, the dashed line the `
-                 + `true probability, the green line the model's running estimate.`,
+                 + `true probability, the green line the RL model probability.`,
   },
 };
 
@@ -112,22 +106,22 @@ const reversal = {
       const probOpt1 = rlModel(opt1Rewarded, v.alpha, 0.5);
       plotly().react(el, scheduleTrace(opt1Rewarded, trueProbability, probOpt1), layout({
         width: 1120, height: 360,
-        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, trueProbability.length + 0.5] }),
+        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial number', standoff: 14 }, range: [0.5, trueProbability.length + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
-          title: { text: 'P(option 1 rewarded)', standoff: 12 }, automargin: true,
+          title: { text: 'option 1 rewarded?', standoff: 12 }, automargin: true,
           // the range runs past 1 only to make room for the labels above the
           // plot, so the ticks stop where the probability does
           tickvals: [0, 0.2, 0.4, 0.6, 0.8, 1],
           range: [-0.06, 1.44] }),
         shapes: [{ type: 'rect', xref: 'x', yref: 'paper', x0: 0.5, x1: 100.5, y0: 0, y1: 1,
-                   fillcolor: '#000', opacity: 0.045, line: { width: 0 }, layer: 'below' }],
+                   fillcolor: COL.neutral, opacity: 0.08, line: { width: 0 }, layer: 'below' }],
         annotations: scheduleLabels(trueProbability.length).concat([
           // the block names head their halves of the plot, well clear of the
           // outcome dots that sit on the line at 1
           { x: 50,  y: 1.36, text: 'volatile', showarrow: false,
-            font: { size: 21, color: COL.ink } },
+            font: { size: 21, color: COL.volatile } },
           { x: 150, y: 1.36, text: 'stable', showarrow: false,
-            font: { size: 21, color: COL.ink } },
+            font: { size: 21, color: COL.stable } },
         ]),
       }), CONFIG);
     },
@@ -137,95 +131,20 @@ const reversal = {
   },
 };
 
-/* --- the two conditions, side by side ----------------------------------- */
+/* --- the two conditions, and the magnitudes on offer -------------------- */
 
-const CONDITIONS = {
-  'fig-condition-1': { condition: 1, title: 'Condition 1' },
-  'fig-condition-2': { condition: 2, title: 'Condition 2' },
-};
-
-/**
- * The reward schedule a participant in each condition actually meets. These
- * are the schedules the task itself generates: condition 1 holds the
- * contingency steady, condition 2 reverses it every 25 trials.
- */
-function conditionSchedule(condition) {
-  const n = 102;
-  const pOption1 = condition === 1
-    ? new Array(n).fill(0.75)
-    : [...new Array(28).fill(0.75), ...new Array(25).fill(0.25),
-       ...new Array(25).fill(0.75), ...new Array(25).fill(0.25)].slice(0, n);
-  const rng = makeRng(condition === 1 ? 404 : 909);
-  return { pOption1, opt1Rewarded: generateSchedule(pOption1, rng) };
-}
-
-const conditions = Object.fromEntries(Object.entries(CONDITIONS).map(([id, spec]) => [id, {
+// drawn by ../assets/figures-shared.js, which sessions 2 to 4 use as well
+const conditions = Object.fromEntries([1, 2].map((condition) => [`fig-condition-${condition}`, {
   params: {},
-  draw(el) {
-    const { pOption1, opt1Rewarded } = conditionSchedule(spec.condition);
-    const x = trials(pOption1.length).map((t) => t + 1);
-    const pick = (want) => {
-      const xs = [], ys = [];
-      opt1Rewarded.forEach((o, i) => { if (o === want) { xs.push(x[i]); ys.push(o); } });
-      return { x: xs, y: ys };
-    };
-    plotly().react(el, [
-      { ...pick(1), mode: 'markers', name: 'option 1 rewarded',
-        marker: { size: 5, color: COL.opt1 },
-        hovertemplate: 'trial %{x}<br>option 1 rewarded<extra></extra>' },
-      { ...pick(0), mode: 'markers', name: 'option 2 rewarded',
-        marker: { size: 5, color: COL.opt2 },
-        hovertemplate: 'trial %{x}<br>option 2 rewarded<extra></extra>' },
-      { x, y: pOption1, mode: 'lines', name: 'true probability',
-        line: { color: COL.ink, dash: 'dash', width: 2 },
-        hovertemplate: 'P(option 1 rewarded) %{y:.2f}<extra></extra>' },
-    ], layout({
-      width: 530, height: 205,
-      xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, pOption1.length + 0.5] }),
-      // automargin keeps the axis title clear of its own tick labels
-      yaxis: Object.assign(layout().yaxis, {
-        title: { text: 'P(option 1 rewarded)', standoff: 10 },
-        automargin: true, range: [-0.08, 1.08], dtick: 0.25 }),
-    }), CONFIG);
-  },
-  note: () => spec.condition === 1
-    ? 'P(option 1 rewarded) holds at 0.75 for all 102 trials.'
-    : 'P(option 1 rewarded) starts at 0.75 and reverses every 25 trials from trial 29.',
+  draw: (el) => drawCondition(el, condition, { width: 530, height: 205 }),
+  note: () => conditionNote(condition),
 }]));
-
-/* --- the reward magnitudes ----------------------------------------------- */
 
 const magnitudes = {
   'fig-magnitudes': {
     params: {},
-    draw(el) {
-      const n = 102;
-      const rng = makeRng(31415);
-      const x = trials(n).map((t) => t + 1);
-      const mag = () => Array.from({ length: n }, () => 1 + Math.floor(rng() * 99));
-      plotly().react(el, [
-        { x, y: mag(), mode: 'lines+markers', name: 'option 1',
-          line: { color: COL.opt1, width: 1.6 }, marker: { size: 4, color: COL.opt1 },
-          hovertemplate: 'trial %{x}<br>option 1: %{y} points<extra></extra>' },
-        { x, y: mag(), mode: 'lines+markers', name: 'option 2',
-          line: { color: COL.opt2, width: 1.6, dash: 'dot' }, marker: { size: 4, color: COL.opt2 },
-          hovertemplate: 'trial %{x}<br>option 2: %{y} points<extra></extra>' },
-      ], layout({
-        width: 1120, height: 155,
-        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, n + 0.5] }),
-        yaxis: Object.assign(layout().yaxis, {
-          title: { text: 'points on offer', standoff: 12 }, automargin: true,
-          range: [0, 104], dtick: 50 }),
-        annotations: [
-          { x: 1, y: 1.22, xref: 'x', yref: 'paper', xanchor: 'left', showarrow: false,
-            text: '\u2014\u2009option 1', font: { size: 16, color: COL.opt1 } },
-          { x: 18, y: 1.22, xref: 'x', yref: 'paper', xanchor: 'left', showarrow: false,
-            text: '\u00b7\u00b7\u00b7\u2009option 2', font: { size: 16, color: COL.opt2 } },
-        ],
-      }), CONFIG);
-    },
-    note: () => 'Points on offer, redrawn at random every trial and independently of which '
-                + 'option is rewarded. Identical in both conditions.',
+    draw: (el) => drawMagnitudes(el, { width: 1120, height: 145 }),
+    note: () => magnitudesNote,
   },
 };
 
@@ -244,22 +163,21 @@ const probRange = Array.from({ length: SAMPLES }, (_, i) => i / (SAMPLES - 1));
 function contour(el, z, label) {
   plotly().react(el, [{
     type: 'contour', z, x: probRange, y: magRange,
-    colorscale: [[0, '#f4f7f4'], [0.5, '#9cc49e'], [1, COL.opt1]],
+    colorscale: CONTINUOUS,
     // the shading is the quantity the slide is about, so it needs saying
     showscale: true,
     colorbar: { title: { text: 'utility', side: 'right' }, thickness: 11,
                 len: 0.92, tickvals: [0, 50, 100], outlinewidth: 0,
                 tickfont: { size: 13 }, titlefont: { size: 14 } },
-    contours: { coloring: 'heatmap', start: 0, end: 100, size: 10,
-                showlabels: true, labelfont: { size: 10, color: '#2a2f33' } },
+    contours: { coloring: 'heatmap', start: 0, end: 100, size: 10 },
     line: { color: 'rgba(255,255,255,0.75)', width: 1 },
-    hovertemplate: 'probability %{x:.2f}<br>magnitude %{y:.0f}<br>utility %{z:.1f}<extra></extra>',
+    hovertemplate: 'reward probability %{x:.2f}<br>reward magnitude %{y:.0f}<br>utility %{z:.1f}<extra></extra>',
   }], layout({
     width: 548, height: 330,
     xaxis: Object.assign(layout().xaxis, {
-      title: { text: 'probability', standoff: 12 }, automargin: true, dtick: 0.25 }),
+      title: { text: 'reward probability', standoff: 12 }, automargin: true, dtick: 0.25 }),
     yaxis: Object.assign(layout().yaxis, {
-      title: { text: 'magnitude', standoff: 12 }, automargin: true, showgrid: false }),
+      title: { text: 'reward magnitude', standoff: 12 }, automargin: true, showgrid: false }),
   }), CONFIG);
   el.setAttribute('aria-label', label);
 }
@@ -293,41 +211,11 @@ const utilities = {
 const weights = {
   'fig-weights': {
     params: { alpha: { min: 0.02, max: 1, step: 0.01, value: 0.15, label: '&alpha;' } },
-    draw(el, v) {
-      const nBack = 20;
-      const w = rlWeights(v.alpha, nBack);
-      const x = Array.from({ length: nBack }, (_, k) => -(k + 1));
-      plotly().react(el, [{
-        x, y: w, type: 'bar', marker: { color: COL.opt1 },
-        hovertemplate: '%{x} trials back<br>weight %{y:.3f}<extra></extra>',
-      }], layout({
-        width: 1000, height: 340,
-        bargap: 0.35,
-        // the label is placed in data coordinates and clamped, so that it
-        // stays inside the plot even when alpha is 1 and the first bar fills
-        // the whole height
-        annotations: [{
-          x: -1, y: w[0],
-          ax: -3.4, ay: Math.min(w[0] + 0.24, 0.93),
-          axref: 'x', ayref: 'y',
-          text: 'the last trial carries weight \u03b1',
-          font: { size: 12, color: COL.ink }, arrowcolor: COL.muted,
-          arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'right',
-        }],
-        xaxis: Object.assign(layout().xaxis, { title: { text: 'trials into the past', standoff: 14 }, dtick: 5, range: [-20.6, -0.4] }),
-        yaxis: Object.assign(layout().yaxis, { title: { text: 'weight', standoff: 14 }, range: [0, 1.08] }),
-      }), CONFIG);
-    },
-    note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}: the most recent outcome carries `
-                 + `weight ${v.alpha.toFixed(2)}, and each earlier one is discounted by a further factor `
-                 + `of ${(1 - v.alpha).toFixed(2)}.`,
+    draw: (el, v) => drawWeights(el, v),
+    note: weightsNote,
   },
 };
 
 /* --- wire them all up ---------------------------------------------------- */
 
-for (const group of [fixedSchedule, reversal, conditions, magnitudes, utilities, weights]) {
-  for (const [id, spec] of Object.entries(group)) {
-    interactiveFigure(id, spec.params, spec.draw, spec.note);
-  }
-}
+registerAll(fixedSchedule, reversal, conditions, magnitudes, utilities, weights);

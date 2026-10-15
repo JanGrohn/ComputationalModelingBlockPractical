@@ -14,6 +14,8 @@ import plotly.express as px
 pio.templates.default = "none"
 
 # import some custom functions we wrote
+# the colours every notebook, the slides and the task share
+from session3 import palette
 from session3 import fitting
 from session3 import loading
 
@@ -75,7 +77,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = trueProbability,
           mode = 'lines',
-          line = dict(color='black', dash='dash'),
+          line = dict(color=palette.TRUTH, dash='dash'),
           name = "true probability"
       ))
 
@@ -86,7 +88,7 @@ def plot_schedule(ID, *df):
             x = list(range(nTrials)),
             y = probOpt1,
             mode = 'lines',
-            line = dict(color='red'),
+            line = dict(color=palette.OPTION1),
             name = "RL model probability"
         ))
 
@@ -97,7 +99,7 @@ def plot_schedule(ID, *df):
             x = list(range(nTrials)),
             y = choiceProb1,
             mode = 'markers',
-            marker = dict(size = 5, symbol='x', color='blue'),
+            marker = dict(size = 5, symbol='x', color=palette.OPTION1),
             name = "choice probability"
         ))
 
@@ -111,7 +113,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = correct_choices,
           mode = 'markers',
-          marker = dict(size = 5, opacity=0.8, color="black"),
+          marker = dict(size = 6, opacity=0.8, color=palette.by_option(choice1)),
           name = "correct choice"
       ))
 
@@ -120,7 +122,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = incorrect_choices,
           mode = 'markers',
-          marker = dict(size = 5, opacity=0.8, color="crimson", symbol='x'),
+          marker = dict(size = 6, opacity=0.8, color=palette.by_option(choice1), symbol='x'),
           name = "incorrect choice"
       ))
 
@@ -133,7 +135,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = magOpt1,
           mode = 'lines',
-          line = dict(color='green'),
+          line = dict(color=palette.OPTION1),
           name = "magnitude option 1",
           xaxis = 'x2',
           yaxis = 'y2',
@@ -143,7 +145,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = magOpt2,
           mode = 'lines',
-          line = dict(color='orange'),
+          line = dict(color=palette.OPTION2),
           name = "magnitude option 2",
           xaxis = 'x2',
           yaxis = 'y2',
@@ -157,7 +159,7 @@ def plot_schedule(ID, *df):
               x = list(range(nTrials)),
               y = utility1,
               mode = 'lines',
-              line = dict(color='green'),
+              line = dict(color=palette.OPTION1),
               name = "utility option 1",
               xaxis = 'x3',
               yaxis = 'y3',
@@ -167,7 +169,7 @@ def plot_schedule(ID, *df):
               x = list(range(nTrials)),
               y = utility2,
               mode = 'lines',
-              line = dict(color='orange'),
+              line = dict(color=palette.OPTION2),
               name = "utility option 2",
               xaxis = 'x3',
               yaxis = 'y3',
@@ -196,7 +198,9 @@ def plot_schedule(ID, *df):
 def visualise_alpha_distributions(stableAlphas, volatileAlphas, title):
   fig = px.histogram(pd.DataFrame({"stable block": stableAlphas,
                                   "volatile block": volatileAlphas}).melt(),
-                                  color="variable", x="value", marginal="box", barmode="overlay")
+                                  color="variable", x="value", marginal="box", barmode="overlay",
+                                  color_discrete_map={"stable block": palette.STABLE,
+                                                      "volatile block": palette.VOLATILE})
 
   fig.update_layout(title= title, xaxis_title="learning rate", legend_title_text="")
   fig.update_xaxes(range=[0, 1])
@@ -213,10 +217,11 @@ def visualise_alpha_distributions(stableAlphas, volatileAlphas, title):
   
   
 def visualise_alpha_difference(stableAlphas, volatileAlphas, title):
-  fig = px.histogram(pd.DataFrame({"volatile alpha - stable alpha": volatileAlphas - stableAlphas}).melt(),
-                                  color="variable", x="value", marginal="box", barmode="overlay")
+  fig = px.histogram(pd.DataFrame({"volatile α − stable α": volatileAlphas - stableAlphas}).melt(),
+                                  color="variable", x="value", marginal="box", barmode="overlay",
+                                  color_discrete_sequence=[palette.NEUTRAL])
 
-  fig.update_layout(title= title, xaxis_title="volatile alpha - stable alpha", legend_title_text="", showlegend=False)
+  fig.update_layout(title= title, xaxis_title="volatile α − stable α", legend_title_text="", showlegend=False)
   fig.update_xaxes(range=[-1, 1])
   
   fig.update_traces(xbins=dict(
@@ -233,54 +238,58 @@ def plot_parameter_corrs(df):
   if any(df.columns == 'alphaStable'):
     if any(df.columns == 'omega'):
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha stable',
+                    dimensions=[dict(label='α stable',
                                     values=df.alphaStable),
-                                dict(label='alpha volatile',
+                                dict(label='α volatile',
                                     values=df.alphaVolatile),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta),
-                                dict(label='omega',
+                                dict(label='ω',
                                     values=df['omega'])],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
     else:
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha stable',
+                    dimensions=[dict(label='α stable',
                                     values=df.alphaStable),
-                                dict(label='alpha volatile',
+                                dict(label='α volatile',
                                     values=df.alphaVolatile),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta)],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
   else:
     if any(df.columns == 'omega'):
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha',
+                    dimensions=[dict(label='α',
                                     values=df.alpha),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta),
-                                dict(label='omega',
+                                dict(label='ω',
                                     values=df['omega'])],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
     else:
       fig = go.Figure(data=go.Splom(
-                    dimensions=[dict(label='alpha',
+                    dimensions=[dict(label='α',
                                     values=df.alpha),
-                                dict(label='beta',
+                                dict(label='β',
                                     values=df.beta)],
                     showupperhalf=False,
                     diagonal_visible=False, 
+                    marker = dict(color=palette.NEUTRAL, size=6),
                     hovertemplate = 'participant ID: %{customdata}',
                     customdata = df.ID
                     ))
@@ -288,7 +297,7 @@ def plot_parameter_corrs(df):
   fig.show()
 
 
-def plot_model_frequencies(bestModels, sd=None, exceedance_probabilities=None, modelNames=['Multiplicative 1 Alpha', 'Multiplicative 2 Alphas', 'Additive 1 Alpha', 'Additive 2 Alphas']):
+def plot_model_frequencies(bestModels, sd=None, exceedance_probabilities=None, modelNames=['1 α, multiplicative utility', '2 α, multiplicative utility', '1 α, additive utility', '2 α, additive utility']):
     # use plotly to plot the model frequencies
     frequencies = bestModels/np.sum(bestModels)
     if sd is not None:
@@ -296,22 +305,25 @@ def plot_model_frequencies(bestModels, sd=None, exceedance_probabilities=None, m
         fig = go.Figure(data=go.Bar(
             x=modelNames,
             y=frequencies,
-            error_y=dict(type='data', array=sd)
+            marker_color=palette.NEUTRAL,
+            error_y=dict(type='data', array=sd, color=palette.TRUTH)
         ))
     else:
         fig = go.Figure(data=go.Bar(
             x=modelNames,
-            y=frequencies
+            y=frequencies,
+            marker_color=palette.NEUTRAL
         ))
     if exceedance_probabilities is not None:
-        text_labels = [f'P_exceedance = {val:.3f}' for val in exceedance_probabilities]
+        text_labels = [f'exceedance probability {val:.3f}' for val in exceedance_probabilities]
         y_positions = frequencies + (sd + 0.05 if sd is not None else 0.05)
         fig.add_trace(go.Scatter(
             x=modelNames,
             y=y_positions,
             mode='text',
-            text=text_labels
+            text=text_labels,
+            textfont=dict(color=palette.TRUTH)
         ))
         
-    fig.update_layout(yaxis_title='Frequency', xaxis_title='', showlegend=False)
+    fig.update_layout(yaxis_title='frequency', xaxis_title='', showlegend=False)
     fig.show()

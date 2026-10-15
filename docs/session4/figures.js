@@ -159,11 +159,11 @@ function recoveryPanel(el, key, label, hi, { width = 520, height = 330 } = {}) {
   const { slope, intercept } = leastSquares(simulated, recovered);
   plotly().react(el, [
     { x: [0, hi], y: [0, hi], mode: 'lines', name: 'simulated = recovered',
-      line: { color: COL.ink, width: 1.2, dash: 'dash' }, hoverinfo: 'skip' },
+      line: { color: COL.truth, width: 1.2, dash: 'dash' }, hoverinfo: 'skip' },
     { x: [0, hi], y: [intercept, intercept + slope * hi], mode: 'lines', name: 'best fit',
-      line: { color: COL.opt2, width: 2 }, hoverinfo: 'skip' },
+      line: { color: COL.estimate, width: 2 }, hoverinfo: 'skip' },
     { x: simulated, y: recovered, mode: 'markers',
-      marker: { size: 5, color: COL.opt1, opacity: 0.45 },
+      marker: { size: 5, color: COL.neutral, opacity: 0.45 },
       hovertemplate: 'simulated %{x:.3f}<br>recovered %{y:.3f}<extra></extra>' },
   ], layout({
     width, height,
@@ -172,7 +172,7 @@ function recoveryPanel(el, key, label, hi, { width = 520, height = 330 } = {}) {
                                         constrain: 'domain' }),
     annotations: [
       { x: 0.04, y: 0.94, xref: 'paper', yref: 'paper', xanchor: 'left', showarrow: false,
-        text: `slope ${slope.toFixed(2)}`, font: { size: 15, color: COL.opt2 } },
+        text: `slope ${slope.toFixed(2)}`, font: { size: 15, color: COL.estimate } },
     ],
   }), CONFIG);
 }
@@ -186,7 +186,7 @@ const recovery = Object.fromEntries(Object.entries(RECOVERY_PANELS).map(([id, p]
   params: {},
   draw: (el) => recoveryPanel(el, p.key, p.label, p.hi),
   note: () => `Simulated against recovered ${p.label}, for four simulated datasets of ${N} `
-              + 'participants each. The dashed line is simulated = recovered; the orange line is '
+              + 'participants each. The dashed line is simulated = recovered; the purple line is '
               + 'the least squares fit through the points. The closer its slope is to 1, and the '
               + 'tighter the scatter around it, the better this parameter recovers.',
 }]));

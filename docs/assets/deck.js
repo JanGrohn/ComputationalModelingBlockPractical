@@ -11,15 +11,27 @@
 --------------------------------------------------------------------------- */
 
 const PLOT_FONT = { family: 'Inter, Helvetica, Arial, sans-serif', size: 16, color: '#14171a' };
-// opt1/opt2 are the two options, green and orange, as in the task itself.
-// stable/opt2 are the two blocks: the volatile block borrows the orange, since
-// it is the one that keeps changing, and the stable block takes a quiet slate.
-// opt2Text is the darkened orange the theme uses wherever the colour carries
-// words rather than a shape, since #e8700a on white fails WCAG at text sizes.
+// The course palette. Each colour stands for exactly one thing, here, in the
+// notebooks (sessionN/palette.py) and in the task, so a colour can be read the
+// same way wherever it is seen. task-source/palette-test.mjs checks they agree.
 export const COL = {
-  opt1: '#2e7d32', opt2: '#e8700a', opt2Text: '#b35309', stable: '#1f4b73',
+  option1:  '#2e7d32',  // option 1, the green deer, and the model's probabilities about it
+  option2:  '#ed6c02',  // option 2, the orange crane
+  stable:   '#1f4b73',  // the stable block
+  volatile: '#c2185b',  // the volatile block
+  estimate: '#6a3d9a',  // a fitted or estimated value
+  truth:    '#14171a',  // the true values a simulation used; always drawn dashed
+  neutral:  '#7d868d',  // data with no category of its own
+
+  // Not data: the darkened orange for words in option 2's colour (the marks'
+  // orange fails WCAG at text sizes), and the type and annotation greys.
+  option2Text: '#b35309',
   ink: '#14171a', muted: '#5b6670', faint: '#9aa3aa',
 };
+
+// Continuous quantities: perceptually uniform, and no single flat colour in it
+// competes with the categorical colours above.
+export const CONTINUOUS = 'Viridis';
 
 /** Plot styling shared by every figure, so the decks read as one system. */
 export function layout(extra = {}) {

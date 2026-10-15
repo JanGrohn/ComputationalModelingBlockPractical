@@ -108,10 +108,32 @@ Slides are plain HTML `<section>` elements. The pieces the theme provides:
 </section>
 ```
 
-Colour means one thing only: `--opt1` green is option 1, `--opt2` orange is
-option 2, matching the task and the notebook plots. Nothing is distinguished by
-colour alone, so the greyscale print still works. Type is one sans family
-throughout, separated by weight rather than by switching to a serif; maths is
+Each colour means exactly one thing, here, in the notebooks and in the task:
+
+| colour | means |
+|---|---|
+| green `#2e7d32` | option 1, the deer: its outcomes, magnitude, utility, choices of it, and the model's probabilities about it |
+| orange `#ed6c02` | option 2, the crane |
+| blue `#1f4b73` | the stable block |
+| raspberry `#c2185b` | the volatile block |
+| purple `#6a3d9a` | a fitted or estimated value |
+| ink, dashed | the true values a simulation used |
+| grey `#7d868d` | data with no category of its own |
+| viridis | continuous quantities: likelihoods, utilities, proportions |
+
+Interface chrome uses ink and greys only, so a colour on a slide always says
+something about the data. The palette is written down in `assets/deck.js`,
+`assets/theme.css` and each `sessionN/palette.py`, since Colab copies one
+session folder at a time; `task-source/palette-test.mjs` fails if those or the
+task's stimuli ever disagree, or if a live figure draws a colour outside them,
+and `task-source/notebook-colours-test.py` checks every notebook figure the same
+way. Nothing is distinguished by colour alone, so the greyscale print still
+works.
+
+Equations are the notebooks' own, character for character, with the same
+numbers; an equation the notebooks do not number is not numbered here either.
+
+Type is one sans family throughout, separated by weight rather than by switching to a serif; maths is
 left to KaTeX's own faces, where a serif is the convention and matches how the
 notebooks render.
 
@@ -152,6 +174,10 @@ canvas is 1280×720), and let `layout()` handle the margins: it sets
 tick labels. Do not pass a `margin` of your own unless you have a reason, and
 give axis titles as `{ text, standoff }` rather than a bare string, which
 discards the standoff.
+
+`task-source/layout-test.mjs` opens every deck, live and as exported, and fails
+if anything reaches the footer or the slide edge, or an equation number is
+drawn over its equation.
 
 A slide carrying little besides a figure should give the figure the room —
 around 1000-1120 wide is right for a full-width plot. Plots are drawn on load rather than when their slide comes

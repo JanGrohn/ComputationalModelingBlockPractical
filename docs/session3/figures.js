@@ -95,14 +95,14 @@ Object.assign(recaps, Object.fromEntries([1, 2].map((condition) => [`fig-conditi
 const realFits = {
   'fig-alpha-dist': {
     params: {},
-    draw: (el) => alphaDistributions(el, FITS.mul2),
+    draw: (el) => alphaDistributions(el, FITS.mul2, { width: 560, height: 280 }),
     note: () => `Learning rates fitted to all ${N} participants under multiplicative utility. The `
                 + 'volatile distribution sits to the right, but this plot compares the two groups '
                 + 'rather than each participant with themselves.',
   },
   'fig-alpha-diff': {
     params: {},
-    draw: (el) => alphaDifference(el, FITS.mul2),
+    draw: (el) => alphaDifference(el, FITS.mul2, { width: 560, height: 280 }),
     note: () => {
       const t = STATS.tTest.mul;
       return 'The same fits as a within participant difference, which is what the hypothesis is '
@@ -110,7 +110,7 @@ const realFits = {
              + `p = ${t.p.toPrecision(2)}.`;
     },
   },
-  'fig-chi2': { params: {}, draw: drawChiSquare, note: chiSquareNote },
+  'fig-chi2': { params: {}, draw: (el) => drawChiSquare(el, { width: 1020, height: 200 }), note: chiSquareNote },
   'fig-bic': { params: {}, draw: drawBic, note: bicNote },
   'fig-params-mul': {
     params: {},
@@ -138,7 +138,7 @@ const realFits = {
 const simulations = Object.fromEntries(Object.entries(SIMULATIONS).map(([key, sim]) => [
   `fig-sim-${key}`, {
     params: {},
-    draw: (el) => alphaDifference(el, sim, { width: 540, height: 290 }),
+    draw: (el) => alphaDifference(el, sim, { width: 540, height: 270 }),
     note: () => 'Recovered differences when the data were simulated '
                 + (key === 'same'
                   ? 'with the same learning rate in both blocks. '

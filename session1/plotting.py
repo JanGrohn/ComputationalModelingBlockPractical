@@ -17,6 +17,9 @@ from typing import Optional, Callable
 import numpy.typing as npt
 from plotly.graph_objs._figure import Figure
 
+# the colours every notebook, the slides and the task share
+from session1 import palette
+
 def plot_schedule(
     opt1Rewarded:    npt.NDArray,
     trueProbability: npt.NDArray,
@@ -50,7 +53,7 @@ def plot_schedule(
           x = list(range(nTrials)),
           y = opt1Rewarded,
           mode = 'markers',
-          marker = dict(color="blue", size = 5),
+          marker = dict(color=palette.by_option(opt1Rewarded), size = 5),
           name = "trial outcomes"
       ))
 
@@ -60,7 +63,7 @@ def plot_schedule(
           x = list(range(nTrials)),
           y = trueProbability,
           mode = 'lines',
-          line = dict(color='black', dash='dash'),
+          line = dict(color=palette.TRUTH, dash='dash'),
           name = "true probability"
       ))
 
@@ -71,12 +74,12 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = probOpt1,
             mode = 'lines',
-            line = dict(color='red'),
+            line = dict(color=palette.OPTION1),
             name = "RL model probability"
         ))
 
   # label the axes
-  fig.update_layout(xaxis_title="trial number", yaxis_title="option 1 (green) rewarded?")
+  fig.update_layout(xaxis_title="trial number", yaxis_title="option 1 rewarded?")
 
   # set the range for the axes
   fig.update_xaxes(range=[0, nTrials])
@@ -230,10 +233,11 @@ def visualise_utility_function(
   # make a 3d plot of the utility function
   fig = go.Figure(go.Surface(z = utilityMatrix,
                             y = magRange,
-                            x = probRange))
+                            x = probRange,
+                            colorscale = palette.CONTINUOUS))
 
-  fig.update_scenes(yaxis_title='magnitude',
-                    xaxis_title='probability',
+  fig.update_scenes(yaxis_title='reward magnitude',
+                    xaxis_title='reward probability',
                     zaxis_title='utility')
 
   fig.update_layout(scene_camera=dict(eye=dict(x=-2, y=-2, z=2)),
@@ -300,7 +304,7 @@ def plot_RL_weights(T: int = 10) -> None:
             x = np.arange(-T, 0, 1),
             y = compute_weights(alphaSlider.value),
             mode = 'lines',
-            line = dict(color='black')
+            line = dict(color=palette.NEUTRAL)
         ))
 
   # label the axes
