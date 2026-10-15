@@ -87,13 +87,13 @@ function Choice({ condition }) {
                         alt={sideIsOptionOne ? "an orange crane" : "a green deer"}
                         style={{
                             maxWidth: "100%",
-                            maxHeight: "100%",
+                            maxHeight: "26vh",
                             objectFit: "contain",
                             filter: "drop-shadow(3px 0px black)",
                         }}
                     />
                 </div>
-                <Typography variant="h2" mt={2} sx={{ userSelect: "none" }}>
+                <Typography variant="h2" mt={2} sx={{ userSelect: "none", fontSize: "5rem", fontWeight: 500 }}>
                     <TextTransition springConfig={presets.gentle} inline>
                         {sideValue(sideIsOptionOne)}
                     </TextTransition>
