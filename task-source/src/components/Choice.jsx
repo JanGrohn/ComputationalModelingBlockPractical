@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Paper, Button, Typography, Slide, Stack, Alert, AlertTitle, Collapse } from "@mui/material";
+import { Box, Paper, Button, Typography, Stack, Alert, AlertTitle, Collapse } from "@mui/material";
 import { styled } from "@mui/system";
 import TextTransition, { presets } from "react-text-transition";
 import CheckIcon from "@mui/icons-material/Check";
@@ -28,7 +28,6 @@ function Choice({ condition }) {
 
     const [selectedPaper, setSelectedPaper] = useState(null);
     const [confirmDisabled, setConfirmDisabled] = useState(true);
-    const [newPaperAnimation, setNewPaperAnimation] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     if (currentIndex >= N_TRIALS) {
@@ -58,13 +57,12 @@ function Choice({ condition }) {
             time: new Date().getTime(),
             type: "Trial started",
         });
+        // The cards used to slide off to the left and right between trials.
+        // At full-screen size that is a large, slow movement for no
+        // information, so the next trial simply replaces the last one.
         setConfirmDisabled(true);
-        setNewPaperAnimation(false);
-        setTimeout(() => {
-            setSelectedPaper(null);
-            setNewPaperAnimation(true);
-            setCurrentIndex((index) => index + 1);
-        }, 1000);
+        setSelectedPaper(null);
+        setCurrentIndex((index) => index + 1);
     };
 
     // what each side shows: its magnitude before a choice is made, and after
@@ -75,8 +73,7 @@ function Choice({ condition }) {
         return sideIsOptionOne === rewardedThisTrial ? magnitude : "-";
     };
 
-    const card = (side, sideIsOptionOne, direction) => (
-        <Slide direction={direction} in={newPaperAnimation}>
+    const card = (side, sideIsOptionOne) => (
             <PaperWrapper
                 elevation={3}
                 sx={{ backgroundColor: selectedPaper === side ? "lightblue" : "white" }}
@@ -110,7 +107,6 @@ function Choice({ condition }) {
                     </Button>
                 </Box>
             </PaperWrapper>
-        </Slide>
     );
 
     return (
@@ -171,8 +167,8 @@ function Choice({ condition }) {
                 </Collapse>
 
                 <Stack direction="row" justifyContent="space-around" width="100%" spacing={4}>
-                    {card("left", leftIsOptionOne, "right")}
-                    {card("right", !leftIsOptionOne, "left")}
+                    {card("left", leftIsOptionOne)}
+                    {card("right", !leftIsOptionOne)}
                 </Stack>
 
                 <Box mt={4}>

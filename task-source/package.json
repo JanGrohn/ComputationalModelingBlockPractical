@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "The volatility learning task used in session 1 of the block practical.",
+  "description": "The volatility learning task used in session 1 of the Advanced Lab.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

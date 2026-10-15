@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-   Shared design for the block practical slides.
+   Shared design for the Advanced Lab slides.
 
    One principle: the slide is a sheet of paper. White ground, generous
    margins, one idea per slide, and the figure or the equation carries the
@@ -83,7 +83,12 @@
 .reveal p { line-height: 1.5; margin: 0 0 0.7em 0; }
 
 .reveal strong { font-weight: 600; }
-.reveal em     { font-style: italic; }
+/* Emphasis is carried by weight or colour, never by slanting the type:
+   italics are harder to read at projector distance and all but vanish in a
+   greyscale handout. */
+.reveal em { font-style: normal; font-weight: 600; }
+.key  { font-weight: 600; color: var(--ink); }
+.work { font-weight: 600; }
 
 .reveal a { color: var(--opt1); text-decoration: none; border-bottom: 1px solid #b9d4ba; }
 .reveal a:hover { color: var(--opt1); border-bottom-color: var(--opt1); }
@@ -209,7 +214,7 @@ figcaption {
 .panel ul { margin-bottom: 0; }
 .panel li:last-child { margin-bottom: 0; }
 
-/* --- the levels of an explanation, named in colour rather than italics --- */
+/* --- the levels of an explanation, named in colour --- */
 
 .level {
   display: inline-block;
@@ -277,16 +282,28 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 .reveal .fragment.box { opacity: 1; visibility: visible; border-color: transparent; }
 .reveal .fragment.box.visible { border-color: var(--faint); }
 
-/* --- a point the original slide drew a box around --------------------- */
+/* --- a point the original slide drew a box around ------------------------
+   Every item on the list carries the same padding, offset and bullet, with a
+   transparent border. Only the border colour changes when a box appears, so
+   nothing shifts or darkens before the click, and the boxed items sit flush
+   with the rest of the list. */
 
-.reveal li.marked {
-  border: 1.5px solid var(--faint);
-  transition: border-color 0.25s ease;
+.reveal ul.reasons li {
+  border: 1.5px solid transparent;
   border-radius: 6px;
   padding: 0.22em 0.6em 0.22em 1.1em;
   margin-left: -0.5em;
+  transition: border-color 0.25s ease;
 }
-.reveal li.marked::before { left: 0.45em; background: var(--ink); }
+.reveal ul.reasons li::before { left: 0.45em; }
+/* .visible is reveal's own class; the exporting case has had its fragment
+   classes stripped, so the boxes have to be drawn unconditionally there */
+.reveal ul.reasons li.marked.visible,
+.exporting .reveal ul.reasons li.marked { border-color: var(--faint); }
+
+@media print {
+  .reveal ul.reasons li.marked { border-color: var(--faint); }
+}
 
 /* --- photo, arrow, consequence ----------------------------------------- */
 
@@ -345,12 +362,22 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 }
 .task-card:disabled .task-select { background: #b9c2c9; }
 /* the outcome is shown with a word as well as a tint, never a tint alone */
-.task-card[data-result="rewarded"]     { border-color: var(--opt1); background: #f2f8f2; }
-.task-card[data-result="not-rewarded"] { border-color: var(--rule); opacity: 0.55; }
-.task-feedback { min-height: 1.5em; margin: 0; font-size: 0.95em; color: var(--muted); }
-.task-feedback[data-outcome="win"]  { color: var(--opt1-text); font-weight: 600; }
-.task-feedback[data-outcome="loss"] { color: var(--muted); }
-.task-status { font-size: 0.82em; color: var(--faint); margin: 0.2em 0 0; }
+.task-card[data-chosen="true"] { background: #d6ecf7; border-color: #7fb3cc; }
+.task-next {
+  margin-top: 0.1em;
+  padding: 0.4em 1.1em;
+  background: #9c27b0;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-family: var(--sans);
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+.task-next:disabled { background: #b9c2c9; cursor: default; }
+.task-status { font-size: 0.82em; color: var(--faint); margin: 0.5em 0 0; }
 
 /* --- discussion prompt ---------------------------------------------------
    A tinted panel, not a coloured bar. Carries a label so that it still reads
@@ -515,7 +542,6 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
   left: 0;
   font-size: 17px;
   color: var(--muted);
-  font-style: italic;
 }
 
 /* --- progress / controls ------------------------------------------------- */

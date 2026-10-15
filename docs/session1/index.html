@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Session 1 &middot; Computational modelling block practical</title>
+<title>Session 1 &middot; Advanced Lab</title>
 <meta name="description" content="Why build a model, the task, and a first reinforcement learning model.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
 <!-- 1 ==================================================================== -->
 <section class="title-slide">
   <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
-  <p class="subtitle">Block practical &middot; Session 1 of 4</p>
+  <p class="subtitle">Advanced Lab &middot; Session 1 of 4</p>
   <p class="byline">Organisers: <strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
      Department of Experimental Psychology, University of Oxford</p>
 </section>
@@ -99,7 +99,7 @@
         realised physically?</li>
     </ul>
   </div>
-  <p class="citation fragment" data-fragment-index="1">Marr &amp; Poggio, <em>Vision</em>, 1982</p>
+  <p class="citation fragment" data-fragment-index="1">Marr &amp; Poggio, <span class="work">Vision</span>, 1982</p>
 </section>
 
 <!-- 6 ==================================================================== -->
@@ -134,7 +134,7 @@
     <p>How do we learn across time which stimulus is more likely to be rewarded?</p>
     <p>How do we decide between different options?</p>
   </div>
-  <p class="citation">Behrens et al., <em>Nature Neuroscience</em>, 2007</p>
+  <p class="citation">Behrens et al., <span class="work">Nature Neuroscience</span>, 2007</p>
 </section>
 
 <!-- 8 ==================================================================== -->
@@ -178,10 +178,10 @@
 <section>
   <h2>Aims for today</h2>
   <ol style="list-style:decimal; margin-left:1.3em">
-    <li>Learn about the task you'll be running in this block practical, and practise by playing
+    <li>Learn about the task you'll be running in this Advanced Lab, and practise by playing
       the task yourself <span class="note">(30&ndash;45 mins)</span></li>
   </ol>
-  <p class="note" style="margin:0.4em 0 0.4em 1.3em"><em>Break (5&ndash;10 minutes)</em></p>
+  <p class="note" style="margin:0.4em 0 0.4em 1.3em"><strong>Break (5&ndash;10 minutes)</strong></p>
   <ol start="2" style="list-style:decimal; margin-left:1.3em">
     <li>Build a simple reinforcement learning model of the task, and understand how varying
       parameters in the model affects its behaviour <span class="note">(~1.5 hours)</span></li>
@@ -275,9 +275,11 @@
         it reverses every 25 trials</p>
     </figure>
   </div>
-  <p class="note" style="margin-top:0.3em">Dots are the trial outcomes; the dashed line is the
-    probability that option 1 is rewarded, which participants never see. Reward magnitudes are
-    redrawn at random every trial in both conditions.</p>
+  <figure class="fig" id="fig-magnitudes" style="margin-top:0.2em">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
 </section>
 
 <!-- 19 =================================================================== -->
@@ -287,7 +289,7 @@
     actions are taken. In this task we need to estimate the probability that
     <span class="term-opt1">green</span> is rewarded on each trial &mdash; the same as 1 minus the
     probability that <span class="term-opt2">orange</span> will be, so we only need to track one
-    probability. We can learn it by calculating a <em>prediction error</em> on each trial:</p>
+    probability. We can learn it by calculating a <span class="key">prediction error</span> on each trial:</p>
   <div class="eq">
     $$\underbrace{\delta_t}_\textrm{prediction error} = \underbrace{o_t}_\textrm{outcome} - \underbrace{p_t}_\textrm{model prediction} \tag{Equation 1}$$
   </div>
@@ -297,7 +299,7 @@
   <div class="eq">
     $$\underbrace{p_{t+1}}_\textrm{new prediction} = \underbrace{p_t}_\textrm{old prediction} + \underbrace{\alpha \delta_t}_\textrm{scaled prediction error} \tag{Equation 2}$$
   </div>
-  <p class="eq-where">where $\alpha$ is the <em>learning rate</em>, with $0 &lt; \alpha \le 1$.</p>
+  <p class="eq-where">where $\alpha$ is the <span class="key">learning rate</span>, with $0 &lt; \alpha \le 1$.</p>
 </section>
 
 <!-- 20 =================================================================== -->
@@ -324,8 +326,8 @@
       <div class="mermaid-figure" data-diagram="model"><svg id="dsnuw2r06kdo" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 461.828125px;" viewBox="0 0 461.828125 460" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#dsnuw2r06kdo{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;fill:#14171a;}#dsnuw2r06kdo .error-icon{fill:#ffffff;}#dsnuw2r06kdo .error-text{fill:#000000;stroke:#000000;}#dsnuw2r06kdo .edge-thickness-normal{stroke-width:1px;}#dsnuw2r06kdo .edge-thickness-thick{stroke-width:3.5px;}#dsnuw2r06kdo .edge-pattern-solid{stroke-dasharray:0;}#dsnuw2r06kdo .edge-thickness-invisible{stroke-width:0;fill:none;}#dsnuw2r06kdo .edge-pattern-dashed{stroke-dasharray:3;}#dsnuw2r06kdo .edge-pattern-dotted{stroke-dasharray:2;}#dsnuw2r06kdo .marker{fill:#14171a;stroke:#14171a;}#dsnuw2r06kdo .marker.cross{stroke:#14171a;}#dsnuw2r06kdo svg{font-family:Inter,Helvetica,Arial,sans-serif;font-size:16px;}#dsnuw2r06kdo p{margin:0;}#dsnuw2r06kdo .label{font-family:Inter,Helvetica,Arial,sans-serif;color:#14171a;}#dsnuw2r06kdo .cluster-label text{fill:#000000;}#dsnuw2r06kdo .cluster-label span{color:#000000;}#dsnuw2r06kdo .cluster-label span p{background-color:transparent;}#dsnuw2r06kdo .label text,#dsnuw2r06kdo span{fill:#14171a;color:#14171a;}#dsnuw2r06kdo .node rect,#dsnuw2r06kdo .node circle,#dsnuw2r06kdo .node ellipse,#dsnuw2r06kdo .node polygon,#dsnuw2r06kdo .node path{fill:#f4f6f7;stroke:#14171a;stroke-width:1px;}#dsnuw2r06kdo .rough-node .label text,#dsnuw2r06kdo .node .label text,#dsnuw2r06kdo .image-shape .label,#dsnuw2r06kdo .icon-shape .label{text-anchor:middle;}#dsnuw2r06kdo .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#dsnuw2r06kdo .rough-node .label,#dsnuw2r06kdo .node .label,#dsnuw2r06kdo .image-shape .label,#dsnuw2r06kdo .icon-shape .label{text-align:center;}#dsnuw2r06kdo .node.clickable{cursor:pointer;}#dsnuw2r06kdo .root .anchor path{fill:#14171a!important;stroke-width:0;stroke:#14171a;}#dsnuw2r06kdo .arrowheadPath{fill:#0b0b0b;}#dsnuw2r06kdo .edgePath .path{stroke:#14171a;stroke-width:2.0px;}#dsnuw2r06kdo .flowchart-link{stroke:#14171a;fill:none;}#dsnuw2r06kdo .edgeLabel{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dsnuw2r06kdo .edgeLabel p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);}#dsnuw2r06kdo .edgeLabel rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dsnuw2r06kdo .labelBkg{background-color:rgba(245.9999999999, 247, 243.9999999999, 0.5);}#dsnuw2r06kdo .cluster rect{fill:#ffffff;stroke:hsl(0, 0%, 90%);stroke-width:1px;}#dsnuw2r06kdo .cluster text{fill:#000000;}#dsnuw2r06kdo .cluster span{color:#000000;}#dsnuw2r06kdo div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Inter,Helvetica,Arial,sans-serif;font-size:12px;background:#ffffff;border:1px solid hsl(0, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#dsnuw2r06kdo .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#14171a;}#dsnuw2r06kdo rect.text{fill:none;stroke-width:0;}#dsnuw2r06kdo .icon-shape,#dsnuw2r06kdo .image-shape{background-color:hsl(80, 15.7894736842%, 96.2745098039%);text-align:center;}#dsnuw2r06kdo .icon-shape p,#dsnuw2r06kdo .image-shape p{background-color:hsl(80, 15.7894736842%, 96.2745098039%);padding:2px;}#dsnuw2r06kdo .icon-shape rect,#dsnuw2r06kdo .image-shape rect{opacity:0.5;background-color:hsl(80, 15.7894736842%, 96.2745098039%);fill:hsl(80, 15.7894736842%, 96.2745098039%);}#dsnuw2r06kdo :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#dsnuw2r06kdo .state rect{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dsnuw2r06kdo .state polygon{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dsnuw2r06kdo .state ellipse{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dsnuw2r06kdo .state circle{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dsnuw2r06kdo .state path{fill:#ffffff!important;stroke:#14171a!important;stroke-width:1.5px!important;color:#14171a!important;}#dsnuw2r06kdo .state tspan{fill:#14171a!important;}#dsnuw2r06kdo .op rect{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dsnuw2r06kdo .op polygon{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dsnuw2r06kdo .op ellipse{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dsnuw2r06kdo .op circle{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dsnuw2r06kdo .op path{fill:#e8eef4!important;stroke:#5b7fa6!important;stroke-width:1.2px!important;color:#1f4b73!important;}#dsnuw2r06kdo .op tspan{fill:#1f4b73!important;}</style><g><marker id="dsnuw2r06kdo_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dsnuw2r06kdo_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="dsnuw2r06kdo_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dsnuw2r06kdo_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="dsnuw2r06kdo_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="dsnuw2r06kdo_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M111.672,58L111.672,62.667C111.672,67.333,111.672,76.667,111.672,83.667C111.672,90.667,111.672,95.333,111.672,99.333C111.672,103.333,111.672,106.667,111.672,108.333L111.672,110" id="L_OH_LM_0" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dsnuw2r06kdo_flowchart-v2-pointEnd)"></path><path d="M111.672,149L111.672,153.667C111.672,158.333,111.672,167.667,111.672,174.667C111.672,181.667,111.672,186.333,111.672,190.333C111.672,194.333,111.672,197.667,111.672,199.333L111.672,201" id="L_LM_LP_1" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dsnuw2r06kdo_flowchart-v2-pointEnd)"></path><path d="M111.672,255L111.672,259.667C111.672,264.333,111.672,273.667,117.926,280.667C124.18,287.667,136.689,292.333,148.573,296.767C160.456,301.201,171.715,305.401,177.345,307.502L182.975,309.602" id="L_LP_CV_2" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dsnuw2r06kdo_flowchart-v2-pointEnd)"></path><path d="M355.586,255L355.586,259.667C355.586,264.333,355.586,273.667,349.332,280.667C343.078,287.667,330.569,292.333,318.685,296.767C306.802,301.201,295.542,305.401,289.913,307.502L284.283,309.602" id="L_SM_CV_3" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dsnuw2r06kdo_flowchart-v2-pointEnd)"></path><path d="M233.629,346L233.629,350.667C233.629,355.333,233.629,364.667,233.629,371.667C233.629,378.667,233.629,383.333,233.629,387.333C233.629,391.333,233.629,394.667,233.629,396.333L233.629,398" id="L_CV_DV_4" class=" edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="" marker-end="url(#dsnuw2r06kdo_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g><g class="edgeLabel"><g class="label" transform="translate(0, 0)"><text y="-10.1"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan></text></g></g></g><g class="nodes"><g class="node default state " id="flowchart-OH-0" transform="translate(111.671875, 33)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-93.7578125" y="-25" width="187.515625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Outcome</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> History</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-LM-1" transform="translate(111.671875, 131.5)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-70.84375" y="-17.5" width="141.6875" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learning</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Model</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-LP-3" transform="translate(111.671875, 230)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-103.671875" y="-25" width="207.34375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Learned</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Probability</tspan></tspan></text></g></g></g><g class="node default op " id="flowchart-CV-5" transform="translate(233.62890625, 328.5)"><rect class="basic label-container" style="fill:#e8eef4 !important;stroke:#5b7fa6 !important;stroke-width:1.2px !important" rx="17.5" ry="17.5" x="-97.0390625" y="-17.5" width="194.078125" height="35"></rect><g class="label" style="color:#1f4b73 !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#1f4b73 !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Combining</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Value</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Dims</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-SM-6" transform="translate(355.5859375, 230)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-98.2421875" y="-25" width="196.484375" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Shown</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Magnitude</tspan></tspan></text></g></g></g><g class="node default state " id="flowchart-DV-9" transform="translate(233.62890625, 427)"><rect class="basic label-container" style="fill:#ffffff !important;stroke:#14171a !important;stroke-width:1.5px !important" x="-95.5078125" y="-25" width="191.015625" height="50"></rect><g class="label" style="color:#14171a !important" transform="translate(0, -10)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style="fill:#14171a !important"><tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Decision</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Variable</tspan></tspan></text></g></g></g></g></g></g></svg></div>
     </div>
     <div>
-      <p>How should the model combine what it has <em>learnt</em> with what it is
-        <em>shown</em>?</p>
+      <p>How should the model combine what it has <span class="key">learnt</span> with what it is
+        <span class="key">shown</span>?</p>
       <div class="eq">
         $$\underbrace{u}_\textrm{utility} = \underbrace{m}_\textrm{magnitude} \times \underbrace{p}_\textrm{probability} \tag{Equation 3}$$
       </div>
@@ -353,8 +355,8 @@
     <div class="fig-controls"></div>
     <p class="fig-print-note"></p>
   </figure>
-  <p class="note">Drag $\alpha$ between a slow learner and a fast one. What does each one buy you,
-    and what does it cost?</p>
+  <p class="note" style="margin-top:0.2em">Drag $\alpha$ between a slow learner and a fast one.
+    What does each one buy you, and what does it cost?</p>
 </section>
 
 <section>
@@ -400,11 +402,11 @@
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 <script type="module">
   import { initDeck } from '../assets/deck.js';
-  initDeck({ title: 'Session 1 &middot; Computational modelling block practical' });
+  initDeck({ title: 'Session 1 &middot; Advanced Lab' });
   await import('./figures.js');
   const { playableTask } = await import('./task.js');
-  playableTask('task-aim', 20251015);
-  playableTask('task-demo', 90210);
+  playableTask('task-aim', { seed: 20251015 });
+  playableTask('task-demo', { seed: 90210, showBlock: true });
 </script>
 </body>
 </html>

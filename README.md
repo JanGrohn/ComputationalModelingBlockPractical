@@ -4,7 +4,7 @@
 
 Jan Grohn (jan.grohn@psy.ox.ac.uk), Miriam Klein-Flügge (miriam.klein-flugge@psy.ox.ac.uk)  
 
-This repository contains exercise sheets and code for a block practical on how to use computational modelling to understand decision making and action selection. The four weeks course is taught yearly at Oxford and is targeted at 3rd year undergraduates. 
+This repository contains exercise sheets and code for a Advanced Lab on how to use computational modelling to understand decision making and action selection. The four weeks course is taught yearly at Oxford and is targeted at 3rd year undergraduates. 
 
 The notebooks are best run via Google Colab:
 
