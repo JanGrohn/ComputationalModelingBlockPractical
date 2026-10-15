@@ -1,0 +1,361 @@
+/* ---------------------------------------------------------------------------
+   Shared design for the block practical slides.
+
+   One principle: the slide is a sheet of paper. White ground, generous
+   margins, one idea per slide, and the figure or the equation carries the
+   point. Colour is used only where it means something: green is option 1,
+   orange is option 2, everything else is ink or grey. Nothing on screen
+   depends on colour alone, so the PDF stays readable.
+--------------------------------------------------------------------------- */
+
+:root {
+  --ink:    #14171a;
+  --muted:  #5b6670;
+  --faint:  #8a949c;
+  --rule:   #e2e6ea;
+  --panel:  #f4f6f7;
+  --paper:  #ffffff;
+
+  /* the two options, taken from the task itself */
+  --opt1:   #2e7d32;   /* green  - option 1 */
+  --opt2:   #e8700a;   /* orange - option 2 */
+
+  --serif: "Source Serif 4", Charter, Cambria, Georgia, serif;
+  --sans:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* --- canvas -------------------------------------------------------------- */
+
+.reveal {
+  font-family: var(--sans);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.reveal-viewport { background: var(--paper); }
+
+.reveal .slides { text-align: left; }
+
+.reveal .slides section {
+  height: 100%;
+  padding: 0;
+}
+
+/* --- headings ------------------------------------------------------------ */
+
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.6em 0;
+  text-align: left;
+}
+
+/* Every content slide puts its title in the same place, at the same size. */
+.reveal h2 {
+  font-size: 1.62em;
+  line-height: 1.15;
+}
+
+.reveal h3 {
+  font-size: 1.1em;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 0.4em;
+}
+
+.reveal p { line-height: 1.5; margin: 0 0 0.7em 0; }
+
+.reveal strong { font-weight: 600; }
+.reveal em     { font-style: italic; }
+
+.reveal a { color: var(--opt1); text-decoration: none; border-bottom: 1px solid #b9d4ba; }
+.reveal a:hover { color: var(--opt1); border-bottom-color: var(--opt1); }
+
+/* --- lists --------------------------------------------------------------- */
+
+.reveal ul, .reveal ol { display: block; margin: 0 0 0.7em 1.1em; }
+.reveal li { line-height: 1.5; margin-bottom: 0.45em; }
+.reveal ul { list-style: none; margin-left: 0; }
+.reveal ul > li { padding-left: 1.1em; position: relative; }
+.reveal ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.15em;
+  top: 0.62em;
+  width: 0.32em;
+  height: 0.32em;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+/* --- title slide --------------------------------------------------------- */
+
+.title-slide { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+.title-slide h1 {
+  font-size: 2.15em;
+  line-height: 1.12;
+  margin-bottom: 0.35em;
+  max-width: 19em;
+}
+.title-slide .subtitle {
+  font-size: 1.05em;
+  color: var(--muted);
+  margin-bottom: 2em;
+}
+.title-slide .byline { font-size: 0.82em; color: var(--muted); }
+.title-slide .byline strong { color: var(--ink); font-weight: 600; }
+
+/* --- section divider ----------------------------------------------------- */
+
+.section-slide { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+.section-slide .eyebrow {
+  font-size: 0.72em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 0.7em;
+}
+.section-slide h2 { font-size: 2.1em; margin: 0; }
+
+/* --- layout helpers ------------------------------------------------------ */
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6em;
+  align-items: start;
+}
+.cols.narrow-left  { grid-template-columns: 0.8fr 1.2fr; }
+.cols.narrow-right { grid-template-columns: 1.2fr 0.8fr; }
+.cols > div { min-width: 0; }
+
+.stack-tight p, .stack-tight li { margin-bottom: 0.3em; }
+
+.lead { font-size: 1.12em; color: var(--ink); max-width: 24em; }
+
+.note { font-size: 0.8em; color: var(--muted); }
+
+figure { margin: 0; }
+figure img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+figcaption {
+  font-size: 0.72em;
+  color: var(--muted);
+  margin-top: 0.6em;
+  line-height: 1.4;
+}
+
+/* --- discussion prompt ---------------------------------------------------
+   A tinted panel, not a coloured bar. Carries a label so that it still reads
+   as a prompt in a greyscale print-out. */
+
+.discuss {
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 1em 1.2em;
+  margin-top: 0.4em;
+}
+.discuss .discuss-label {
+  font-family: var(--sans);
+  font-size: 0.68em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.55em;
+}
+.discuss ul { margin-bottom: 0; }
+.discuss li:last-child { margin-bottom: 0; }
+
+/* --- key takeaway -------------------------------------------------------- */
+
+.takeaway {
+  font-family: var(--serif);
+  font-size: 1.25em;
+  line-height: 1.4;
+  color: var(--ink);
+  max-width: 22em;
+  padding-left: 0.8em;
+  border-left: 3px solid var(--opt1);
+}
+
+/* --- equations ----------------------------------------------------------- */
+
+.eq {
+  margin: 0.9em 0;
+  position: relative;
+}
+.reveal .katex-display { margin: 0.4em 0; }
+.reveal .katex { font-size: 1.08em; }
+.eq .eq-tag {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72em;
+  color: var(--faint);
+}
+.eq-where { font-size: 0.82em; color: var(--muted); line-height: 1.5; }
+
+/* colour-coded inline terms, each also labelled in words so that the meaning
+   survives a greyscale print */
+.term-opt1 { color: var(--opt1); font-weight: 600; }
+.term-opt2 { color: var(--opt2); font-weight: 600; }
+
+/* --- code ---------------------------------------------------------------- */
+
+.reveal code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: var(--panel);
+  padding: 0.1em 0.32em;
+  border-radius: 4px;
+}
+.reveal pre {
+  width: 100%;
+  margin: 0.6em 0;
+  box-shadow: none;
+  font-size: 0.56em;
+}
+.reveal pre code {
+  display: block;
+  padding: 0.9em 1.1em;
+  background: var(--panel);
+  border-radius: 8px;
+  line-height: 1.5;
+  max-height: none;
+  overflow: visible;
+}
+
+/* --- interactive figures ------------------------------------------------- */
+
+.fig { margin: 0; }
+
+.fig-plot { width: 100%; }
+/* a bar chart of 20 lags does not need the full width of a 16:9 slide */
+.fig-narrow .fig-plot, .fig-narrow .fig-controls { max-width: 68%; }
+
+.fig-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 1.6em;
+  align-items: center;
+  margin-top: 0.5em;
+  font-size: 0.72em;
+  color: var(--muted);
+}
+.fig-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  white-space: nowrap;
+}
+.fig-controls .ctrl-name { font-family: var(--serif); font-size: 1.15em; color: var(--ink); }
+.fig-controls input[type="range"] {
+  width: 8.5em;
+  accent-color: var(--opt1);
+  cursor: pointer;
+}
+.fig-controls output {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  color: var(--ink);
+  min-width: 2.8em;
+}
+.fig-controls button {
+  font-family: var(--sans);
+  font-size: 1em;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.3em 0.8em;
+  cursor: pointer;
+}
+.fig-controls button:hover { background: #e9edef; }
+
+/* Shown only in the PDF, where the sliders are dead: states what the figure
+   is set to, so the printed figure still means something. */
+.fig-print-note { display: none; }
+
+/* --- footer -------------------------------------------------------------- */
+
+.deck-footer {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--faint);
+  pointer-events: none;
+}
+.reveal .slide-number {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--faint);
+  background: none;
+  right: 0;
+  bottom: 14px;
+}
+
+.citation {
+  position: absolute;
+  bottom: 34px;
+  left: 0;
+  font-size: 13px;
+  color: var(--faint);
+  font-style: italic;
+}
+
+/* --- progress / controls ------------------------------------------------- */
+
+.reveal .progress { color: var(--opt1); height: 3px; }
+.reveal .controls { color: var(--faint); }
+
+/* --- export and print ----------------------------------------------------
+   The PDF is produced with DeckTape, which drives a real browser and writes
+   exactly one page per slide:
+
+     npx decktape reveal -s 1280x720 \
+       "https://jangrohn.github.io/ComputationalModelingBlockPractical/session1/?export" \
+       session1.pdf
+
+   The ?export flag adds .exporting to <html>, which drops the live controls
+   and reveals the line of text stating what each figure is showing, so the
+   PDF still says what a reader can no longer discover by dragging a slider.
+   The same swap applies to a plain File > Print.
+--------------------------------------------------------------------------- */
+
+.exporting .fig-controls { display: none !important; }
+.exporting .fig-print-note {
+  display: block;
+  font-size: 0.72em;
+  color: var(--muted);
+  margin-top: 0.5em;
+  max-width: 52em;
+}
+.exporting .reveal .progress { display: none !important; }
+
+@media print {
+  .fig-controls { display: none !important; }
+  .fig-print-note {
+    display: block;
+    font-size: 0.72em;
+    color: var(--muted);
+    margin-top: 0.5em;
+    max-width: 52em;
+  }
+  .reveal .progress, .reveal .controls { display: none !important; }
+  .discuss  { background: #f0f2f3 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .takeaway { border-left-color: #777 !important; }
+  a { border-bottom: none !important; }
+}

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Computational modelling of decision making and action selection</title>
+<meta name="description" content="Slides and notebooks for a four-week block practical on computational modelling of reward-guided learning, taught at the University of Oxford.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14171a; --muted: #5b6670; --faint: #8a949c;
+    --rule: #e2e6ea; --panel: #f4f6f7; --opt1: #2e7d32;
+    --serif: "Source Serif 4", Charter, Georgia, serif;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #fff; color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.6;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 4rem 1rem 6rem; }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 2.1rem; line-height: 1.2; margin: 0 0 .5rem; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0 0 .4rem; }
+  .byline { color: var(--muted); font-size: .92rem; margin: 0 0 3rem; }
+  h2 { font-family: var(--serif); font-weight: 600; font-size: 1.15rem; margin: 2.6rem 0 .9rem; }
+  a { color: var(--opt1); text-decoration: none; border-bottom: 1px solid #b9d4ba; }
+  a:hover { border-bottom-color: var(--opt1); }
+  .session {
+    display: grid; grid-template-columns: 2.2rem 1fr; gap: 0 1rem;
+    padding: 1.1rem 0; border-top: 1px solid var(--rule);
+  }
+  .session:last-of-type { border-bottom: 1px solid var(--rule); }
+  .num { font-family: var(--serif); font-size: 1.5rem; color: var(--faint); line-height: 1.1; }
+  .session h3 { font-family: var(--serif); font-size: 1.1rem; font-weight: 600; margin: 0 0 .25rem; }
+  .session p { margin: 0 0 .5rem; color: var(--muted); font-size: .95rem; }
+  .links { font-size: .9rem; display: flex; flex-wrap: wrap; gap: .25rem 1.1rem; }
+  .links span.pending { color: var(--faint); border-bottom: 1px dotted var(--rule); }
+  .tip { background: var(--panel); border-radius: 10px; padding: 1rem 1.2rem; font-size: .92rem; color: var(--muted); }
+  .tip strong { color: var(--ink); }
+  kbd {
+    font-family: ui-monospace, Menlo, monospace; font-size: .85em;
+    background: #fff; border: 1px solid var(--rule); border-bottom-width: 2px;
+    border-radius: 4px; padding: .05em .4em;
+  }
+  footer { margin-top: 3.5rem; font-size: .88rem; color: var(--faint); }
+  @media (max-width: 480px) { .wrap { padding-top: 2.5rem; } h1 { font-size: 1.6rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Computational modelling of decision making and action selection</h1>
+  <p class="sub">A four&#8209;week block practical for third&#8209;year undergraduates, University of Oxford.</p>
+  <p class="byline">Dr Jan Grohn &middot; Dr Miriam Klein-Fl&uuml;gge &middot; Department of Experimental Psychology</p>
+
+  <h2>Sessions</h2>
+
+  <div class="session">
+    <div class="num">1</div>
+    <div>
+      <h3>Why model, and a first learning model</h3>
+      <p>The task, Marr's levels, prediction errors and the learning rate.</p>
+      <div class="links">
+        <a href="session1/">Slides</a>
+        <a href="https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session1.ipynb">Notebook</a>
+        <a href="https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session1_completed.ipynb">Solutions</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="session">
+    <div class="num">2</div>
+    <div>
+      <h3>Utility, choice, and simulation</h3>
+      <p>Combining points with probability, the softmax, and parameter recovery.</p>
+      <div class="links">
+        <span class="pending">Slides &mdash; in progress</span>
+        <a href="https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session2.ipynb">Notebook</a>
+        <a href="https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session2_completed.ipynb">Solutions</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="session">
+    <div class="num">3</div>
+    <div>
+      <h3>Fitting and comparing models on real data</h3>
+      <p>Maximum likelihood, the likelihood ratio test, BIC, and who to exclude.</p>
+      <div class="links">
+        <span class="pending">Slides &mdash; in progress</span>
+        <a href="https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session3.ipynb">Notebook</a>
+        <a href="https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session3_completed.ipynb">Solutions</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="session">
+    <div class="num">4</div>
+    <div>
+      <h3>Validating the fits, and writing it up</h3>
+      <p>Model recovery, effect sizes, and the structure of your report.</p>
+      <div class="links">
+        <span class="pending">Slides &mdash; in progress</span>
+        <a href="https://colab.research.google.com/github/JanGrohn/ComputationalModelingBlockPractical/blob/main/session4.ipynb">Notebook</a>
+      </div>
+    </div>
+  </div>
+
+  <h2>Using the slides</h2>
+  <p class="tip">
+    <strong>Fullscreen</strong> with <kbd>F</kbd>, move with the arrow keys, and press
+    <kbd>Esc</kbd> for an overview of every slide. <kbd>S</kbd> opens a speaker view with
+    notes, a timer and the next slide. The plots are live &mdash; drag a slider and the
+    model is recomputed in the browser.<br><br>
+    <strong>To get a PDF</strong>, run <code>./docs/export-pdf.sh</code> from the
+    repository. Each slide becomes one page, and every figure is captioned with the
+    parameter values it is showing, so the handout still makes sense once the sliders
+    no longer work.
+  </p>
+
+  <h2>The task</h2>
+  <p>You can play the experiment these slides analyse at
+    <a href="https://jangrohn.github.io/volatility_study/">jangrohn.github.io/volatility_study</a>.
+    The data analysed from week 3 onwards is from
+    <a href="https://elifesciences.org/articles/57977">Blain &amp; Rutledge (2020)</a>.</p>
+
+  <footer>
+    Source and notebooks:
+    <a href="https://github.com/JanGrohn/ComputationalModelingBlockPractical">github.com/JanGrohn/ComputationalModelingBlockPractical</a>
+  </footer>
+
+</div>
+</body>
+</html>

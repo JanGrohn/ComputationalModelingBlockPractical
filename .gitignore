@@ -163,3 +163,6 @@ cython_debug/
 
 # macOS folder metadata
 .DS_Store
+
+# exported slide PDFs
+docs/pdf/

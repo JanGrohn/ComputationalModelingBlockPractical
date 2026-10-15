@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 1 &middot; Computational modelling block practical</title>
+<meta name="description" content="Why build a model, the task, and a first reinforcement learning model.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<link rel="stylesheet" href="../assets/theme.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- ===================================================================== -->
+<section class="title-slide">
+  <h1>Cognitive and computational models of reward&#8209;guided learning and decision&#8209;making</h1>
+  <p class="subtitle">Block practical &middot; Session 1 of 4</p>
+  <p class="byline"><strong>Dr Jan Grohn</strong> &middot; <strong>Dr Miriam Klein-Fl&uuml;gge</strong><br>
+     Department of Experimental Psychology, University of Oxford</p>
+  <aside class="notes">Welcome. Four sessions, each half a day. Today is the gentlest.</aside>
+</section>
+
+<!-- ===================================================================== -->
+<section>
+  <h2>Four weeks</h2>
+  <div class="cols">
+    <div class="stack-tight">
+      <h3>Week 1 &mdash; today</h3>
+      <ul><li>Play the task yourself</li>
+          <li>Build a learning model</li>
+          <li>See what its parameters do</li></ul>
+      <h3>Week 2</h3>
+      <ul><li>Utility and choice probability</li>
+          <li>Simulations and parameter recovery</li></ul>
+    </div>
+    <div class="stack-tight">
+      <h3>Week 3</h3>
+      <ul><li>Fitting the model to real data</li>
+          <li>Model comparison</li>
+          <li>Data quality and exclusions</li></ul>
+      <h3>Week 4</h3>
+      <ul><li>Validating the fits</li>
+          <li>Statistics and your write-up</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part one</p>
+  <h2>Why build a model?</h2>
+</section>
+
+<section>
+  <h2>Why build a model?</h2>
+  <div class="discuss">
+    <span class="discuss-label">Discuss with your neighbour</span>
+    <ul>
+      <li>What models have you come across in your course so far?</li>
+      <li>What has modelling taught us about behaviour?</li>
+      <li>What has modelling taught us about the brain?</li>
+      <li>What practical uses might computational models of cognition have?</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Why build a model?</h2>
+  <div class="cols narrow-right">
+    <div>
+      <ul class="stack-tight">
+        <li>To make inferences about causes of behaviour we cannot observe directly</li>
+        <li>To infer latent variables and mechanisms</li>
+        <li>To say something about the computations involved in a task</li>
+        <li>To ask questions that are hard to answer with an experiment alone</li>
+        <li>To quantify the evidence for a theory</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="../assets/img/s1/brain-circuit.png" alt="A brain, half anatomical and half printed circuit.">
+    </figure>
+  </div>
+  <p class="citation">After a slide by Wei Ji Ma's lab, NYU</p>
+</section>
+
+<!-- ===================================================================== -->
+<section>
+  <h2>Marr's three levels</h2>
+  <div class="cols narrow-right">
+    <div class="stack-tight">
+      <p><strong>Computational theory.</strong> What is the goal, and why is it the right one?</p>
+      <p><strong>Algorithm.</strong> What representation and what procedure achieve it?</p>
+      <p><strong>Implementation.</strong> How is that realised physically?</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s1/cash-register.png" alt="A cash register.">
+      <figcaption>A cash register adds up prices. The goal is arithmetic; the algorithm
+        operates on Arabic rather than Roman numerals; the implementation may be
+        mechanical or electronic.</figcaption>
+    </figure>
+  </div>
+  <p class="takeaway" style="margin-top:0.8em">Two systems can share a goal and differ in algorithm,
+    or share an algorithm and differ in hardware.</p>
+  <p class="citation">Marr &amp; Poggio, <em>Vision</em>, 1982</p>
+</section>
+
+<!-- ===================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part two</p>
+  <h2>The task</h2>
+</section>
+
+<section>
+  <h2>What we are trying to model</h2>
+  <div class="cols">
+    <div>
+      <p class="lead">Two questions, and the task is built to separate them.</p>
+      <ul>
+        <li>How do we learn, over time, which option is more likely to be rewarded?</li>
+        <li>How do we decide between options once we have learnt that?</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="../assets/img/s1/task-screen.png" alt="The task screen: a green deer worth 31 points beside an orange heron worth 66 points.">
+      <figcaption>One trial. <span class="term-opt1">Option 1 is the green stimulus</span>,
+        <span class="term-opt2">option 2 the orange one</span>. The number below each is the
+        points on offer this trial; how likely each is to pay out has to be learnt.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2>Two things vary, and they vary independently</h2>
+  <div class="cols narrow-left">
+    <div class="stack-tight">
+      <p><strong>Magnitude</strong> is shown. It is redrawn at random every trial.</p>
+      <p><strong>Probability</strong> is hidden. It has to be learnt from outcomes, and it changes.</p>
+      <p class="note">Because the two are independent, a participant who tracks only the
+        numbers on screen behaves differently from one who also learns the probabilities &mdash;
+        which is what makes the model identifiable.</p>
+    </div>
+    <figure>
+      <img src="../assets/img/s1/behrens-schedule.png" alt="Three stacked panels showing reward probability and magnitude across 160 trials.">
+      <figcaption>A whole schedule: the reward probability reverses in the volatile
+        half and holds steady in the stable half, while magnitudes jitter throughout.</figcaption>
+    </figure>
+  </div>
+  <p class="citation">Behrens et al., <em>Nature Neuroscience</em>, 2007</p>
+</section>
+
+<section>
+  <h2>What we can measure, and what we cannot</h2>
+  <div class="cols">
+    <div>
+      <h3>Measured directly</h3>
+      <ul class="stack-tight">
+        <li>Which option was chosen</li>
+        <li>Reaction time</li>
+        <li>Points earned</li>
+      </ul>
+      <h3>Not measured</h3>
+      <ul class="stack-tight">
+        <li>How quickly a participant updates their beliefs</li>
+        <li>How they trade points off against probability</li>
+        <li>How noisy their choices are</li>
+      </ul>
+    </div>
+    <div>
+      <p class="takeaway">The second list is what we actually want. A model is how we
+        get at it &mdash; each entry becomes a parameter we can estimate.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Before you run anyone</h2>
+  <div class="discuss">
+    <span class="discuss-label">Discuss with your neighbour</span>
+    <ul>
+      <li>What makes a good testing environment?</li>
+      <li>What would you ask a participant to check they have understood the task?</li>
+      <li>Should the stable and volatile blocks be counterbalanced? Why?</li>
+    </ul>
+  </div>
+  <p class="note" style="margin-top:0.8em">In a real study you would brief the participant and
+    take informed consent before any of this.</p>
+</section>
+
+<section>
+  <h2>Your turn: play the task</h2>
+  <p class="lead">Follow the link in Section 2 of the Colab notebook.</p>
+  <ul>
+    <li>Play it properly &mdash; try to earn points, not just click through.</li>
+    <li>If you have time, restart and play the other block order.</li>
+    <li>Pay attention to <em>how</em> you are deciding. You will be asked.</li>
+  </ul>
+  <p class="note">Roughly 30&ndash;45 minutes, then a short break.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part three</p>
+  <h2>A first model</h2>
+</section>
+
+<section>
+  <h2>Learning as error correction</h2>
+  <p>On each trial, compare what happened with what you expected:</p>
+  <div class="eq">
+    $$\underbrace{\delta_t}_{\text{prediction error}}
+      = \underbrace{o_t}_{\text{outcome}} - \underbrace{p_t}_{\text{expectation}}$$
+    <span class="eq-tag">(1)</span>
+  </div>
+  <p>then move your expectation a fraction of the way towards it:</p>
+  <div class="eq">
+    $$\underbrace{p_{t+1}}_{\text{new expectation}}
+      = p_t + \underbrace{\alpha}_{\text{learning rate}} \delta_t$$
+    <span class="eq-tag">(2)</span>
+  </div>
+  <p class="eq-where">$o_t = 1$ if <span class="term-opt1">option 1 (green)</span> was rewarded and
+    $0$ if <span class="term-opt2">option 2 (orange)</span> was; $p_t$ is the current estimate that
+    option 1 will be rewarded, and $0 &lt; \alpha \le 1$.</p>
+  <aside class="notes">Only one probability is tracked: the two options are perfectly
+    anticorrelated, so P(option 2) = 1 - P(option 1).</aside>
+</section>
+
+<section>
+  <h2>What the learning rate does</h2>
+  <figure class="fig" id="fig-schedule">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">Drag $\alpha$ between a slow learner and a fast one. What does each
+    one buy you, and what does it cost?</p>
+</section>
+
+<section>
+  <h2>Now make the world change</h2>
+  <figure class="fig" id="fig-reversal">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <div class="discuss">
+    <span class="discuss-label">Discuss</span>
+    <ul><li>Which $\alpha$ tracks the reversals best? Which is steadiest once things settle?</li>
+        <li>So should $\alpha$ be the same in a volatile and a stable environment?</li></ul>
+  </div>
+</section>
+
+<section>
+  <h2>The hypothesis this sets up</h2>
+  <p class="takeaway">How fast we learn should depend on how fast the world is changing:
+    a higher learning rate when outcomes are volatile, a lower one when they are stable.</p>
+  <div class="cols" style="margin-top:1em">
+    <figure>
+      <img src="../assets/img/s1/behrens-volatility.png" alt="Estimated reward rate tracking a reversing true rate, and estimated volatility rising in the volatile blocks.">
+      <figcaption>An ideal observer does exactly this: its estimate of volatility
+        rises in the volatile blocks, and its learning speeds up to match.</figcaption>
+    </figure>
+    <div>
+      <p>We will test this in real participants in week 3, by fitting one learning
+        rate per block and asking whether the volatile one is larger.</p>
+      <p class="note">Behrens, T. E. J., Woolrich, M. W., Walton, M. E., &amp; Rushworth, M. F. S. (2007).
+        Learning the value of information in an uncertain world. <em>Nature Neuroscience</em>,
+        10(9), 1214&ndash;1221.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Part four</p>
+  <h2>From probability to a decision</h2>
+</section>
+
+<section>
+  <h2>The model so far cannot choose</h2>
+  <p class="lead">It tracks how likely option 1 is to pay out. It says nothing about
+    the points on offer &mdash; so it cannot yet prefer one option over the other.</p>
+  <div class="discuss">
+    <span class="discuss-label">Discuss</span>
+    <ul>
+      <li>Name two ways a participant might combine points and probability.</li>
+      <li>Which is better, and better <em>for what</em>?</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Multiplying the two</h2>
+  <div class="cols narrow-left">
+    <div>
+      <div class="eq">
+        $$u = m \times p$$
+        <span class="eq-tag">(3)</span>
+      </div>
+      <p class="eq-where">$m$ is the magnitude on offer, $p$ the learnt probability.</p>
+      <p>This is expected value. An option is worthless if either the points
+        or the chance of winning them is near zero.</p>
+    </div>
+    <figure class="fig" id="fig-utility-mult">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2>Adding the two</h2>
+  <div class="cols narrow-left">
+    <div>
+      <div class="eq">
+        $$u = \omega m + (1-\omega)\,p$$
+        <span class="eq-tag">(4)</span>
+      </div>
+      <p class="eq-where">with magnitude rescaled to $0$&ndash;$1$, and $0 \le \omega \le 1$
+        setting how much weight goes on points rather than probability.</p>
+      <div class="discuss">
+        <span class="discuss-label">Discuss</span>
+        <ul><li>What does $\omega = 0$ describe? And $\omega = 1$?</li></ul>
+      </div>
+    </div>
+    <figure class="fig" id="fig-utility-add">
+      <div class="fig-plot"></div>
+      <div class="fig-controls"></div>
+      <p class="fig-print-note"></p>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2>Two shapes, two predictions</h2>
+  <p class="lead">The multiplicative surface is curved and pinned to zero along both edges.
+    The additive surface is a tilted plane: a lot of points can compensate for a poor chance.</p>
+  <p>Which one describes real participants is an empirical question &mdash; and in week 3
+    we will answer it by fitting both and comparing them.</p>
+</section>
+
+<!-- ===================================================================== -->
+<section class="section-slide">
+  <p class="eyebrow">Harder, and optional</p>
+  <h2>The learning rate is a weighting</h2>
+</section>
+
+<section>
+  <h2>Unrolling the update</h2>
+  <p>Substituting equation 2 into itself, trial after trial, gives the expectation
+    at trial $T+1$ as a weighted sum of everything that has happened:</p>
+  <div class="eq">
+    $$p_{T+1} = (1-\alpha)^T p_1 + \sum_{t=1}^{T} w_t\, o_t,
+      \qquad w_t = \alpha(1-\alpha)^{T-t}$$
+    <span class="eq-tag">(5, 6)</span>
+  </div>
+  <p class="eq-where">The influence of any one outcome decays geometrically as it recedes
+    into the past, and the starting value $p_1$ is forgotten at the same rate.</p>
+</section>
+
+<section>
+  <h2>What that weighting looks like</h2>
+  <figure class="fig fig-narrow" id="fig-weights">
+    <div class="fig-plot"></div>
+    <div class="fig-controls"></div>
+    <p class="fig-print-note"></p>
+  </figure>
+  <p class="note">At $\alpha = 1$ only the last trial counts. As $\alpha$ falls the model
+    averages over a longer and longer window &mdash; which is exactly why a low $\alpha$ is
+    steady but slow.</p>
+  <p class="citation">Discussed in Daw &amp; Tobler (2014), <em>Neuroeconomics</em>, ch. 15</p>
+</section>
+
+<!-- ===================================================================== -->
+<section>
+  <h2>Before next week</h2>
+  <ul>
+    <li>Finish the Session 1 notebook if you have not already.</li>
+    <li>Answer the four exercise questions and bring them to session 2.</li>
+    <li>Try the derivation of equation 6 &mdash; we will work through it next time.</li>
+  </ul>
+  <p class="note" style="margin-top:1em">Notebook, with and without solutions:
+    <a href="https://github.com/JanGrohn/ComputationalModelingBlockPractical">github.com/JanGrohn/ComputationalModelingBlockPractical</a></p>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script type="module">
+  import { initDeck } from '../assets/deck.js';
+  initDeck({ title: 'Session 1 &middot; Computational modelling block practical' });
+  await import('./figures.js');
+</script>
+</body>
+</html>
