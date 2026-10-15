@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
    A few playable trials of the task, on the slide.
 
-   The real experiment lives at jangrohn.github.io/volatility_study. This is a
+   The real experiment is served from this repository at /task/. This is a
    short stand-in so the recap slide can be played rather than described: same
    two stimuli, same independent draw of magnitude and probability, same
    anticorrelated outcome. It runs a stable block then a volatile one so the

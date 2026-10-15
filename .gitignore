@@ -166,3 +166,7 @@ cython_debug/
 
 # exported slide PDFs
 docs/pdf/
+
+# the task is built from task-source/ and committed to docs/task/
+task-source/node_modules/
+task-source/build/
