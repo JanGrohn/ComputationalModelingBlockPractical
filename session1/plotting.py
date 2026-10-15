@@ -76,7 +76,7 @@ def plot_schedule(
         ))
 
   # label the axes
-  fig.update_layout(xaxis_title="trial number", yaxis_title="option 1 (orange) rewarded?")
+  fig.update_layout(xaxis_title="trial number", yaxis_title="option 1 (green) rewarded?")
 
   # set the range for the axes
   fig.update_xaxes(range=[0, nTrials])

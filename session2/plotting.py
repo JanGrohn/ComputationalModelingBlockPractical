@@ -127,7 +127,7 @@ def plot_schedule(
         ))
 
   # label the axes
-  fig.update_layout(xaxis_title="", yaxis_title="option 1 (orange) rewarded?")
+  fig.update_layout(xaxis_title="", yaxis_title="option 1 (green) rewarded?")
 
   # check if we should plot reward magnitudes, and if so plot them as lines
   if magOpt1 is not None:
@@ -136,7 +136,7 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = magOpt1,
             mode = 'lines',
-            line = dict(color='orange'),
+            line = dict(color='green'),
             name = "magnitude option 1",
             xaxis = 'x2',
             yaxis = 'y2',
@@ -146,7 +146,7 @@ def plot_schedule(
             x = list(range(nTrials)),
             y = magOpt2,
             mode = 'lines',
-            line = dict(color='green'),
+            line = dict(color='orange'),
             name = "magnitude option 2",
             xaxis = 'x2',
             yaxis = 'y2',

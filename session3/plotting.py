@@ -111,7 +111,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = correct_choices,
           mode = 'markers',
-          marker = dict(size = 5, opacity=0.8, color="green"),
+          marker = dict(size = 5, opacity=0.8, color="black"),
           name = "correct choice"
       ))
 
@@ -120,7 +120,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = incorrect_choices,
           mode = 'markers',
-          marker = dict(size = 5, opacity=0.8, color="red"),
+          marker = dict(size = 5, opacity=0.8, color="crimson", symbol='x'),
           name = "incorrect choice"
       ))
 
@@ -133,7 +133,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = magOpt1,
           mode = 'lines',
-          line = dict(color='orange'),
+          line = dict(color='green'),
           name = "magnitude option 1",
           xaxis = 'x2',
           yaxis = 'y2',
@@ -143,7 +143,7 @@ def plot_schedule(ID, *df):
           x = list(range(nTrials)),
           y = magOpt2,
           mode = 'lines',
-          line = dict(color='green'),
+          line = dict(color='orange'),
           name = "magnitude option 2",
           xaxis = 'x2',
           yaxis = 'y2',
@@ -157,7 +157,7 @@ def plot_schedule(ID, *df):
               x = list(range(nTrials)),
               y = utility1,
               mode = 'lines',
-              line = dict(color='orange'),
+              line = dict(color='green'),
               name = "utility option 1",
               xaxis = 'x3',
               yaxis = 'y3',
@@ -167,7 +167,7 @@ def plot_schedule(ID, *df):
               x = list(range(nTrials)),
               y = utility2,
               mode = 'lines',
-              line = dict(color='green'),
+              line = dict(color='orange'),
               name = "utility option 2",
               xaxis = 'x3',
               yaxis = 'y3',
