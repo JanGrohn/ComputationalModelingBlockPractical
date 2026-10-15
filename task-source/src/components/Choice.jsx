@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Box, Paper, Button, Typography, Stack, Alert, AlertTitle, Collapse } from "@mui/material";
 import { styled } from "@mui/system";
-import TextTransition, { presets } from "react-text-transition";
 import CheckIcon from "@mui/icons-material/Check";
 import ForwardIcon from "@mui/icons-material/Forward";
 import CraneImage from "./img/bird-crane-shape.svg";
@@ -91,9 +90,13 @@ function Choice({ condition }) {
                     />
                 </div>
                 <Typography variant="h2" mt={2} sx={{ userSelect: "none", fontSize: "5rem", fontWeight: 500 }}>
-                    <TextTransition springConfig={presets.gentle} inline>
+                    {/* The reward used to slide in and out on a spring, which
+                        overshot and bounced. Re-keying the span on the value
+                        restarts a short fade instead: the number simply
+                        changes, with nothing moving. */}
+                    <span className="reward-value" key={`${currentIndex}-${sideValue(sideIsOptionOne)}`}>
                         {sideValue(sideIsOptionOne)}
-                    </TextTransition>
+                    </span>
                 </Typography>
                 <Box mt={2}>
                     <Button

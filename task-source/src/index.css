@@ -11,3 +11,20 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* The reward number changes in place with a short fade. Anything that slides
+   or springs draws the eye away from the two stimuli, which is where it
+   should be. */
+.reward-value {
+  display: inline-block;
+  animation: reward-fade 160ms ease-out;
+}
+
+@keyframes reward-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reward-value { animation: none; }
+}
