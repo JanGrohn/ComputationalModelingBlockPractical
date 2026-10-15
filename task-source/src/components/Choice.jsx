@@ -3,8 +3,10 @@ import { Box, Paper, Button, Typography, Stack, Alert, AlertTitle, Collapse } fr
 import { styled } from "@mui/system";
 import CheckIcon from "@mui/icons-material/Check";
 import ForwardIcon from "@mui/icons-material/Forward";
-import CraneImage from "./img/bird-crane-shape.svg";
-import DeerImage from "./img/deer-silhouette.svg";
+// The two stimuli live under docs/, which is what GitHub Pages serves, so
+// that the slides can show the very same files rather than a copy of them.
+import CraneImage from "../../../docs/assets/img/stimuli/bird-crane-shape.svg";
+import DeerImage from "../../../docs/assets/img/stimuli/deer-silhouette.svg";
 import EndStudy from "./EndStudy";
 import { buildSchedule, N_TRIALS } from "../schedule";
 

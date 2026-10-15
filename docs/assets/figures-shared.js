@@ -27,11 +27,11 @@ export function plotly() {
 /** Trial numbers starting at 1, matching the equations in the notebooks. */
 export const trials = (n) => Array.from({ length: n }, (_, i) => i + 1);
 
-/** Register every { id: { params, draw, note } } entry in each group given. */
+/** Register every { id: { params, draw, note, opts } } entry in each group given. */
 export function registerAll(...groups) {
   for (const group of groups) {
     for (const [id, spec] of Object.entries(group)) {
-      interactiveFigure(id, spec.params, spec.draw, spec.note);
+      interactiveFigure(id, spec.params, spec.draw, spec.note, spec.opts);
     }
   }
 }
@@ -313,13 +313,25 @@ export function blockKey(stableAt = 0, volatileAt = 0.42) {
 
 /* --- gradient ascent ------------------------------------------------------ */
 
-export function drawAscent(el, { width = 900, height = 390 } = {}) {
+/** How many steps the longer of the two ascent runs takes. */
+export const ASCENT_STEPS = Math.max(...ASCENT.paths.map((p) => p.length));
+
+/**
+ * Two runs of gradient ascent on one likelihood surface.
+ *
+ * `v.step` is how far along to draw, so the slide can play the climb rather
+ * than present it finished. At the last step both runs are complete, which is
+ * what the default and the PDF export show.
+ */
+export function drawAscent(el, v = {}, { width = 900, height = 390 } = {}) {
   const { data, truth, paths } = ASCENT;
+  const step = Math.round(v.step ?? ASCENT_STEPS);
   const alphas = Array.from({ length: 46 }, (_, i) => 0.01 + (0.88 * i) / 45);
   const betas = Array.from({ length: 46 }, (_, i) => 0.01 + (0.39 * i) / 45);
   const z = alphas.map((a) => betas.map((b) =>
     logLikelihood(data.opt1Rewarded, data.magOpt1, data.magOpt2, data.choice1, a, b)));
   const top = Math.max(...z.flat());
+  const walked = paths.map((path) => path.slice(0, Math.max(1, Math.min(step, path.length))));
 
   plotly().react(el, [
     { type: 'contour', z, x: betas, y: alphas, zmin: top - 70, zmax: top,
@@ -327,11 +339,15 @@ export function drawAscent(el, { width = 900, height = 390 } = {}) {
       showscale: false, contours: { coloring: 'heatmap', start: top - 70, end: top, size: 7 },
       line: { color: 'rgba(255,255,255,0.7)', width: 1 },
       hovertemplate: 'α %{y:.2f}<br>β %{x:.2f}<br>log likelihood %{z:.0f}<extra></extra>' },
-    ...paths.map((path) => ({
+    ...walked.map((path) => ({
       x: path.map((p) => p.beta), y: path.map((p) => p.alpha), mode: 'lines+markers',
       line: { color: COL.ink, width: 2 }, marker: { size: 5, color: COL.ink },
       hovertemplate: 'step %{pointNumber}<br>α %{y:.2f}, β %{x:.2f}<extra></extra>',
     })),
+    // where each run has got to, so the eye can follow the two climbs
+    { x: walked.map((p) => p[p.length - 1].beta), y: walked.map((p) => p[p.length - 1].alpha),
+      mode: 'markers', marker: { size: 11, color: COL.opt2, line: { color: '#fff', width: 1.5 } },
+      hovertemplate: 'step %{pointNumber}<extra></extra>' },
     { x: [truth.beta], y: [truth.alpha], mode: 'markers',
       marker: { size: 14, color: '#fff', symbol: 'circle', line: { color: COL.ink, width: 2 } },
       hovertemplate: 'simulated with these values<extra></extra>' },
@@ -349,9 +365,15 @@ export function drawAscent(el, { width = 900, height = 390 } = {}) {
   }), CONFIG);
 }
 
-export const ascentNote = 'Two runs of gradient ascent on one likelihood surface, from two '
-  + 'different starting points. Every step goes uphill; the steps are long where the surface is '
-  + 'steep and shorten as it flattens. Both end near the values the data were simulated with.';
+export const ascentNote = (v = {}) => {
+  const step = Math.round(v.step ?? ASCENT_STEPS);
+  const done = step >= ASCENT_STEPS;
+  return 'Two runs of gradient ascent on one likelihood surface, from two different starting '
+    + 'points. Every step goes uphill; the steps are long where the surface is steep and shorten '
+    + 'as it flattens. '
+    + (done ? 'Both end near the values the data were simulated with.'
+            : `Shown after ${step} steps; the orange dots are where each run has got to.`);
+};
 
 /* --- the learning rate as a weighting of past outcomes -------------------- */
 

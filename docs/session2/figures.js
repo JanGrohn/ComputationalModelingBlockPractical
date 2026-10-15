@@ -6,7 +6,7 @@ import { layout, CONFIG, COL } from '../assets/deck.js';
 import {
   plotly, axis, registerAll, drawChoices, choicesNote, drawCondition, conditionNote,
   drawMagnitudes, magnitudesNote, drawLikelihood, likelihoodNote, drawRecovery,
-  drawFalsification, drawAscent, ascentNote,
+  drawFalsification, drawAscent, ascentNote, ASCENT_STEPS,
 } from '../assets/figures-shared.js';
 
 /* --- the softmax ---------------------------------------------------------- */
@@ -41,6 +41,54 @@ const softmaxFigure = {
                  + `the deterministic rule, which always takes the better option; the green curve `
                  + `is the softmax, which takes it most of the time. A larger β makes the curve `
                  + `steeper, so behaviour approaches the deterministic rule.`,
+  },
+};
+
+/* --- the deterministic rule, on the same axes as the softmax -------------- */
+
+const deterministic = {
+  'fig-deterministic': {
+    params: {},
+    draw(el) {
+      const tint = (colour) => ({ type: 'rect', xref: 'x', yref: 'paper', y0: 0, y1: 1,
+        line: { width: 0 }, fillcolor: colour, layer: 'below' });
+      plotly().react(el, [
+        // drawn as two separate segments, because the rule really does jump:
+        // joining them would draw a vertical line that is not part of it
+        { x: [-100, 0], y: [0, 0], mode: 'lines', line: { color: COL.ink, width: 3 },
+          hovertemplate: 'always choose B<extra></extra>' },
+        { x: [0, 100], y: [1, 1], mode: 'lines', line: { color: COL.ink, width: 3 },
+          hovertemplate: 'always choose A<extra></extra>' },
+        { x: [0], y: [0.5], mode: 'markers',
+          marker: { size: 11, color: '#fff', line: { color: COL.ink, width: 2 } },
+          hovertemplate: 'indifference: the two are worth the same<extra></extra>' },
+      ], layout({
+        width: 620, height: 340,
+        shapes: [
+          Object.assign(tint('rgba(232,112,10,0.07)'), { x0: -100, x1: 0 }),
+          Object.assign(tint('rgba(46,125,50,0.07)'), { x0: 0, x1: 100 }),
+          { type: 'line', x0: 0, x1: 0, yref: 'paper', y0: 0, y1: 0.78,
+            line: { color: COL.faint, width: 1.5, dash: 'dash' } },
+        ],
+        xaxis: Object.assign(axis('u<sub>A</sub> \u2212 u<sub>B</sub>'),
+                             { range: [-100, 100], tickvals: [-100, -50, 0, 50, 100] }),
+        yaxis: axis('P(choose A)', { range: [-0.12, 1.42], tickvals: [0, 0.5, 1] }),
+        annotations: [
+          { x: -52, y: 1.22, xanchor: 'center', showarrow: false,
+            text: 'u<sub>B</sub> &gt; u<sub>A</sub><br>always choose B',
+            font: { size: 16, color: COL.opt2Text } },
+          { x: 52, y: 1.22, xanchor: 'center', showarrow: false,
+            text: 'u<sub>A</sub> &gt; u<sub>B</sub><br>always choose A',
+            font: { size: 16, color: COL.opt1 } },
+          { x: 0, y: 0.5, ax: 46, ay: -26, text: 'indifference point',
+            font: { size: 15, color: COL.ink }, arrowcolor: COL.ink, arrowhead: 2,
+            arrowsize: 0.8, arrowwidth: 1, xanchor: 'left' },
+        ],
+      }), CONFIG);
+    },
+    note: () => 'The deterministic rule: whichever option is worth more is taken every time, so '
+                + 'the probability of choosing A jumps straight from 0 to 1. The jump sits at the '
+                + 'indifference point, where the two options are worth the same.',
   },
 };
 
@@ -112,7 +160,15 @@ const falsification = {
   },
 };
 
-const ascent = { 'fig-ascent': { params: {}, draw: drawAscent, note: () => ascentNote } };
+const ascent = {
+  'fig-ascent': {
+    params: { step: { min: 1, max: ASCENT_STEPS, step: 1, value: ASCENT_STEPS,
+                      label: 'step', format: (v) => String(Math.round(v)) } },
+    draw: (el, v) => drawAscent(el, v),
+    note: ascentNote,
+    opts: { play: { param: 'step', fps: 14 } },
+  },
+};
 
-registerAll(softmaxFigure, choiceFigure, conditions, magnitudes, landscape,
+registerAll(softmaxFigure, deterministic, choiceFigure, conditions, magnitudes, landscape,
             recovery, falsification, ascent);

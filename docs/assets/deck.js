@@ -14,8 +14,10 @@ const PLOT_FONT = { family: 'Inter, Helvetica, Arial, sans-serif', size: 16, col
 // opt1/opt2 are the two options, green and orange, as in the task itself.
 // stable/opt2 are the two blocks: the volatile block borrows the orange, since
 // it is the one that keeps changing, and the stable block takes a quiet slate.
+// opt2Text is the darkened orange the theme uses wherever the colour carries
+// words rather than a shape, since #e8700a on white fails WCAG at text sizes.
 export const COL = {
-  opt1: '#2e7d32', opt2: '#e8700a', stable: '#1f4b73',
+  opt1: '#2e7d32', opt2: '#e8700a', opt2Text: '#b35309', stable: '#1f4b73',
   ink: '#14171a', muted: '#5b6670', faint: '#9aa3aa',
 };
 
@@ -55,8 +57,10 @@ export const CONFIG = {
  * @param {object} params    {name: {min, max, step, value, label, format}}
  * @param {function} draw    (el, values) -> void, draws or updates the plot
  * @param {function} note    (values) -> string, the line shown in the PDF
+ * @param {object} [opts]    {play: {param, fps}} adds a play button that runs
+ *                           that parameter from its minimum to its maximum
  */
-export function interactiveFigure(id, params, draw, note) {
+export function interactiveFigure(id, params, draw, note, { play } = {}) {
   const fig = document.getElementById(id);
   if (!fig) return;
   const plot = fig.querySelector('.fig-plot');
@@ -73,6 +77,9 @@ export function interactiveFigure(id, params, draw, note) {
     if (printNote && note) printNote.textContent = note(values);
   };
 
+  /** Move one slider from code, keeping its readout and the plot in step. */
+  const setters = {};
+
   for (const [key, p] of Object.entries(params)) {
     const label = document.createElement('label');
     const name = document.createElement('span');
@@ -84,13 +91,37 @@ export function interactiveFigure(id, params, draw, note) {
     input.setAttribute('aria-label', (p.label ?? key).replace(/<[^>]+>/g, ''));
     const out = document.createElement('output');
     out.textContent = fmt(p, p.value);
-    input.addEventListener('input', () => {
-      values[key] = parseFloat(input.value);
-      out.textContent = fmt(p, values[key]);
+    setters[key] = (v) => {
+      values[key] = v;
+      input.value = v;
+      out.textContent = fmt(p, v);
       render();
-    });
+    };
+    input.addEventListener('input', () => setters[key](parseFloat(input.value)));
     label.append(name, input, out);
     controls.appendChild(label);
+  }
+
+  if (play) {
+    const p = params[play.param];
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'fig-play';
+    let timer = null;
+    const stop = () => { clearInterval(timer); timer = null; btn.textContent = '\u25b6 Play'; };
+    stop();
+    btn.addEventListener('click', () => {
+      if (timer) { stop(); return; }
+      // a second press after it has finished starts again from the beginning
+      if (values[play.param] >= p.max) setters[play.param](p.min);
+      btn.textContent = '\u275a\u275a Pause';
+      timer = setInterval(() => {
+        const next = values[play.param] + (p.step ?? 1);
+        setters[play.param](Math.min(next, p.max));
+        if (next >= p.max) stop();
+      }, 1000 / (play.fps ?? 12));
+    });
+    controls.appendChild(btn);
   }
 
   if (controls.dataset.reseed) {

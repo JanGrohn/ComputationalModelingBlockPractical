@@ -8,7 +8,7 @@
 import {
   registerAll, drawChoices, choicesNote, drawCondition, drawMagnitudes, magnitudesNote,
   drawWeights, weightsNote, drawLikelihood, likelihoodNote, drawGridSearch, gridSearchNote,
-  drawRecovery, drawFalsification, drawAscent, ascentNote,
+  drawRecovery, drawFalsification, drawAscent, ascentNote, ASCENT_STEPS,
 } from '../assets/figures-shared.js';
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
@@ -55,7 +55,13 @@ const recaps = {
     draw: (el, v) => drawGridSearch(el, v, { width: 600, height: 340 }),
     note: gridSearchNote,
   },
-  'fig-ascent': { params: {}, draw: drawAscent, note: () => ascentNote },
+  'fig-ascent': {
+    params: { step: { min: 1, max: ASCENT_STEPS, step: 1, value: ASCENT_STEPS,
+                      label: 'step', format: (v) => String(Math.round(v)) } },
+    draw: (el, v) => drawAscent(el, v),
+    note: ascentNote,
+    opts: { play: { param: 'step', fps: 14 } },
+  },
   'fig-recovery-alpha': {
     params: {},
     draw: (el) => drawRecovery(el, 'alpha', 'fitAlpha', 'α', 0.72, { width: 560, height: 360 }),

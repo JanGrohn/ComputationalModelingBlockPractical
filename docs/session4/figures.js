@@ -8,7 +8,7 @@ import { layout, CONFIG, COL } from '../assets/deck.js';
 import {
   plotly, axis, registerAll, drawChoices, choicesNote, drawCondition, conditionNote,
   drawMagnitudes, magnitudesNote, drawLikelihood, likelihoodNote, drawGridSearch,
-  gridSearchNote, drawAscent, ascentNote,
+  gridSearchNote, drawAscent, ascentNote, ASCENT_STEPS,
 } from '../assets/figures-shared.js';
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
@@ -33,7 +33,13 @@ const recap = {
     draw: (el, v) => drawGridSearch(el, v, { width: 600, height: 340 }),
     note: gridSearchNote,
   },
-  'fig-ascent': { params: {}, draw: drawAscent, note: () => ascentNote },
+  'fig-ascent': {
+    params: { step: { min: 1, max: ASCENT_STEPS, step: 1, value: ASCENT_STEPS,
+                      label: 'step', format: (v) => String(Math.round(v)) } },
+    draw: (el, v) => drawAscent(el, v),
+    note: ascentNote,
+    opts: { play: { param: 'step', fps: 14 } },
+  },
   'fig-alpha-dist': {
     params: {},
     draw: (el) => alphaDistributions(el, FITS.mul2),

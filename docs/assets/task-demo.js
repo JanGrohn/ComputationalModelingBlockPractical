@@ -3,10 +3,14 @@
 
    The real experiment is served from this repository at /task/. This is a
    short stand-in so a slide can be played rather than described, and it
-   follows the real task's interaction exactly: both options show the points on
-   offer, you press Select on one, the chosen card is tinted, the rewarded
-   option keeps its number while the other turns to a dash, and Next choice
-   becomes available a second later.
+   follows the real task's interaction: both options show the points on offer,
+   you press Select on one, the chosen card is tinted, and the rewarded option
+   keeps its number while the other turns to a dash.
+
+   Two things the real task has are left out here, because a lecture is not an
+   experiment: there is no Next choice button, since on a slide the next trial
+   should simply arrive, and no running score, which would invite the audience
+   to play for points rather than watch what the model has to learn.
 --------------------------------------------------------------------------- */
 
 import { makeRng } from './models.js';
@@ -14,7 +18,7 @@ import { makeRng } from './models.js';
 const P_OPTION1 = 0.75;    // option 1 pays out on three trials in four
 const REVERSE_EVERY = 4;   // ...until the contingency starts reversing
 const STABLE_TRIALS = 6;
-const REVEAL_DELAY = 1000; // how long the outcome shows before you may move on
+const REVEAL_DELAY = 1600; // how long the outcome shows before the next trial
 
 export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}) {
   const root = document.getElementById(rootId);
@@ -22,7 +26,6 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
 
   const rng = makeRng(seed);
   let trial = 0;
-  let score = 0;
   let state = null;
   let timer = null;
 
@@ -35,9 +38,6 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
 
   const board = el('div', 'task-board', root);
   const cards = el('div', 'task-cards', board);
-  const next = el('button', 'task-next', board);
-  next.type = 'button';
-  next.textContent = 'Next choice';
   const status = el('p', 'task-status', board);
 
   /** The probability that option 1 is rewarded on the current trial. */
@@ -59,20 +59,12 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
   function choose(option) {
     if (state.chosen !== null) return;
     state.chosen = option;
-    if ((option === 1) === state.oneRewarded) score += state.mag[option - 1];
     render();
-    // the outcome stays up for a moment before you may move on, as in the
-    // real task
-    next.disabled = true;
-    timer = setTimeout(() => { next.disabled = false; }, REVEAL_DELAY);
-  }
-
-  next.addEventListener('click', () => {
-    if (next.disabled) return;
+    // the outcome stays up for a moment, then the next trial arrives on its
+    // own: on a slide there is nothing useful for a Next button to do
     clearTimeout(timer);
-    trial += 1;
-    nextTrial();
-  });
+    timer = setTimeout(() => { trial += 1; nextTrial(); }, REVEAL_DELAY);
+  }
 
   function render() {
     cards.innerHTML = '';
@@ -82,10 +74,13 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
       card.disabled = state.chosen !== null;
       if (state.chosen === option) card.dataset.chosen = 'true';
 
+      // the very files the real task imports, not copies of them: the PNG
+      // exports used before carried a white background, which showed as a
+      // white box as soon as the chosen card was tinted
       const img = el('img', null, card);
       img.src = option === 1
-        ? new URL('./img/s1/stim-opt1-green.png', import.meta.url).href
-        : new URL('./img/s1/stim-opt2-orange.png', import.meta.url).href;
+        ? new URL('./img/stimuli/deer-silhouette.svg', import.meta.url).href
+        : new URL('./img/stimuli/bird-crane-shape.svg', import.meta.url).href;
       img.alt = option === 1 ? 'the green option' : 'the orange option';
 
       // before a choice both numbers show; afterwards the rewarded option
@@ -100,11 +95,10 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
       card.addEventListener('click', () => choose(option));
     });
 
-    next.disabled = state.chosen === null;
     const block = showBlock
       ? ` · ${trial < STABLE_TRIALS ? 'stable block' : 'volatile block'}`
       : '';
-    status.textContent = `Trial ${trial + 1}${block} · ${score} points won`;
+    status.textContent = `Trial ${trial + 1}${block}`;
   }
 
   nextTrial();
