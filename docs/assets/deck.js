@@ -19,14 +19,18 @@ export function layout(extra = {}) {
     font: PLOT_FONT,
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: 'rgba(0,0,0,0)',
-    margin: { l: 52, r: 16, t: 10, b: 42 },
+    // automargin on both axes below sizes the margins itself, so these are
+    // only a floor: an axis title can never end up on its own tick labels
+    margin: { l: 10, r: 16, t: 10, b: 10 },
     showlegend: false,
     hovermode: 'closest',
     // no zooming or panning anywhere: a slide is not a place to explore, and
     // a stray drag during a lecture leaves the figure in a state nobody wants
     dragmode: false,
-    xaxis: { zeroline: false, showgrid: false, linecolor: '#c9d0d5', ticks: 'outside', tickcolor: '#c9d0d5' },
-    yaxis: { zeroline: false, gridcolor: '#eef1f3', linecolor: '#c9d0d5', ticks: 'outside', tickcolor: '#c9d0d5' },
+    xaxis: { zeroline: false, showgrid: false, linecolor: '#c9d0d5', ticks: 'outside',
+             tickcolor: '#c9d0d5', automargin: true, title: { standoff: 14 } },
+    yaxis: { zeroline: false, gridcolor: '#eef1f3', linecolor: '#c9d0d5', ticks: 'outside',
+             tickcolor: '#c9d0d5', automargin: true, title: { standoff: 14 } },
   }, extra);
 }
 

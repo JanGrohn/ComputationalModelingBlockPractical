@@ -81,8 +81,7 @@ const fixedSchedule = {
       const probOpt1 = rlModel(opt1Rewarded, v.alpha, v.startingProb);
       plotly().react(el, scheduleTrace(opt1Rewarded, trueProbability, probOpt1), layout({
         width: 1120, height: 430,
-        margin: { l: 10, r: 16, t: 10, b: 46 },
-        xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0.5, n + 0.5] }),
+        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, n + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
           title: { text: 'P(option 1 rewarded)', standoff: 12 }, automargin: true,
           // the range runs past 1 only to make room for the labels above the
@@ -113,8 +112,7 @@ const reversal = {
       const probOpt1 = rlModel(opt1Rewarded, v.alpha, 0.5);
       plotly().react(el, scheduleTrace(opt1Rewarded, trueProbability, probOpt1), layout({
         width: 1120, height: 360,
-        margin: { l: 10, r: 16, t: 10, b: 44 },
-        xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0.5, trueProbability.length + 0.5] }),
+        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, trueProbability.length + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
           title: { text: 'P(option 1 rewarded)', standoff: 12 }, automargin: true,
           // the range runs past 1 only to make room for the labels above the
@@ -183,8 +181,7 @@ const conditions = Object.fromEntries(Object.entries(CONDITIONS).map(([id, spec]
         hovertemplate: 'P(option 1 rewarded) %{y:.2f}<extra></extra>' },
     ], layout({
       width: 530, height: 205,
-      margin: { l: 10, r: 12, t: 26, b: 40 },
-      xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0.5, pOption1.length + 0.5] }),
+      xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, pOption1.length + 0.5] }),
       // automargin keeps the axis title clear of its own tick labels
       yaxis: Object.assign(layout().yaxis, {
         title: { text: 'P(option 1 rewarded)', standoff: 10 },
@@ -215,8 +212,7 @@ const magnitudes = {
           hovertemplate: 'trial %{x}<br>option 2: %{y} points<extra></extra>' },
       ], layout({
         width: 1120, height: 155,
-        margin: { l: 10, r: 16, t: 24, b: 40 },
-        xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0.5, n + 0.5] }),
+        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, n + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
           title: { text: 'points on offer', standoff: 12 }, automargin: true,
           range: [0, 104], dtick: 50 }),
@@ -259,8 +255,7 @@ function contour(el, z, label) {
     line: { color: 'rgba(255,255,255,0.75)', width: 1 },
     hovertemplate: 'probability %{x:.2f}<br>magnitude %{y:.0f}<br>utility %{z:.1f}<extra></extra>',
   }], layout({
-    width: 540, height: 310,
-    margin: { l: 52, r: 10, t: 10, b: 42 },
+    width: 548, height: 330,
     xaxis: Object.assign(layout().xaxis, {
       title: { text: 'probability', standoff: 12 }, automargin: true, dtick: 0.25 }),
     yaxis: Object.assign(layout().yaxis, {
@@ -306,7 +301,7 @@ const weights = {
         x, y: w, type: 'bar', marker: { color: COL.opt1 },
         hovertemplate: '%{x} trials back<br>weight %{y:.3f}<extra></extra>',
       }], layout({
-        width: 700, height: 250,
+        width: 1000, height: 340,
         bargap: 0.35,
         // the label is placed in data coordinates and clamped, so that it
         // stays inside the plot even when alpha is 1 and the first bar fills
@@ -319,8 +314,8 @@ const weights = {
           font: { size: 12, color: COL.ink }, arrowcolor: COL.muted,
           arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'right',
         }],
-        xaxis: Object.assign(layout().xaxis, { title: 'trials into the past', dtick: 5, range: [-20.6, -0.4] }),
-        yaxis: Object.assign(layout().yaxis, { title: 'weight', range: [0, 1.08] }),
+        xaxis: Object.assign(layout().xaxis, { title: { text: 'trials into the past', standoff: 14 }, dtick: 5, range: [-20.6, -0.4] }),
+        yaxis: Object.assign(layout().yaxis, { title: { text: 'weight', standoff: 14 }, range: [0, 1.08] }),
       }), CONFIG);
     },
     note: (v) => `Shown with a learning rate of ${v.alpha.toFixed(2)}: the most recent outcome carries `

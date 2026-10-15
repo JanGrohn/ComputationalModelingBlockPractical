@@ -123,7 +123,14 @@ interactiveFigure(
 ```
 
 Give every plot an explicit `width` and `height` in slide coordinates (the
-canvas is 1280×720). Plots are drawn on load rather than when their slide comes
+canvas is 1280×720), and let `layout()` handle the margins: it sets
+`automargin` on both axes, so an axis title can never end up sitting on its own
+tick labels. Do not pass a `margin` of your own unless you have a reason, and
+give axis titles as `{ text, standoff }` rather than a bare string, which
+discards the standoff.
+
+A slide carrying little besides a figure should give the figure the room —
+around 1000-1120 wide is right for a full-width plot. Plots are drawn on load rather than when their slide comes
 up, so a fixed size is what lets a figure on slide 20 render correctly while
 slide 1 is showing — which is how the PDF export gets complete figures.
 

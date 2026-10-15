@@ -30,8 +30,7 @@ const softmaxFigure = {
           name: 'softmax', line: { color: COL.opt1, width: 3 },
           hovertemplate: 'utility difference %{x}<br>P(choose option 1) %{y:.2f}<extra></extra>' },
       ], layout({
-        width: 980, height: 340,
-        margin: { l: 10, r: 16, t: 10, b: 50 },
+        width: 1080, height: 390,
         xaxis: Object.assign(layout().xaxis, {
           title: { text: 'utility of option 1 − utility of option 2', standoff: 12 },
           automargin: true, zeroline: true, zerolinecolor: '#e2e6ea' }),
@@ -90,9 +89,8 @@ const choiceFigure = {
           marker: { size: 4, color: COL.opt2, opacity: 0.55 },
           hovertemplate: 'trial %{x}<br>chose option %{y}<extra></extra>' },
       ], layout({
-        width: 1120, height: 390,
-        margin: { l: 10, r: 16, t: 10, b: 46 },
-        xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0.5, x.length + 0.5] }),
+        width: 1120, height: 345,
+        xaxis: Object.assign(layout().xaxis, { title: { text: 'trial', standoff: 14 }, range: [0.5, x.length + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
           title: { text: 'probability', standoff: 12 }, automargin: true,
           tickvals: [0, 0.2, 0.4, 0.6, 0.8, 1], range: [-0.06, 1.44] }),
@@ -171,8 +169,7 @@ const landscape = {
           marker: { size: 13, color: COL.opt2, symbol: 'x', line: { width: 3 } },
           hovertemplate: `peak at α ${best.a.toFixed(2)}, β ${best.b.toFixed(2)}<extra></extra>` },
       ], layout({
-        width: 820, height: 390,
-        margin: { l: 10, r: 70, t: 32, b: 10 },
+        width: 980, height: 430,
         xaxis: Object.assign(layout().xaxis, {
           title: { text: 'inverse temperature β', standoff: 12 }, automargin: true, showgrid: false }),
         yaxis: Object.assign(layout().yaxis, {
