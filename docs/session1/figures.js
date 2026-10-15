@@ -85,6 +85,9 @@ const fixedSchedule = {
         xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0.5, n + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
           title: { text: 'P(option 1 rewarded)', standoff: 12 }, automargin: true,
+          // the range runs past 1 only to make room for the labels above the
+          // plot, so the ticks stop where the probability does
+          tickvals: [0, 0.2, 0.4, 0.6, 0.8, 1],
           range: [-0.06, 1.44] }),
         annotations: scheduleLabels(n),
       }), CONFIG);
@@ -114,6 +117,9 @@ const reversal = {
         xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0.5, trueProbability.length + 0.5] }),
         yaxis: Object.assign(layout().yaxis, {
           title: { text: 'P(option 1 rewarded)', standoff: 12 }, automargin: true,
+          // the range runs past 1 only to make room for the labels above the
+          // plot, so the ticks stop where the probability does
+          tickvals: [0, 0.2, 0.4, 0.6, 0.8, 1],
           range: [-0.06, 1.44] }),
         shapes: [{ type: 'rect', xref: 'x', yref: 'paper', x0: 0.5, x1: 100.5, y0: 0, y1: 1,
                    fillcolor: '#000', opacity: 0.045, line: { width: 0 }, layer: 'below' }],
@@ -121,11 +127,9 @@ const reversal = {
           // the block names head their halves of the plot, well clear of the
           // outcome dots that sit on the line at 1
           { x: 50,  y: 1.36, text: 'volatile', showarrow: false,
-            font: { size: 21, color: COL.ink }, bgcolor: '#eceff1',
-            borderpad: 5, bordercolor: '#eceff1' },
+            font: { size: 21, color: COL.ink } },
           { x: 150, y: 1.36, text: 'stable', showarrow: false,
-            font: { size: 21, color: COL.ink }, bgcolor: '#eceff1',
-            borderpad: 5, bordercolor: '#eceff1' },
+            font: { size: 21, color: COL.ink } },
         ]),
       }), CONFIG);
     },
