@@ -158,6 +158,11 @@ figcaption {
   line-height: 1.4;
 }
 
+/* --- a long list of reasons, with a few of them boxed ------------------- */
+
+.reveal ul.reasons { font-size: 0.96em; max-width: 46em; margin-top: 0.2em; }
+.reveal ul.reasons li { margin-bottom: 0.42em; }
+
 /* --- the four weeks ------------------------------------------------------ */
 
 .weeks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9em; margin-top: 0.3em; }

@@ -151,10 +151,12 @@ const conditions = Object.fromEntries(Object.entries(CONDITIONS).map(([id, spec]
         hovertemplate: 'P(option 1 rewarded) %{y:.2f}<extra></extra>' },
     ], layout({
       width: 520, height: 250,
-      margin: { l: 46, r: 12, t: 26, b: 40 },
+      margin: { l: 10, r: 12, t: 26, b: 40 },
       xaxis: Object.assign(layout().xaxis, { title: 'trial', range: [0, pOption1.length] }),
+      // automargin keeps the axis title clear of its own tick labels
       yaxis: Object.assign(layout().yaxis, {
-        title: 'P(option 1 rewarded)', range: [-0.08, 1.08], dtick: 0.25 }),
+        title: { text: 'P(option 1 rewarded)', standoff: 10 },
+        automargin: true, range: [-0.08, 1.08], dtick: 0.25 }),
     }), CONFIG);
   },
   note: () => spec.condition === 1
@@ -236,7 +238,7 @@ const weights = {
         // the whole height
         annotations: [{
           x: -1, y: w[0],
-          ax: -9, ay: Math.min(w[0] + 0.24, 0.93),
+          ax: -3.4, ay: Math.min(w[0] + 0.24, 0.93),
           axref: 'x', ayref: 'y',
           text: 'the last trial carries weight \u03b1',
           font: { size: 12, color: COL.ink }, arrowcolor: COL.muted,

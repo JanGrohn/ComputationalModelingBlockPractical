@@ -50,7 +50,13 @@ check('magnitudes are integers in 1..99',
   `min ${lo}, max ${hi}`);
 check('the two fixed opening trials are numbers, not strings',
   runs.every((r) => [r.reward1[0], r.reward1[1], r.reward2[0], r.reward2[1]].every(Number.isInteger)),
-  'reward1 66,45 / reward2 31,60');
+  'reward1 31,60 / reward2 66,45');
+
+// option 1 is the green stimulus, as in the notebooks: trial 1 shows green on
+// the left worth 31, orange on the right worth 66
+check('trial 1 matches the task screenshot and the slides',
+  runs.every((r) => r.reward1[0] === 31 && r.reward2[0] === 66 && r.displaySide[0] === 1),
+  'green option 1 on the left worth 31, orange option 2 on the right worth 66');
 
 // an unknown condition fails loudly rather than reading undefined
 let threw = false;

@@ -1,0 +1,15 @@
+%% Boxes are the things the model holds; rounded tinted nodes are the
+%% operations that take you from one box to the next. Combining value
+%% dimensions is a single step that both the learned probability and the
+%% shown magnitude feed into.
+flowchart TD
+  OH["Outcome History"] --> LM(["Learning Model"])
+  LM --> LP["Learned Probability"]
+  LP --> CV(["Combining Value Dims"])
+  SM["Shown Magnitude"] --> CV
+  CV --> DV["Decision Variable"]
+
+  classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
+  classDef op fill:#e8eef4,stroke:#5b7fa6,stroke-width:1.2px,color:#1f4b73;
+  class OH,LP,SM,DV state;
+  class LM,CV op;

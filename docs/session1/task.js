@@ -14,11 +14,11 @@ const STABLE_P = 0.8;      // option 1 pays out on 80% of stable trials
 const REVERSE_EVERY = 4;   // the volatile block flips this often
 const STABLE_TRIALS = 6;
 
-export function playableTask(rootId) {
+export function playableTask(rootId, seed = 20251015) {
   const root = document.getElementById(rootId);
   if (!root) return;
 
-  const rng = makeRng(20251015);
+  const rng = makeRng(seed);
   let trial = 0;
   let score = 0;
   let state = null;

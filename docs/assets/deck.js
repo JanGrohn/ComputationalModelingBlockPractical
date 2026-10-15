@@ -22,12 +22,21 @@ export function layout(extra = {}) {
     margin: { l: 52, r: 16, t: 10, b: 42 },
     showlegend: false,
     hovermode: 'closest',
+    // no zooming or panning anywhere: a slide is not a place to explore, and
+    // a stray drag during a lecture leaves the figure in a state nobody wants
+    dragmode: false,
     xaxis: { zeroline: false, showgrid: false, linecolor: '#c9d0d5', ticks: 'outside', tickcolor: '#c9d0d5' },
     yaxis: { zeroline: false, gridcolor: '#eef1f3', linecolor: '#c9d0d5', ticks: 'outside', tickcolor: '#c9d0d5' },
   }, extra);
 }
 
-export const CONFIG = { displayModeBar: false, responsive: true, staticPlot: false };
+export const CONFIG = {
+  displayModeBar: false,
+  responsive: true,
+  staticPlot: false,   // hover tooltips stay
+  scrollZoom: false,
+  doubleClick: false,
+};
 
 /**
  * Wire up one interactive figure.

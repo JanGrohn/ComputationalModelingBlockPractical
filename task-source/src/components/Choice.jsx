@@ -83,8 +83,8 @@ function Choice({ condition }) {
             >
                 <div style={{ userSelect: "none", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", flexGrow: 1, overflow: "hidden" }}>
                     <img
-                        src={sideIsOptionOne ? CraneImage : DeerImage}
-                        alt={sideIsOptionOne ? "an orange crane" : "a green deer"}
+                        src={sideIsOptionOne ? DeerImage : CraneImage}
+                        alt={sideIsOptionOne ? "the green option" : "the orange option"}
                         style={{
                             maxWidth: "100%",
                             maxHeight: "26vh",
