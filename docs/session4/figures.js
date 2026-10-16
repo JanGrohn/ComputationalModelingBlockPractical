@@ -68,14 +68,14 @@ const recap = {
   },
   'fig-params-mul': {
     params: {},
-    draw: (el) => parameterMatrix(el, FITS.mul2, MUL_LABELS, { width: 1060, height: 330 }),
+    draw: (el) => parameterMatrix(el, FITS.mul2, MUL_LABELS, { width: 600, height: 470 }),
     note: () => 'Every fitted parameter against every other, under multiplicative utility. Points '
                 + 'pinned at 0 or 1 are the ones to look at.',
   },
   'fig-params-add': {
     params: {},
     draw: (el) => parameterMatrix(el, FITS.add2, ADD_LABELS),
-    note: () => 'The same under additive utility, with ω as a fourth parameter.',
+    note: () => 'All 75 participants, fitted with two learning rates under additive utility.',
   },
 };
 
@@ -123,8 +123,8 @@ Object.assign(plotsForTheReport, {
   },
   'fig-params-mul-2': {
     params: {},
-    draw: (el) => parameterMatrix(el, FITS.mul2, MUL_LABELS, { width: 1000, height: 430 }),
-    note: () => 'Every fitted parameter against every other, under multiplicative utility.',
+    draw: (el) => parameterMatrix(el, FITS.mul2, MUL_LABELS, { width: 600, height: 470 }),
+    note: () => 'All 75 participants, fitted with two learning rates under multiplicative utility.',
   },
 });
 

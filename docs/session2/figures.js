@@ -9,6 +9,7 @@ import {
   drawFalsification, drawAscent, ascentNote, ASCENT_STEPS, drawWeights, weightsNote,
   drawGridSearch, gridSearchNote, drawErrorTerm, errorTermNote, drawBlockLandscapes,
   blockLandscapesNote, drawRegression, regressionNote, drawSoftmaxPair, softmaxPairNote,
+  drawFitQuality, fitQualityNote,
 } from '../assets/figures-shared.js';
 import { REGRESSION } from '../assets/participant-fits.js';
 
@@ -105,6 +106,17 @@ const choiceFigure = {
     },
     draw: drawChoices,
     note: choicesNote,
+  },
+};
+
+const fitQuality = {
+  'fig-fit-quality': {
+    params: {
+      alpha: { min: 0.01, max: 1, step: 0.01, value: 0.9, label: '&alpha;' },
+      beta:  { min: 0.01, max: 0.5, step: 0.01, value: 0.2, label: '&beta;' },
+    },
+    draw: drawFitQuality,
+    note: fitQualityNote,
   },
 };
 
@@ -209,5 +221,5 @@ const ascent = {
   },
 };
 
-registerAll(softmaxFigure, deterministic, choiceFigure, conditions, magnitudes, landscape,
+registerAll(softmaxFigure, deterministic, choiceFigure, fitQuality, conditions, magnitudes, landscape,
             recovery, weights, regression, falsification, ascent);

@@ -166,11 +166,13 @@ export const ADD_LABELS = { ...MUL_LABELS, omega: 'ω' };
  * titles, and at this size it stacks them on top of the tick labels, so the
  * lower triangle is built here as an ordinary grid of subplots instead.
  */
-export function parameterMatrix(el, fits, labels, { width = 1060, height = 400 } = {}) {
+export function parameterMatrix(el, fits, labels, { width = 640, height = 560 } = {}) {
   const keys = Object.keys(labels);
   const side = keys.length - 1;
   const traces = [];
   const axes = {};
+  // learning rates and ω run from 0 to 1; β has no upper bound of its own
+  const ticks = (key) => (key === 'beta' ? { nticks: 4 } : { dtick: 0.5 });
 
   for (let row = 0; row < side; row++) {
     for (let col = 0; col <= row; col++) {
@@ -187,8 +189,8 @@ export function parameterMatrix(el, fits, labels, { width = 1060, height = 400 }
                        + '<extra></extra>',
       });
       // only the outer edges are labelled, so the inner subplots stay clear
-      axes[`xaxis${suffix}`] = axis(row === side - 1 ? labels[xKey] : '', { dtick: 0.5 });
-      axes[`yaxis${suffix}`] = axis(col === 0 ? labels[yKey] : '', { dtick: 0.5 });
+      axes[`xaxis${suffix}`] = axis(row === side - 1 ? labels[xKey] : '', ticks(xKey));
+      axes[`yaxis${suffix}`] = axis(col === 0 ? labels[yKey] : '', ticks(yKey));
     }
   }
 

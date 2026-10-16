@@ -138,7 +138,7 @@ const realFits = {
   'fig-bic': { params: {}, draw: drawBic, note: bicNote },
   'fig-params-mul': {
     params: {},
-    draw: (el) => parameterMatrix(el, FITS.mul2, MUL_LABELS, { width: 1060, height: 330 }),
+    draw: (el) => parameterMatrix(el, FITS.mul2, MUL_LABELS, { width: 600, height: 470 }),
     note: () => 'Every fitted parameter against every other, under multiplicative utility. Points '
                 + 'pinned at 0 or 1 are the ones to look at: a learning rate of 1 means only the '
                 + 'last outcome counted, and a β of 0 means choices were random.',
@@ -146,9 +146,7 @@ const realFits = {
   'fig-params-add': {
     params: {},
     draw: (el) => parameterMatrix(el, FITS.add2, ADD_LABELS),
-    note: () => 'The same under additive utility, with the weight ω on magnitude as a fourth '
-                + 'parameter. An ω at 0 or 1 means the participant used only one of the two '
-                + 'dimensions.',
+    note: () => 'All 75 participants, fitted with two learning rates under additive utility.',
   },
   'fig-model-frequencies': {
     params: {},
