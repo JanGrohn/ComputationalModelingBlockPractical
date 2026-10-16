@@ -300,25 +300,32 @@ export function correlation(a, b) {
 }
 
 /**
- * Simulated against recovered values for one parameter. The points are
- * coloured by the inverse temperature each participant was simulated with,
- * since that is what decides how much their choices can reveal: someone with
- * a β near zero chooses almost at random.
+ * Simulated against recovered values for one parameter, each point coloured by
+ * the other parameter that participant was simulated with: the α panel by β,
+ * since someone with a β near zero chooses almost at random and reveals little
+ * about their learning rate, and the β panel by α.
  */
+const COLOUR_BY = {
+  alpha: { key: 'beta', label: 'β', name: 'inverse temperature', max: 0.3 },
+  beta: { key: 'alpha', label: 'α', name: 'learning rate', max: 0.7 },
+};
+
 export function drawRecovery(el, key, fitKey, label, hi, { width = 500, height = 340 } = {}) {
   const simulated = RECOVERY.map((r) => r[key]);
   const recovered = RECOVERY.map((r) => r[fitKey]);
+  const by = COLOUR_BY[key];
+  const shade = RECOVERY.map((r) => r[by.key]);
   plotly().react(el, [
     { x: [0, hi], y: [0, hi], mode: 'lines', line: { color: COL.truth, width: 1.2, dash: 'dash' },
       hoverinfo: 'skip' },
     { x: simulated, y: recovered, mode: 'markers',
-      marker: { size: 10, color: RECOVERY.map((r) => r.beta), colorscale: CONTINUOUS,
-                cmin: 0, cmax: 0.3, line: { color: '#fff', width: 0.5 },
-                colorbar: { title: { text: 'simulated β', side: 'right' }, thickness: 10, len: 0.8,
-                            outlinewidth: 0, tickfont: { size: 12 }, titlefont: { size: 13 } } },
-      customdata: RECOVERY.map((r) => r.beta),
-      hovertemplate: 'simulated %{x:.3f}<br>recovered %{y:.3f}<br>simulated β %{customdata:.3f}'
-                     + '<extra></extra>' },
+      marker: { size: 10, color: shade, colorscale: CONTINUOUS,
+                cmin: 0, cmax: by.max, line: { color: '#fff', width: 0.5 },
+                colorbar: { title: { text: `simulated ${by.label}`, side: 'right' }, thickness: 10,
+                            len: 0.8, outlinewidth: 0, tickfont: { size: 12 }, titlefont: { size: 13 } } },
+      customdata: shade,
+      hovertemplate: `simulated %{x:.3f}<br>recovered %{y:.3f}<br>simulated ${by.label} `
+                     + '%{customdata:.3f}<extra></extra>' },
   ], layout({
     width, height,
     // constrain the domain rather than the range, so the box comes out square
@@ -332,9 +339,12 @@ export function drawRecovery(el, key, fitKey, label, hi, { width = 500, height =
   }), CONFIG);
 }
 
-export const recoveryNote = (label) => `${label}: ${RECOVERY.length} simulated participants, each `
-  + 'fitted back with the same model, coloured by the inverse temperature they were simulated '
-  + 'with. The dashed line is simulated = recovered.';
+export const recoveryNote = (label) => {
+  const by = COLOUR_BY[label === 'Inverse temperature' ? 'beta' : 'alpha'];
+  return `${label}: ${RECOVERY.length} simulated participants, each fitted back with the same `
+    + `model, coloured by the ${by.name} they were simulated with. The dashed line is `
+    + 'simulated = recovered.';
+};
 
 /**
  * Box plots in a strip above a histogram, one per series, as the notebooks'
