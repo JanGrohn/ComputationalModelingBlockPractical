@@ -91,6 +91,9 @@
   font-size: 1.62em;
   line-height: 1.15;
 }
+/* a second line under a title, as some of the original slides have */
+.reveal h2 .h2-sub { font-weight: 500; font-size: 0.78em; color: var(--muted); }
+.reveal h2 .h2-sub strong { font-weight: 700; color: var(--ink); }
 
 .reveal h3 {
   font-size: 1.1em;
@@ -456,6 +459,42 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
    than an equation standing on its own */
 .eq-stack .eq { margin: 0.25em 0; }
 .eq-stack .katex-display { margin: 0.1em 0; }
+/* a pipeline told as a row of stations, each revealed in turn: what goes in,
+   what turns it into data, the data, the model fitted to it, what comes out */
+.pipeline {
+  display: grid; grid-template-columns: 1.15fr auto 1fr auto 0.85fr auto 1.25fr auto 1fr;
+  /* top-aligned, so every station sits in the same place on both slides and
+     only the one that is swapped changes */
+  align-items: start; gap: 0 0.5em; margin-top: 1.6em;
+}
+.station { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.station-art {
+  height: 210px; display: flex; align-items: center; justify-content: center; width: 100%;
+}
+.station-label { font-weight: 600; margin: 0.5em 0 0; font-size: 0.9em; line-height: 1.25; }
+.station-label span { display: block; font-weight: 400; font-size: 0.8em; color: var(--muted); }
+.station-arrow { font-size: 1.6em; color: var(--ink); align-self: start; margin-top: 82px; }
+/* the stations stacked in one cell, one replacing the other on a click */
+.station-swap { display: grid; }
+.station-swap > * { grid-area: 1 / 1; }
+.exporting .station-swap > .swap-out { visibility: hidden; }
+.mini-cards { display: flex; gap: 8px; }
+.mini-card {
+  width: 84px; padding: 8px 4px 6px; border: 1.5px solid var(--rule); border-radius: 8px;
+  background: #fff; text-align: center; font-size: 0.7em; font-weight: 600;
+}
+.mini-card img { height: 78px; width: auto; display: block; margin: 0 auto 4px; }
+.data-sheet {
+  font-family: var(--mono); font-size: 0.6em; line-height: 1.35; margin: 0;
+  background: var(--panel); border-radius: 6px; padding: 0.5em 0.8em; white-space: pre;
+}
+.model-card {
+  border: 1.5px solid var(--neutral); border-radius: 12px; background: var(--panel);
+  padding: 0.5em 0.6em; font-size: 0.62em; line-height: 1.6;
+}
+.model-card .katex { font-size: 1.05em; }
+.param-out { font-size: 1em; line-height: 1.35; margin: 0; }
+
 /* a recap that sets each step of the model beside its equations and, where
    one helps, a small plot of it at work */
 .recap { display: flex; flex-direction: column; gap: 0.35em; }
