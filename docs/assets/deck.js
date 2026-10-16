@@ -181,7 +181,7 @@ function addFooters(deckTitle) {
  * slides large, with no figure to make room for; how far each can grow depends
  * on how much it says, so it is measured rather than fixed.
  */
-const VISUAL = '.fig, .mermaid-figure, img, .task-demo, .weeks, .eq, .measure, .katex-display';
+const VISUAL = '.fig, .mermaid-figure, .overview, .pipeline, img, .task-demo, .weeks, .eq, .measure, .katex-display';
 const TEXT_SCALES = [1.32, 1.24, 1.16, 1.08, 1];
 
 function fitTextSlides() {
