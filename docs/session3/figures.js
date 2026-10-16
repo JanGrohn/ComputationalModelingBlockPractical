@@ -43,7 +43,8 @@ const recaps = {
     note: () => 'The magnitudes on offer in the same schedule, redrawn at random every trial.',
   },
   'fig-weights': {
-    params: { alpha: { min: 0.02, max: 1, step: 0.01, value: 0.15, label: '&alpha;' } },
+    // starts at the learning rate the regression beside it was simulated with
+    params: { alpha: { min: 0.02, max: 1, step: 0.01, value: REGRESSION.alpha, label: '&alpha;' } },
     draw: (el, v) => drawWeights(el, v, { width: 560, height: 270 }),
     note: weightsNote,
   },

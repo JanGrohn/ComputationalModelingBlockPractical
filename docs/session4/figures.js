@@ -58,7 +58,7 @@ const recap = {
   'fig-bic': { params: {}, draw: drawBic, note: bicNote },
   'fig-model-frequencies': {
     params: {},
-    draw: (el) => drawModelFrequencies(el, { width: 700, height: 330 }),
+    draw: (el) => drawModelFrequencies(el, { width: 700, height: 450 }),
     note: modelFrequenciesNote,
   },
   'fig-model-recovery': {

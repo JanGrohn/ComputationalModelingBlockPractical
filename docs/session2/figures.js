@@ -171,16 +171,20 @@ const recovery = Object.fromEntries([
   note: () => recoveryNote(name),
 }]));
 
-const weights = Object.fromEntries(['fig-weights'].map((id) => [id, {
-  params: { alpha: { min: 0.02, max: 1, step: 0.01, value: 0.15, label: '&alpha;' } },
-  draw: (el, v) => drawWeights(el, v, { width: 1000, height: id === 'fig-weights' ? 340 : 200 }),
+// the second sits beside the regression weights, as in session 3
+const weights = Object.fromEntries(['fig-weights', 'fig-weights-regression'].map((id) => [id, {
+  // beside the regression it starts at the learning rate the regression's choices were simulated with
+  params: { alpha: { min: 0.02, max: 1, step: 0.01, value: id === 'fig-weights' ? 0.15 : REGRESSION.alpha,
+                     label: '&alpha;' } },
+  draw: (el, v) => drawWeights(el, v, id === 'fig-weights' ? { width: 1000, height: 340 }
+                                                           : { width: 560, height: 270 }),
   note: weightsNote,
 }]));
 
 const regression = {
   'fig-regression': {
     params: {},
-    draw: (el) => drawRegression(el, REGRESSION, { width: 1100, height: 380 }),
+    draw: (el) => drawRegression(el, REGRESSION, { width: 560, height: 270 }),
     note: () => regressionNote(REGRESSION),
   },
   'fig-softmax-pair': {
