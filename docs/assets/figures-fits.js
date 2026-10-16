@@ -203,8 +203,11 @@ export function parameterMatrix(el, fits, labels, { width = 1060, height = 400 }
 
 export function drawModelRecovery(el, { width = 700, height = 420 } = {}) {
   const short = MODEL_RECOVERY.labels.map(stacked);
+  // the rows are stacked closer than the columns sit apart, so their labels
+  // take two lines rather than three
+  const rows = MODEL_RECOVERY.labels.map((l) => l.replace(', ', ',<br>'));
   plotly().react(el, [{
-    type: 'heatmap', z: MODEL_RECOVERY.matrix, x: short, y: short,
+    type: 'heatmap', z: MODEL_RECOVERY.matrix, x: short, y: rows,
     xgap: 2, ygap: 2, zmin: 0, zmax: 1,
     colorscale: CONTINUOUS,
     colorbar: { title: { text: 'proportion', side: 'right' }, thickness: 11, len: 0.9,

@@ -35,7 +35,7 @@ export const CONTINUOUS = 'Viridis';
 
 /** The margins for a figure with a key or titles above its plotting area,
     which automargin does not count when it sizes the margins. */
-export const HEADROOM = { l: 10, r: 16, t: 34, b: 10 };
+export const HEADROOM = { l: 10, r: 16, t: 40, b: 10 };
 
 /** Plot styling shared by every figure, so the decks read as one system. */
 export function layout(extra = {}) {

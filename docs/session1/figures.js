@@ -136,7 +136,7 @@ const reversal = {
 // drawn by ../assets/figures-shared.js, which sessions 2 to 4 use as well
 const conditions = Object.fromEntries([1, 2].map((condition) => [`fig-condition-${condition}`, {
   params: {},
-  draw: (el) => drawCondition(el, condition, { width: 530, height: 160 }),
+  draw: (el) => drawCondition(el, condition, { width: 530, height: 148 }),
   // the line beneath each plot already names its condition, so the caption is short
   note: () => (condition === 1 ? 'P(option 1 rewarded) holds at 0.75.'
                                : 'P(option 1 rewarded) reverses every 25 trials.'),
@@ -145,7 +145,7 @@ const conditions = Object.fromEntries([1, 2].map((condition) => [`fig-condition-
 const magnitudes = {
   'fig-magnitudes': {
     params: {},
-    draw: (el) => drawMagnitudes(el, { width: 1120, height: 125 }),
+    draw: (el) => drawMagnitudes(el, { width: 1120, height: 140 }),
     note: () => 'Magnitudes, redrawn at random every trial.',
   },
 };

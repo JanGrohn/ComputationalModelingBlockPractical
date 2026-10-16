@@ -30,7 +30,7 @@ const softmaxFigure = {
         width: 1080, height: 300,
         xaxis: Object.assign(axis('utility 1 − utility 2  (u<sub>1</sub> − u<sub>2</sub>)'),
                              { zeroline: true, zerolinecolor: '#e2e6ea' }),
-        yaxis: axis('probability of choosing option 1',
+        yaxis: axis('probability of<br>choosing option 1',
                     { range: [-0.04, 1.2], tickvals: [0, 0.25, 0.5, 0.75, 1] }),
         annotations: [
           { x: -98, y: 1.13, xanchor: 'left', showarrow: false, text: '··· deterministic rule',
@@ -75,7 +75,7 @@ const deterministic = {
         ],
         xaxis: Object.assign(axis('utility 1 \u2212 utility 2  (u<sub>1</sub> \u2212 u<sub>2</sub>)'),
                              { range: [-100, 100], tickvals: [-100, -50, 0, 50, 100] }),
-        yaxis: axis('probability of choosing option 1', { range: [-0.12, 1.42], tickvals: [0, 0.5, 1] }),
+        yaxis: axis('probability of<br>choosing option 1', { range: [-0.12, 1.42], tickvals: [0, 0.5, 1] }),
         annotations: [
           { x: -52, y: 1.22, xanchor: 'center', showarrow: false,
             text: 'u<sub>2</sub> &gt; u<sub>1</sub><br>always choose option 2',
@@ -119,7 +119,7 @@ const conditions = Object.fromEntries([1, 2].map((condition) => [`fig-condition-
 const magnitudes = {
   'fig-magnitudes': {
     params: {},
-    draw: (el) => drawMagnitudes(el, { width: 1120, height: 125 }),
+    draw: (el) => drawMagnitudes(el, { width: 1120, height: 140 }),
     note: () => 'Magnitudes, redrawn at random every trial.',
   },
 };

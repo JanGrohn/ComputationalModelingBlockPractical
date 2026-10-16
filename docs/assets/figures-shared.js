@@ -130,7 +130,8 @@ export function drawCondition(el, condition, { width = 530, height = 215 } = {})
   ], layout({
     width, height,
     xaxis: axis('trial number', { range: [0.5, pOption1.length + 0.5] }),
-    yaxis: axis('option 1 rewarded?', { range: [-0.08, 1.08], dtick: 0.25 }),
+    // three ticks: these plots are short, and the dashed line shows the levels
+    yaxis: axis('option 1<br>rewarded?', { range: [-0.08, 1.08], tickvals: [0, 0.5, 1] }),
   }), CONFIG);
 }
 
@@ -164,14 +165,17 @@ export function drawMagnitudes(el, { width = 1120, height = 165,
       line: { color: COL.option2, width: 1.6, dash: 'dot' }, marker: { size: 4, color: COL.option2 },
       hovertemplate: 'trial %{x}<br>magnitude option 2: %{y}<extra></extra>' },
   ], layout({
-    width, height,
+    // a strip this short is past the point where Plotly will grow its margins
+    // to fit an axis title, so the room below for the ticks and the title is
+    // reserved outright
+    width, height, margin: { ...HEADROOM, b: 62 },
     xaxis: axis('trial number', { range: [0.5, n + 0.5] }),
-    yaxis: axis('magnitude', { range: [0, 104], dtick: 50 }),
+    yaxis: axis('', { range: [0, 104], tickvals: [0, 100] }),
     annotations: [
       { x: keyAt(0), text: '— magnitude option 1', color: COL.option1 },
       { x: keyAt(0.29), text: '··· magnitude option 2', color: COL.option2 },
-    ].map(({ x: ax, text, color }) => ({ x: ax, y: 1.24, xref: 'x', yref: 'paper',
-      xanchor: 'left', showarrow: false, text, font: { size: 16, color } })),
+    ].map(({ x: ax, text, color }) => ({ x: ax, y: 1.02, xref: 'x', yref: 'paper',
+      xanchor: 'left', yanchor: 'bottom', showarrow: false, text, font: { size: 16, color } })),
   }), CONFIG);
 }
 
@@ -620,7 +624,7 @@ export function drawSoftmaxPair(el, { low = 0.02, high = 0.2, width = 1000, heig
     width, height,
     xaxis: Object.assign(axis('utility 1 − utility 2  (u<sub>1</sub> − u<sub>2</sub>)'),
                          { zeroline: true, zerolinecolor: '#e2e6ea', range: [-100, 100] }),
-    yaxis: axis('probability of choosing option 1', { range: [-0.04, 1.04], tickvals: [0, 0.25, 0.5, 0.75, 1] }),
+    yaxis: axis('probability of<br>choosing option 1', { range: [-0.04, 1.04], tickvals: [0, 0.25, 0.5, 0.75, 1] }),
     annotations: [
       { x: 12, y: softmax(12, 0, high), ax: -40, ay: -26, text: `β = ${high}: steep, rarely the worse option`,
         xanchor: 'right', font: { size: 15, color: COL.ink }, arrowcolor: COL.muted, arrowhead: 2,
