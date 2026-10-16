@@ -1,0 +1,15 @@
+%% The original deck's model diagram, built up across slides: boxes are what
+%% the model holds, arrows are labelled with the step that takes it from one
+%% box to the next. Combining value dimensions is a single step that both the
+%% learned probability and the shown magnitude feed into.
+flowchart TB
+  OH["Outcome History"] -- "Learning model" --> LP["Learned Probability"]
+  LP --> CV(["Combining<br>value dims"])
+  SM["Shown Magnitude"] --> CV
+  CV --> DV["Decision Variable"]
+
+  classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
+  classDef op fill:#f4f6f7,stroke:#7d868d,stroke-width:1.2px,color:#14171a;
+  classDef out fill:#ffffff,stroke:#14171a,stroke-width:3px,color:#14171a;
+  class OH,LP,SM,DV state;
+  class CV op;

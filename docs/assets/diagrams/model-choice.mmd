@@ -1,0 +1,13 @@
+%% model-utility.mmd, one step further: the decision rule.
+flowchart TB
+  OH["Outcome History"] -- "Learning model" --> LP["Learned Probability"]
+  LP --> CV(["Combining<br>value dims"])
+  SM["Shown Magnitude"] --> CV
+  CV --> DV["Decision Variable"]
+  DV -- "Decision rule" --> CP["Choice Probability"]
+
+  classDef state fill:#ffffff,stroke:#14171a,stroke-width:1.5px,color:#14171a;
+  classDef op fill:#f4f6f7,stroke:#7d868d,stroke-width:1.2px,color:#14171a;
+  classDef out fill:#ffffff,stroke:#14171a,stroke-width:3px,color:#14171a;
+  class OH,LP,SM,DV,CP state;
+  class CV op;

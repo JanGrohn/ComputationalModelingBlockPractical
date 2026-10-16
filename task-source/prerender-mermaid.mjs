@@ -49,6 +49,9 @@ for (const file of files) {
       themeVariables: { fontFamily: 'Inter, Helvetica, Arial, sans-serif', fontSize: '16px',
         primaryColor: '#f4f6f7', primaryTextColor: '#14171a', primaryBorderColor: '#14171a',
         lineColor: '#14171a', tertiaryColor: '#ffffff' },
+      // an edge's label sits on its line; mermaid draws the box behind it
+      // half transparent, so the line shows through the words
+      themeCSS: '.edgeLabel rect { opacity: 1; fill: #ffffff; }',
     });
     const { svg } = await mermaid.render('d' + Math.random().toString(36).slice(2), text);
     return svg;

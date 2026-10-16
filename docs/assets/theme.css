@@ -316,6 +316,13 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 .mermaid-figure svg { max-width: 100%; height: auto; max-height: 520px; }
 /* a wide diagram sharing a slide with text beneath it */
 .mermaid-figure.wide svg { max-height: 300px; }
+/* the model diagram the decks build up step by step, beside what each step adds */
+.cols.model-steps { grid-template-columns: 460px 1fr; }
+/* Equation 4 and its number have to fit beside the diagram: set flush left,
+   under the text, rather than centred between the diagram and the number */
+.reveal .model-steps .katex { font-size: 0.82em; }
+.model-steps .katex-display > .katex { text-align: left; }
+.model-steps .mermaid-figure svg { width: 100%; max-width: none !important; }
 
 /* --- a box that appears on click, with its text there from the start ----- */
 
