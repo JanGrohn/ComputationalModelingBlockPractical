@@ -406,22 +406,16 @@ export function drawAscent(el, v = {}, { width = 900, height = 390 } = {}) {
   const walked = paths.map((path) => path.slice(0, Math.max(1, Math.min(step, path.length))));
 
   plotly().react(el, [
-    // viridis at full strength, as on every other landscape; the path and its
-    // labels carry a white edge instead, so they read over the dark end too
-    { type: 'contour', z, x: betas, y: alphas, zmin: top - 70, zmax: top,
+    // lightened, so the climb stays visible where it starts, over the dark
+    // low end of the scale
+    { type: 'contour', z, x: betas, y: alphas, zmin: top - 70, zmax: top, opacity: 0.6,
       colorscale: CONTINUOUS,
       showscale: false, contours: { coloring: 'heatmap', start: top - 70, end: top, size: 7 },
       line: { color: 'rgba(255,255,255,0.7)', width: 1 },
       hovertemplate: 'α %{y:.2f}<br>β %{x:.2f}<br>log likelihood %{z:.0f}<extra></extra>' },
-    // a wide white line under each path is its halo
-    ...walked.map((path) => ({
-      x: path.map((p) => p.beta), y: path.map((p) => p.alpha), mode: 'lines',
-      line: { color: '#ffffff', width: 6 }, hoverinfo: 'skip',
-    })),
     ...walked.map((path) => ({
       x: path.map((p) => p.beta), y: path.map((p) => p.alpha), mode: 'lines+markers',
-      line: { color: COL.ink, width: 2 },
-      marker: { size: 6, color: COL.ink, line: { color: '#ffffff', width: 1 } },
+      line: { color: COL.ink, width: 2 }, marker: { size: 5, color: COL.ink },
       hovertemplate: 'step %{pointNumber}<br>α %{y:.2f}, β %{x:.2f}<extra></extra>',
     })),
     // where each run has got to, so the eye can follow the two climbs
@@ -438,11 +432,10 @@ export function drawAscent(el, v = {}, { width = 900, height = 390 } = {}) {
     annotations: paths.map((path, i) => ({
       x: path[0].beta, y: path[0].alpha, ax: i === 0 ? 34 : 44, ay: i === 0 ? 22 : -4,
       text: `start ${i + 1}`, font: { size: 15, color: COL.ink }, arrowcolor: COL.ink,
-      arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'left', bgcolor: '#ffffff',
-      borderpad: 2,
+      arrowhead: 2, arrowsize: 0.8, arrowwidth: 1, xanchor: 'left',
     })).concat([{ x: truth.beta, y: truth.alpha, ax: 40, ay: -34, text: 'simulated with',
       font: { size: 15, color: COL.truth }, arrowcolor: COL.truth, arrowhead: 2,
-      arrowsize: 0.8, arrowwidth: 1, xanchor: 'left', bgcolor: '#ffffff', borderpad: 2 }]),
+      arrowsize: 0.8, arrowwidth: 1, xanchor: 'left' }]),
   }), CONFIG);
 }
 
