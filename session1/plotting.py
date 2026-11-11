@@ -168,6 +168,7 @@ def plot_interactive_RL_model(
     # update the figure
     with fig.batch_update():
       fig.data[0].y = opt1Rewarded
+      fig.data[0].marker.color = palette.by_option(opt1Rewarded)
       fig.data[1].y = trueProbability
       fig.data[2].y = probOpt1
 
