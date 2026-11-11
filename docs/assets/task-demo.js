@@ -14,6 +14,7 @@
 --------------------------------------------------------------------------- */
 
 import { makeRng } from './models.js';
+import { sync } from './deck.js';
 
 const P_OPTION1 = 0.75;    // option 1 pays out on three trials in four
 const REVERSE_EVERY = 4;   // ...until the contingency starts reversing
@@ -56,6 +57,10 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
     render();
   }
 
+  // a choice made in the speaker view is made on the main screen too, and the
+  // other way round; both draw the same trials from the same seed
+  const send = sync(rootId, ({ option }) => choose(option));
+
   function choose(option) {
     if (state.chosen !== null) return;
     state.chosen = option;
@@ -92,7 +97,7 @@ export function playableTask(rootId, { seed = 20251015, showBlock = false } = {}
 
       const select = el('span', 'task-select', card);
       select.textContent = '✓ Select';
-      card.addEventListener('click', () => choose(option));
+      card.addEventListener('click', () => { choose(option); send({ option }); });
     });
 
     const block = showBlock

@@ -67,6 +67,45 @@ export const CONFIG = {
 };
 
 /**
+ * Keeps each interactive element in step across every window showing this
+ * deck. The speaker view draws the deck in frames of its own, so without this
+ * a slider moved there would stay put on the main screen, and the other way
+ * round. A window that opens late asks for each element's state, and only
+ * windows where that element has been changed answer.
+ */
+const channel = new BroadcastChannel(`deck:${window.location.pathname}`);
+const synced = new Map();
+
+channel.onmessage = ({ data }) => {
+  const element = synced.get(data.id);
+  if (!element) return;   // not set up in this window yet: it will ask once it is
+  if (data.ask) {
+    if (element.changed) channel.postMessage({ id: data.id, change: element.state() });
+  } else {
+    element.changed = true;
+    element.apply(data.change);
+  }
+};
+
+/**
+ * Register an interactive element for syncing.
+ *
+ * @param {string} id          the same in every window
+ * @param {function} apply     (change) -> void, applies a change another window made
+ * @param {function} [state]   () -> change, the element's whole state, for late windows
+ * @returns {function}         (change) -> void, tells the other windows about a change
+ */
+export function sync(id, apply, state) {
+  const element = { apply, state, changed: false };
+  synced.set(id, element);
+  if (state) channel.postMessage({ id, ask: true });
+  return (change) => {
+    element.changed = true;
+    channel.postMessage({ id, change });
+  };
+}
+
+/**
  * Wire up one interactive figure.
  *
  * @param {string} id        id of the <figure> element
@@ -93,8 +132,21 @@ export function interactiveFigure(id, params, draw, note, { play } = {}) {
     if (printNote && note) printNote.textContent = note(values);
   };
 
-  /** Move one slider from code, keeping its readout and the plot in step. */
-  const setters = {};
+  /** Set values, keeping each slider and its readout in step, and redraw. */
+  const sliders = {};
+  const set = (change) => {
+    for (const [key, v] of Object.entries(change)) {
+      values[key] = v;
+      if (sliders[key]) {
+        sliders[key].input.value = v;
+        sliders[key].out.textContent = fmt(params[key], v);
+      }
+    }
+    render();
+  };
+  const send = sync(id, set, () => ({ ...values }));
+  /** A change made in this window: apply it here, then everywhere else. */
+  const change = (c) => { set(c); send(c); };
 
   for (const [key, p] of Object.entries(params)) {
     const label = document.createElement('label');
@@ -107,13 +159,8 @@ export function interactiveFigure(id, params, draw, note, { play } = {}) {
     input.setAttribute('aria-label', (p.label ?? key).replace(/<[^>]+>/g, ''));
     const out = document.createElement('output');
     out.textContent = fmt(p, p.value);
-    setters[key] = (v) => {
-      values[key] = v;
-      input.value = v;
-      out.textContent = fmt(p, v);
-      render();
-    };
-    input.addEventListener('input', () => setters[key](parseFloat(input.value)));
+    sliders[key] = { input, out };
+    input.addEventListener('input', () => change({ [key]: parseFloat(input.value) }));
     label.append(name, input, out);
     controls.appendChild(label);
   }
@@ -129,11 +176,11 @@ export function interactiveFigure(id, params, draw, note, { play } = {}) {
     btn.addEventListener('click', () => {
       if (timer) { stop(); return; }
       // a second press after it has finished starts again from the beginning
-      if (values[play.param] >= p.max) setters[play.param](p.min);
+      if (values[play.param] >= p.max) change({ [play.param]: p.min });
       btn.textContent = '\u275a\u275a Pause';
       timer = setInterval(() => {
         const next = values[play.param] + (p.step ?? 1);
-        setters[play.param](Math.min(next, p.max));
+        change({ [play.param]: Math.min(next, p.max) });
         if (next >= p.max) stop();
       }, 1000 / (play.fps ?? 12));
     });
@@ -144,7 +191,7 @@ export function interactiveFigure(id, params, draw, note, { play } = {}) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = 'new schedule';
-    btn.addEventListener('click', () => { values.__seed = Math.floor(Math.random() * 1e6); render(); });
+    btn.addEventListener('click', () => change({ __seed: Math.floor(Math.random() * 1e6) }));
     controls.appendChild(btn);
   }
 
