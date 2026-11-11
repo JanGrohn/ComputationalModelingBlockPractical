@@ -1,3 +1,6 @@
+# json reads the data file the task in session 1 lets you download
+import json
+
 # numpy is a library used to do all kinds of mathematical operations
 import numpy as np
 
@@ -64,3 +67,53 @@ def load_blain(ID, data = blain_data):
         opt1Rewarded[i] = 1
 
   return trueProbability, choice1, magOpt1, magOpt2, opt1Rewarded
+
+# the task's condition 1 is the stable schedule and condition 2 the volatile one
+CONDITIONS = {1: "stable", 2: "volatile"}
+
+def load_own_data(paths):
+  '''
+  Returns your own data from the task you played in session 1.
+
+    Parameters:
+        paths(list of str): the participantData.json files the task let you
+          download at the end, one for each condition you played.
+
+    Returns:
+        blocks(dict): one entry, "stable" or "volatile", for each condition you
+          played. Each holds the arrays choice1, magOpt1, magOpt2 and
+          opt1Rewarded, as described in load_blain.
+  '''
+
+  blocks = {}
+  for path in paths:
+    with open(path) as file:
+      events = json.load(file)
+
+    # the file is a list of events: who you are, the condition you picked, and
+    # one "Select Left" or "Select Right" event for every choice you made
+    conditions = [event["condition"] for event in events if "condition" in event]
+    choices    = [event for event in events if event.get("type") in ("Select Left", "Select Right")]
+    if len(conditions) != 1 or conditions[0] not in CONDITIONS or not choices:
+      raise ValueError(
+        f"{path} does not look like a file downloaded from the task at the end of "
+        f"session 1: it should name one condition (1 or 2) and contain your choices."
+      )
+
+    condition = CONDITIONS[conditions[0]]
+    if condition in blocks:
+      raise ValueError(
+        f"Two of your files are from the {condition} condition. Upload one file "
+        f"per condition you played."
+      )
+
+    # displaySide is 1 when option 1 (green) was shown on the left, so you chose
+    # option 1 whenever you picked the side it was on
+    choice1      = np.array([(event["type"] == "Select Left") == (event["displaySide"] == 1) for event in choices], dtype = int)
+    magOpt1      = np.array([event["reward1"] for event in choices], dtype = int)
+    magOpt2      = np.array([event["reward2"] for event in choices], dtype = int)
+    opt1Rewarded = np.array([event["oneRewarded"] for event in choices], dtype = int)
+
+    blocks[condition] = (choice1, magOpt1, magOpt2, opt1Rewarded)
+
+  return blocks

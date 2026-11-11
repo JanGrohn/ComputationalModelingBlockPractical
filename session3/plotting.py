@@ -327,3 +327,33 @@ def plot_model_frequencies(bestModels, sd=None, exceedance_probabilities=None, m
         
     fig.update_layout(yaxis_title='frequency', xaxis_title='', showlegend=False)
     fig.show()
+
+
+PARAMETER_LABELS = {'alpha': 'α', 'alphaStable': 'α stable', 'alphaVolatile': 'α volatile', 'beta': 'β', 'omega': 'ω'}
+
+def plot_own_parameters(myFit, df):
+  '''
+  Plots your fitted parameters against those of every participant in the dataset.
+
+    Parameters:
+        myFit (pandas.DataFrame): your fit, from fitting.fit_own_data
+        df (pandas.DataFrame): the dataset's fits of the same model
+  '''
+  parameters = [name for name in myFit.columns if name in PARAMETER_LABELS]
+  fig = make_subplots(rows=len(parameters), cols=1,
+                      subplot_titles=[PARAMETER_LABELS[name] for name in parameters])
+
+  for row, name in enumerate(parameters, start=1):
+    fig.add_trace(go.Box(x=df[name], name='dataset', boxpoints='all', jitter=0.5, pointpos=0,
+                         marker=dict(color=palette.NEUTRAL, size=5), line=dict(color=palette.NEUTRAL),
+                         customdata=df.ID,
+                         hovertemplate='participant ID: %{customdata}<br>%{x:.3f}<extra></extra>',
+                         showlegend=row == 1), row=row, col=1)
+    fig.add_trace(go.Scatter(x=myFit[name], y=['dataset'], mode='markers', name='you',
+                             marker=dict(color=palette.ESTIMATE, size=16, symbol='diamond'),
+                             hovertemplate='you: %{x:.3f}<extra></extra>',
+                             showlegend=row == 1), row=row, col=1)
+
+  fig.update_yaxes(showticklabels=False)
+  fig.update_layout(height=170*len(parameters), legend=dict(orientation='h', y=1.12, x=1, xanchor='right'))
+  fig.show()

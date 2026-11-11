@@ -641,8 +641,98 @@ def fit_participant_data(
          fitData2Alpha.loc[s, "omega"] = omega_diff_values[s]
          fitData1Alpha.loc[s, "BIC"] = 3*np.log(numTrials) + 2*float(loss_same_alpha[s])
          fitData2Alpha.loc[s, "BIC"] = 4*np.log(numTrials) + 2*float(loss_alpha_difference[s])
-    
+
     return fitData1Alpha, fitData2Alpha
+
+def fit_single_block(
+  data:             Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray],
+  utility_function: Callable,
+  paramsClip:       Dict[str, float],
+  nInits:           int = 10,
+  ) -> Tuple[Dict[str, jnp.ndarray], float]:
+    '''
+    Fits one learning rate, beta and (for additive utility) omega to a single
+    block of trials, starting from nInits random initial values.
+
+    Parameters:
+        data(tuple): opt1Rewarded, magOpt1, magOpt2 and choice1 for the block
+        utility_function(function): the utility function to use
+        paramsClip(dict): the parameters to constrain
+        nInits(int): the number of initial values to use
+
+    Returns:
+        bestParams(dict): the best fitting parameters
+        bestLoss(float): the loss of the best fitting parameters
+    '''
+    names = ['alpha', 'beta'] + (['omega'] if utility_function == additive_utility else [])
+
+    def fit_from(rng):
+      initParams = {name: jax.random.uniform(key, shape=(1,), minval=paramsClip[name + 'Min'], maxval=paramsClip[name + 'Max'])
+                    for name, key in zip(names, jax.random.split(rng, len(names)))}
+      loss_fun = lambda params: loss_RL_model(data, params, utility_function = utility_function)
+      finalParams, _ = run_opt(initParams, loss_fun, paramsClip = paramsClip)
+      return finalParams, loss_fun(finalParams)
+
+    params, loss = jax.vmap(fit_from)(jnp.stack([jax.random.PRNGKey(i) for i in range(nInits)]))
+    bestFit = jnp.nanargmin(loss)
+    return {name: params[name][bestFit] for name in names}, loss[bestFit]
+
+def fit_own_data(
+  blocks:           Dict[str, Tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]],
+  utility_function: Callable,
+  fit_model:        Callable,
+  nInits:           int = 10,
+  ) -> pd.DataFrame:
+    '''
+    Fits a model to your own data, the same way fit_participant_data fits it to
+    every participant in the dataset.
+
+    Parameters:
+        blocks(dict): your data, as returned by loading.load_own_data
+        utility_function(function): the utility function to use
+        fit_model(function): fit_model_same_alpha or fit_model_alpha_difference
+        nInits(int): the number of initial values to use
+
+    Returns:
+        fitData(dataframe): one row holding your fitted parameters, LL and BIC
+    '''
+
+    if fit_model == fit_model_alpha_difference and set(blocks) != {"stable", "volatile"}:
+      raise ValueError(
+        "A model with separate learning rates for the stable and the volatile block "
+        "needs data from both conditions, but you uploaded only the "
+        f"{' and '.join(blocks)} condition. Play the other condition of the task too, "
+        "download your data, and upload both files."
+      )
+
+    paramsClip = {'alphaMin': 0, 'alphaMax': 1, 'betaMin': 0, 'betaMax': 1}
+    if utility_function == additive_utility:
+      paramsClip |= {'omegaMin': 0, 'omegaMax': 1}
+
+    # the fitting functions want opt1Rewarded, magOpt1, magOpt2, choice1, in that order
+    fittingOrder = {condition: (opt1Rewarded, magOpt1, magOpt2, choice1)
+                    for condition, (choice1, magOpt1, magOpt2, opt1Rewarded) in blocks.items()}
+    numTrials = sum(len(choice1) for choice1, _, _, _ in blocks.values())
+
+    if len(blocks) == 1:
+      (data,) = fittingOrder.values()
+      params, loss = fit_single_block(data, utility_function, paramsClip, nInits)
+    else:
+      data = fittingOrder["stable"] + fittingOrder["volatile"]
+      params, loss = fit_with_multiple_initial_values(data, nInits = nInits, utility_function = utility_function,
+                                                      fit_model = fit_model_same_alpha, paramsClip = paramsClip)
+      if fit_model == fit_model_alpha_difference:
+        # as for the dataset, one run starts from the single learning rate fit
+        startingParams = {'alphaStable': params['alpha'], 'alphaVolatile': params['alpha']} \
+                         | {name: params[name] for name in params if name != 'alpha'}
+        params, loss = fit_with_multiple_initial_values(data, nInits = nInits, utility_function = utility_function,
+                                                        fit_model = fit_model_alpha_difference, paramsClip = paramsClip,
+                                                        startingParams = startingParams)
+
+    fitData = pd.DataFrame({name: [float(value[0])] for name, value in params.items()})
+    fitData["LL"]  = -float(loss)
+    fitData["BIC"] = len(params)*np.log(numTrials) + 2*float(loss)
+    return fitData
 
 def simulate_RL_model(
     opt1Rewarded: npt.NDArray,

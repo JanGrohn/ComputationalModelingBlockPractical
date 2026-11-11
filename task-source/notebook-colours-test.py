@@ -124,6 +124,8 @@ def figures():
 
     yield 's3 plot_model_frequencies', lambda: p3.plot_model_frequencies(
         np.array([9., 3., 35., 28.]), np.array([.03, .02, .05, .05]), np.array([0., 0., .77, .23]))
+    for name, d in fits.items():
+        yield f's3 plot_own_parameters {name}', lambda d=d: p3.plot_own_parameters(d.drop(columns='ID').iloc[[0]], d)
 
     recoveries = l4.load_parameter_recovery()
     for name, recovery in zip(('1 α mul', '2 α mul', '1 α add', '2 α add'), recoveries):
