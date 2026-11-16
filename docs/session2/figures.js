@@ -9,7 +9,7 @@ import {
   drawFalsification, drawAscent, ascentNote, ASCENT_STEPS, drawWeights, weightsNote,
   drawGridSearch, gridSearchNote, drawErrorTerm, errorTermNote, drawBlockLandscapes,
   blockLandscapesNote, drawRegression, regressionNote, drawSoftmaxPair, softmaxPairNote,
-  drawFitQuality, fitQualityNote,
+  drawFitQuality, fitQualityNote, FIT_SIMULATED,
 } from '../assets/figures-shared.js';
 import { REGRESSION } from '../assets/participant-fits.js';
 
@@ -117,6 +117,11 @@ const fitQuality = {
     },
     draw: drawFitQuality,
     note: fitQualityNote,
+  },
+  'fig-fit-quality-reference': {
+    params: {},
+    draw: (el) => drawFitQuality(el, FIT_SIMULATED, { reference: true }),
+    note: () => fitQualityNote(FIT_SIMULATED),
   },
 };
 

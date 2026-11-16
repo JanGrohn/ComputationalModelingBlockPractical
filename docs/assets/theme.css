@@ -536,6 +536,7 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
   content: "\25B2"; position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
   font-size: 0.8em; line-height: 1; margin-top: -1px;
 }
+.overview:has(.ov-loop.fragment:not(.visible)) .ov-data::after { visibility: hidden; }
 .ov-loop-label {
   position: absolute; left: 50%; bottom: -0.75em; transform: translateX(-50%); white-space: nowrap;
   background: #fff; padding: 0 0.6em;

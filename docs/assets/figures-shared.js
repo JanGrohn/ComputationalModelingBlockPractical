@@ -113,50 +113,40 @@ const FIT_DATA = (() => {
 })();
 export const FIT_SIMULATED = { alpha: 0.3, beta: 0.05 };
 
-/**
- * The same choices under two sets of parameters: the ones they were simulated
- * with, on top, and whichever the sliders set, beneath. A good fit puts its
- * choice probability high where option 1 was chosen and low where option 2 was.
- */
-export function drawFitQuality(el, v, { width = 720, height = 430 } = {}) {
+/** Compare fixed simulated choices with the choice probabilities for these parameters. */
+export function drawFitQuality(el, v, { width = 720, height = 210, reference = false } = {}) {
   const { opt1Rewarded, magOpt1, magOpt2, choice1 } = FIT_DATA;
   const x = trials(choice1.length);
-  const panel = (params, n) => {
-    const { choiceProb1 } = simulateRlModel(opt1Rewarded, magOpt1, magOpt2, params.alpha, params.beta,
-                                            { rng: makeRng(1) });
-    const suffix = n === 1 ? '' : String(n);
-    return [
-      { x, y: Array.from(choiceProb1), xaxis: `x${suffix}`, yaxis: `y${suffix}`, mode: 'lines',
-        line: { color: COL.estimate, width: 2 },
-        hovertemplate: 'trial %{x}<br>P(choose option 1) %{y:.2f}<extra></extra>' },
-      ...[[1, COL.option1, 'option 1'], [0, COL.option2, 'option 2']].map(([c, color, name]) => ({
-        ...where(x, choice1, c), xaxis: `x${suffix}`, yaxis: `y${suffix}`, mode: 'markers',
-        marker: { size: 5, color }, hovertemplate: `trial %{x}<br>chose ${name}<extra></extra>` })),
-    ];
-  };
-  const title = (params, y, what) => ({
-    xref: 'paper', yref: 'paper', x: 0, y, xanchor: 'left', yanchor: 'bottom', showarrow: false,
-    font: { size: 15, color: COL.ink },
-    text: `${what}: α = ${params.alpha.toFixed(2)}, β = ${params.beta.toFixed(2)} · `
-      + `<b>log L = ${logLikelihood(opt1Rewarded, magOpt1, magOpt2, choice1, params.alpha, params.beta).toFixed(1)}</b>`,
-  });
-  const yaxis = (domain) => axis('P(option 1)', { domain, range: [-0.08, 1.08], tickvals: [0, 0.5, 1] });
-  plotly().react(el, [...panel(FIT_SIMULATED, 1), ...panel(v, 2)], layout({
-    width, height, showlegend: false,
-    grid: { rows: 2, columns: 1, pattern: 'independent' },
-    xaxis: axis('', { range: [0.5, x.length + 0.5], domain: [0, 1], anchor: 'y', showticklabels: false }),
-    yaxis: yaxis([0.6, 0.93]),
-    xaxis2: axis('trial number', { range: [0.5, x.length + 0.5], domain: [0, 1], anchor: 'y2' }),
-    yaxis2: yaxis([0, 0.33]),
-    annotations: [title(FIT_SIMULATED, 0.95, 'The values simulated with'),
-                  title(v, 0.35, 'Your values')],
+  const { choiceProb1 } = simulateRlModel(opt1Rewarded, magOpt1, magOpt2, v.alpha, v.beta,
+                                         { rng: makeRng(1) });
+  const what = reference ? 'The values simulated with' : 'Your values';
+  plotly().react(el, [
+    { x, y: trueProbability, mode: 'lines', name: 'true P(option 1 rewarded)',
+      line: { color: COL.truth, dash: 'dash', width: 1.8 },
+      hovertemplate: 'trial %{x}<br>true P(option 1 rewarded) %{y:.2f}<extra></extra>' },
+    { x, y: Array.from(choiceProb1), mode: 'lines', name: 'P(choose option 1)',
+      line: { color: COL.estimate, width: 2 },
+      hovertemplate: 'trial %{x}<br>P(choose option 1) %{y:.2f}<extra></extra>' },
+    ...[[1, COL.option1, 'option 1'], [0, COL.option2, 'option 2']].map(([c, color, name]) => ({
+      ...where(x, choice1, c), mode: 'markers', showlegend: false,
+      marker: { size: 5, color }, hovertemplate: `trial %{x}<br>chose ${name}<extra></extra>` })),
+  ], layout({
+    width, height, margin: { ...HEADROOM, t: 58 }, showlegend: true,
+    legend: { orientation: 'h', x: 0, y: 1.04, yanchor: 'bottom', font: { size: 13 } },
+    xaxis: axis('trial number', { range: [0.5, x.length + 0.5] }),
+    yaxis: axis('P(option 1)', { range: [-0.08, 1.08], tickvals: [0, 0.5, 1] }),
+    annotations: [{
+      xref: 'paper', yref: 'paper', x: 0, y: 1.32, xanchor: 'left', yanchor: 'bottom', showarrow: false,
+      font: { size: 15, color: COL.ink },
+      text: `${what}: α = ${v.alpha.toFixed(2)}, β = ${v.beta.toFixed(2)} · `
+        + `<b>log L = ${logLikelihood(opt1Rewarded, magOpt1, magOpt2, choice1, v.alpha, v.beta).toFixed(1)}</b>`,
+    }],
   }), CONFIG);
 }
 
 export const fitQualityNote = (v) =>
-  `The same 200 choices, option 1 at the top and option 2 at the bottom, with the choice `
-  + `probability the model gives them: on top at the values they were simulated with, beneath at `
-  + `α = ${v.alpha.toFixed(2)} and β = ${v.beta.toFixed(2)}. The closer log L is to zero, the better the fit.`;
+  `200 fixed simulated choices; model α = ${v.alpha.toFixed(2)}, β = ${v.beta.toFixed(2)}. `
+  + `Dashed: true P(option 1 rewarded).`;
 
 /* --- the two conditions, and the magnitudes on offer ---------------------- */
 
@@ -691,11 +681,15 @@ export function drawSoftmaxPair(el, { low = 0.02, high = 0.2, width = 1000, heig
                          { zeroline: true, zerolinecolor: '#e2e6ea', range: [-100, 100] }),
     yaxis: axis('probability of<br>choosing option 1', { range: [-0.04, 1.04], tickvals: [0, 0.25, 0.5, 0.75, 1] }),
     annotations: [
-      { x: 12, y: softmax(12, 0, high), ax: -40, ay: -26, text: `β = ${high}: steep, rarely the worse option`,
-        xanchor: 'right', font: { size: 15, color: COL.ink }, arrowcolor: COL.muted, arrowhead: 2,
+      { x: 6, y: softmax(6, 0, high), ax: -90, ay: 0.92, axref: 'x', ayref: 'y',
+        text: `β = ${high}: steep<br>rarely the worse option`,
+        xanchor: 'left', yanchor: 'top', align: 'left',
+        font: { size: 15, color: COL.ink }, arrowcolor: COL.muted, arrowhead: 2,
         arrowsize: 0.8, arrowwidth: 1 },
-      { x: -55, y: softmax(-55, 0, low), ax: 30, ay: -60, text: `β = ${low}: shallow, often the worse option`,
-        xanchor: 'left', font: { size: 15, color: COL.ink }, arrowcolor: COL.muted, arrowhead: 2,
+      { x: 35, y: softmax(35, 0, low), ax: 90, ay: 0.18, axref: 'x', ayref: 'y',
+        text: `β = ${low}: shallow<br>often the worse option`,
+        xanchor: 'right', yanchor: 'bottom', align: 'left',
+        font: { size: 15, color: COL.ink }, arrowcolor: COL.muted, arrowhead: 2,
         arrowsize: 0.8, arrowwidth: 1 },
     ],
   }), CONFIG);
