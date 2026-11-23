@@ -76,7 +76,7 @@ export function alphaDifference(el, fits, { width = 560, height = 300 } = {}) {
 
 /* --- the likelihood ratio test, against its null distribution ------------- */
 
-export function drawChiSquare(el, { width = 1020, height = 215 } = {}) {
+export function drawChiSquare(el, { width = 1020, height = 260 } = {}) {
   const marks = [
     { value: SIMULATIONS.same.test.lambda, label: 'simulated with one learning rate',
       color: COL.neutral },
@@ -94,25 +94,28 @@ export function drawChiSquare(el, { width = 1020, height = 215 } = {}) {
     width, height,
     xaxis: axis(`λ, against χ² with ${CHI2.df} degrees of freedom`,
                 { range: [30, 430] }),
-    yaxis: Object.assign(axis('density'), { range: [0, peak * 1.75], showticklabels: false }),
+    yaxis: Object.assign(axis('density'), { range: [0, peak * 2.1], showticklabels: false }),
     shapes: [
-      { type: 'line', x0: CHI2.critical, x1: CHI2.critical, y0: 0, y1: peak * 1.1,
+      { type: 'line', x0: CHI2.critical, x1: CHI2.critical, y0: 0, y1: peak,
         line: { color: COL.faint, width: 1.5, dash: 'dot' } },
-      ...marks.map((m) => ({ type: 'line', x0: m.value, x1: m.value, y0: 0, y1: peak * 1.22,
+      ...marks.map((m) => ({ type: 'line', x0: m.value, x1: m.value, y0: 0, y1: peak,
         line: { color: m.color, width: 2.5 } })),
     ],
     annotations: [
-      { x: CHI2.critical, y: peak * 1.12, yanchor: 'bottom', xanchor: 'left', showarrow: false,
-        text: `p = 0.05 at ${CHI2.critical}`, font: { size: 14, color: COL.faint } },
-      // past the middle of the axis a left anchored label would run off the
-      // edge, so those are hung to the left of their line instead
-      ...marks.map((m, i) => {
-        const left = m.value < 240;
-        return { x: m.value, y: peak * (1.62 - i * 0.2), xanchor: left ? 'left' : 'right',
-          showarrow: false,
-          text: left ? `  ${m.label}: ${m.value}` : `${m.label}: ${m.value}  `,
-          font: { size: 15, color: m.color } };
-      }),
+      ...[
+        { ...marks[0], labelX: 75, labelY: 1.7 },
+        { value: CHI2.critical, label: 'p = 0.05 threshold', color: COL.faint,
+          labelX: 170, labelY: 1.15 },
+        { ...marks[1], labelX: 280, labelY: 1.7 },
+        { ...marks[2], labelX: 385, labelY: 1.15 },
+      ].map((m) => ({
+        x: m.value, y: peak, ax: m.labelX, ay: peak * m.labelY,
+        axref: 'x', ayref: 'y', xanchor: 'center', yanchor: 'bottom',
+        showarrow: true, arrowhead: 2, arrowwidth: 1.2, arrowcolor: m.color,
+        bgcolor: 'white', borderpad: 3,
+        text: `${m.label}<br>λ = ${m.value}`,
+        font: { size: 14, color: m.color },
+      })),
     ],
   }), CONFIG);
 }

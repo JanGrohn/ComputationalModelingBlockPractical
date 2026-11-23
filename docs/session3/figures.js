@@ -11,6 +11,7 @@ import {
   drawFalsification, drawAscent, ascentNote, ASCENT_STEPS, drawRegression, regressionNote,
   drawErrorTerm, errorTermNote, drawLikelihoodSpike, likelihoodSpikeNote, drawFitComplexity,
   fitComplexityNote, drawMiniLearning, drawMiniUtility, drawMiniSoftmax,
+  drawFitQuality, fitQualityNote,
 } from '../assets/figures-shared.js';
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
@@ -23,6 +24,14 @@ const N = STATS.nParticipants;
 /* --- recaps of weeks 1 and 2 ---------------------------------------------- */
 
 const recaps = {
+  'fig-fit-quality': {
+    params: {
+      alpha: { min: 0.01, max: 1, step: 0.01, value: 0.9, label: '&alpha;' },
+      beta: { min: 0.01, max: 0.5, step: 0.01, value: 0.2, label: '&beta;' },
+    },
+    draw: drawFitQuality,
+    note: fitQualityNote,
+  },
   'fig-choices': {
     params: {
       alpha: { min: 0.01, max: 1, step: 0.01, value: 0.3, label: '&alpha;' },
@@ -136,7 +145,7 @@ const realFits = {
              + `p = ${t.p.toPrecision(2)}.`;
     },
   },
-  'fig-chi2': { params: {}, draw: (el) => drawChiSquare(el, { width: 1020, height: 200 }), note: chiSquareNote },
+  'fig-chi2': { params: {}, draw: (el) => drawChiSquare(el, { width: 1020, height: 260 }), note: chiSquareNote },
   'fig-bic': { params: {}, draw: drawBic, note: bicNote },
   'fig-params-mul': {
     params: {},

@@ -759,8 +759,8 @@ export function drawMiniUtility(el, { width = 330, height = 150 } = {}) {
     contours: { coloring: 'heatmap', start: 0, end: 100, size: 20 },
     line: { color: 'rgba(255,255,255,0.75)', width: 0.8 }, hoverinfo: 'skip' }], layout({
     width, height, margin: { l: 30, r: 6, t: 6, b: 22 },
-    xaxis: axis('probability', { range: [0, 1], showgrid: false }),
-    yaxis: axis('magnitude', { range: [1, 100], showgrid: false }),
+    xaxis: axis('', { range: [0, 1], showgrid: false }),
+    yaxis: axis('', { range: [1, 100], showgrid: false }),
   }), CONFIG);
 }
 

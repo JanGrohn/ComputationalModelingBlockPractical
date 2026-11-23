@@ -502,6 +502,14 @@ figure.centred { text-align: center; margin-bottom: 0.7em; }
 .model-card .katex { font-size: 1.05em; }
 .param-out { font-size: 1em; line-height: 1.35; margin: 0; }
 
+.fitting-pipelines .pipeline { font-size: 0.65em; margin-top: 0.4em; }
+.fitting-pipeline-title { font-size: 0.75em; font-weight: 600; margin: 0.8em 0 0; }
+.fitting-pipelines .station-art { height: 130px; }
+.fitting-pipelines .station-arrow { margin-top: 45px; }
+.fitting-pipelines .station-art > img { max-height: 80px; }
+.fitting-pipelines .mini-card { width: 44px; }
+.fitting-pipelines .mini-card img { height: 40px; }
+
 /* the overview of the whole model: where each session's piece sits, and how
    simulated choices loop back to stand in for real data. The columns have
    fixed widths so the loop can be drawn from the middle of the first card to
