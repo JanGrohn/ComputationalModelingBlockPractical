@@ -10,7 +10,7 @@ import {
   drawWeights, weightsNote, drawGridSearch, gridSearchNote, drawRecovery, recoveryNote,
   drawFalsification, drawAscent, ascentNote, ASCENT_STEPS, drawRegression, regressionNote,
   drawErrorTerm, errorTermNote, drawLikelihoodSpike, likelihoodSpikeNote, drawFitComplexity,
-  fitComplexityNote, drawMiniLearning, drawMiniSoftmax,
+  fitComplexityNote, drawMiniLearning, drawMiniUtility, drawMiniSoftmax,
 } from '../assets/figures-shared.js';
 import {
   alphaDistributions, alphaDifference, drawChiSquare, chiSquareNote, drawBic, bicNote,
@@ -69,6 +69,7 @@ const recaps = {
     note: () => fitComplexityNote,
   },
   'fig-mini-learning': { params: {}, draw: (el) => drawMiniLearning(el), note: () => '' },
+  'fig-mini-utility': { params: {}, draw: (el) => drawMiniUtility(el), note: () => '' },
   'fig-mini-softmax': { params: {}, draw: (el) => drawMiniSoftmax(el), note: () => '' },
   'fig-recovery-mini': {
     params: {},

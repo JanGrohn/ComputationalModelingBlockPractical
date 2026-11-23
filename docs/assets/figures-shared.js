@@ -749,6 +749,21 @@ export function drawMiniLearning(el, { width = 330, height = 150 } = {}) {
   }), CONFIG);
 }
 
+/** Multiplicative utility contour from Session 1, sized for the recap slide. */
+export function drawMiniUtility(el, { width = 330, height = 150 } = {}) {
+  const values = Array.from({ length: 31 }, (_, i) => i / 30);
+  const magnitudes = Array.from({ length: 31 }, (_, i) => 1 + (99 * i) / 30);
+  const z = magnitudes.map((m) => values.map((p) => (m * p)));
+  plotly().react(el, [{ type: 'contour', x: values, y: magnitudes, z,
+    colorscale: CONTINUOUS, showscale: false,
+    contours: { coloring: 'heatmap', start: 0, end: 100, size: 20 },
+    line: { color: 'rgba(255,255,255,0.75)', width: 0.8 }, hoverinfo: 'skip' }], layout({
+    width, height, margin: { l: 30, r: 6, t: 6, b: 22 },
+    xaxis: axis('probability', { range: [0, 1], showgrid: false }),
+    yaxis: axis('magnitude', { range: [1, 100], showgrid: false }),
+  }), CONFIG);
+}
+
 /** A small softmax beside the deterministic rule, for the same recap. */
 export function drawMiniSoftmax(el, { width = 330, height = 150 } = {}) {
   const d = Array.from({ length: 201 }, (_, i) => -100 + i);
